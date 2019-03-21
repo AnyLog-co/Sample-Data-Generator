@@ -5,6 +5,14 @@
 * [3.5'' Screen](https://www.amazon.com/gp/product/B01IGBDT02/ref=ppx_yo_dt_b_asin_title_o04_s00?ie=UTF8&psc=1) (Optional) 
 
 **Installation**
+* Before install user should Update/Upgrade Raspberry PI
+```
+sudo apt update 
+sudo apt -y upgrade 
+sudo apt update 
+sudo rpi-update
+``` 
+
 * [Install GrovePi](https://www.dexterindustries.com/GrovePi/get-started-with-the-grovepi/setting-software/)  
 ```
 sudo curl -kL dexterindustries.com/update_grovepi | bash
