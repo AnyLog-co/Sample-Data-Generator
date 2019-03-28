@@ -1,46 +1,40 @@
+import datetime
 import grovepi 
+import socket 
+import  uuid 
 
-DHT_GROVE_PIN = 8
+DHT_GROVE_PIN = 7
 DHT_VERSION = 0 
 
 LIGHT_GROVE_PIN = 2 
 SOUND_GROVE_PIN = 0 
 BUTTON_GROVE_PIN = 3
 
-def get_humidity():
+def get_ip()->str:
    """
-   Get Humidity Percentage 
+   Get IP address of given node to know source of sensor
    :return: 
-      humidity as a percentage 
+      IP Address 
    """
-   try: 
-      return grovepi.dht(DHT_GROVE_PIN, DHT_VERSION)[1]
-   except: 
-      return None
+   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-def get_temp_c():
-   """
-   Get Temperature in Celcius
-   :return: 
-      temperature in celcius
-   """
-   try: 
-      return grovepi.dht(DHT_GROVE_PIN, DHT_VERSION)[0]
-   except: 
-      return None
+   s.connect(("8.8.8.8", 80))
 
-def get_temp_f():
-   """
-   Get Temperature in Fahrenheit
-   :return: 
-      temp in fahrenheit
-   """
-   try: 
-      temp = grovepi.dht(DHT_GROVE_PIN, DHT_VERSION)[0]
-   except: 
-       return None 
+   return str(s.getsockname()[0])
 
-   return (temp * 1.8) + 32
+def get_dht():
+   try:  
+      return grovepi.dht(DHT_GROVE_PIN, DHT_VERSION)
+   except: 
+      return False
+
+def get_dht_f():
+   try: 
+      temp, humidity = grovepi.dht(DHT_GROVE_PIN, DHT_VERSION)
+   except: 
+      return False 
+
+   return (temp * 1.8) + 32, humidity 
 
 def get_light_levels():
    """
@@ -53,19 +47,18 @@ def get_light_levels():
    try:
       sensor_value = grovepi.analogRead(LIGHT_GROVE_PIN)
    except: 
-      return None
+      return False
 
    resistance = (float)(1023 - sensor_value) * 10 / sensor_value
 
-   return sensor_value, round(resistance, 2)
-
+   return sensor_value, resistance
 
 def get_sound_levels():
    grovepi.pinMode(SOUND_GROVE_PIN, "INPUT")
    try:
-      print(grovepi.analogRead(SOUND_GROVE_PIN))
+      return grovepi.analogRead(SOUND_GROVE_PIN)
    except: 
-      print(False) 
+      return False 
 
 def get_button():
    grovepi.pinMode(BUTTON_GROVE_PIN, "INPUT") 
@@ -74,5 +67,51 @@ def get_button():
    except: 
       return 0
 
+def main(sensor:str): 
+   sensors = {
+      'dht': get_dht,
+      'dht_f': get_dht_f, 
+      'light': get_light_levels, 
+      'sound': get_sound_levels 
+   }
+
+   try:
+      sensor_cmd = sensors[sensor]
+   except KeyError: 
+      return False 
+
+   data = {} 
+   data['key'] = str(uuid.uuid4())
+   data['timestamp'] = str(datetime.datetime.now())
+   data['sensor'] = sensor 
+   data['location'] = get_ip() 
+   if sensor == "dht" or sensor == "dht_f": 
+      try: 
+         temp, humidity = sensor_cmd()
+      except: 
+         return False 
+      data['readings'] = {
+         'humidity': humidity, 
+         'temp': temp
+      } 
+   elif sensor == "light": 
+      try: 
+          sensor_value, resistance = sensor_cmd()
+      except:
+         return False 
+
+      data['readings'] = {
+         'level': sensor_value, 
+         'resistance': resistance 
+      }
+
+   else: 
+      try: 
+          data[sensor]  = sensor_cmd()
+      except: 
+         return False 
+
+   return data 
+   
 if __name__ == '__main__': 
-   print(get_button())
+   main('sound') 
