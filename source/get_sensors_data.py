@@ -1,5 +1,6 @@
 import datetime
 import grovepi 
+import random 
 import socket 
 import  uuid 
 
@@ -67,7 +68,7 @@ def get_button():
    except: 
       return 0
 
-def main(sensor:str): 
+def get_sensor_data(sensor:str): 
    sensors = {
       'dht': get_dht,
       'dht_f': get_dht_f, 
@@ -75,8 +76,11 @@ def main(sensor:str):
       'sound': get_sound_levels 
    }
 
+   if sensor.lower() is "random":
+      sensor = random.choice(list(sensors.keys()))
+
    try:
-      sensor_cmd = sensors[sensor]
+      sensor_cmd = sensors[sensor.lower()]
    except KeyError: 
       return False 
 
