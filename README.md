@@ -1,38 +1,18 @@
-**Components**
-* [Raspberry PI 3B+](https://www.amazon.com/gp/product/B07BC7BMHY/ref=ppx_yo_dt_b_asin_title_o00_s00?ie=UTF8&psc=1) 
-* [Seedstudio-GrovePi](https://www.amazon.com/gp/product/B01BRCEWV2/ref=ppx_yo_dt_b_asin_title_o01_s00?ie=UTF8&psc=1) 
-* [32GB Memory Card](https://www.amazon.com/gp/product/B06XWN9Q99/ref=ppx_yo_dt_b_asin_title_o00_s00?ie=UTF8&psc=1) 
-* [3.5'' Screen](https://www.amazon.com/gp/product/B01IGBDT02/ref=ppx_yo_dt_b_asin_title_o04_s00?ie=UTF8&psc=1) (Optional) 
-
-**Installation**
-* Before install user should Update/Upgrade Raspberry PI
 ```
-sudo apt update 
-sudo apt -y upgrade 
-sudo apt update 
-sudo rpi-update
-``` 
-
-* [Install GrovePi](https://www.dexterindustries.com/GrovePi/get-started-with-the-grovepi/setting-software/)  
-```
-sudo curl -kL dexterindustries.com/update_grovepi | bash
-sudo reboot 
-``` 
-* Check i2c & [Update Firmware](https://www.dexterindustries.com/GrovePi/get-started-with-the-grovepi/updating-firmware/)
-```
-# Check if i2c is accessible / seen 
-sudo i2cdetect -y 1
-
-# If not update firmware 
-sudo git clone https://github.com/DexterInd/GrovePi
-cd GrovePi/Firmware 
-sudo chmod +x firmware_update.sh
-sudo ./firmware_update.sh
-```
-* [Install 3.5'' Monitor](https://github.com/goodtft/LCD-show) 
-```
-git clone https://github.com/goodtft/LCD-show.git
-chmod -R 755 LCD-show
-cd LCD-show/
-sudo ./LCD35-show
+python3 rest_data_generator.py  --help
+:positional arguments:
+  conn:str - REST host and port   [ex. 10.0.0.96:2049] 
+  dbms:str - database name        [ex. sample_data] 
+  sensor:str - type of sensor to get data from 
+     * machine - general data regarding the machine 
+     * ping - data from random devices generating "ping" data 
+     * sin - SIN-sign values 
+     * cos - COS-sign values  
+:optional arguments:
+  -h, --help - show this help message and exit
+  -m, --mode - insert type (default: streaming)
+     * streaming - store batches of data 
+     * file - store data as it comese 
+  -r, --repeat - number of iterations. IF set to 0 run continuesly (default: 1)
+  -s, --sleep - wait between insert (default: 0)
 ```
