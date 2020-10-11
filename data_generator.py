@@ -115,7 +115,7 @@ def switch_get_data(dbms:str, sensor:str, mode:str, insert_size:int, sleep:float
          data_list.append(payload) 
    return header, data_list
 
-def switch_store_data(store_format:str, conn:str, header:dict, payloads:list): 
+def switch_store_data(store_format:str, sensor:str, conn:str, header:dict, payloads:list): 
    """
    Switch to store data
    :args:
@@ -125,14 +125,27 @@ def switch_store_data(store_format:str, conn:str, header:dict, payloads:list):
       payload:dict - data to store in operator
    """
    if store_format == 'rest': 
-      if store_data.validate_connection(conn) == True: 
+      if store_data_options.validate_connection(conn) == True: 
          for payload in payloads: 
-            store_data.send_data(conn, header, payload) 
+            if sensor == 'sin' or sensor == 'cos': 
+               for pyload in payload: 
+                  store_data_options.send_data(conn, header, pyload) 
+            else:
+               store_data_options.send_data(conn, header, payload) 
    elif store_format == 'file': 
-      store_data_options.write_data(header, payloads) 
+      for payload in payloads: 
+         if sensor == 'sin' or sensor == 'cos': 
+               for pylaod in payload: 
+                  store_data_options.write_data(header, pyload) 
+         else:
+            store_data_options.write_data(header, payload)
    else: 
       for payload in payloads: 
-         store_data_options.print_data(payload)
+         if sensor == 'sin' or sensor == 'cos': 
+            for pyload in payload: 
+               store_data_options.print_data(pyload) 
+         else:
+            store_data_options.print_data(payload)
 
 def main(): 
    """
@@ -171,13 +184,13 @@ def main():
       while True: 
          conn = random.choice(args.conns.split(','))
          header, payloads = switch_get_data(args.dbms, args.sensor, args.mode, args.insert_size, args.sleep)
-         switch_store_data(args.store_format, conn, header, payload)
+         switch_store_data(args.sensor, rgs.store_format, conn, header, payload)
          time.sleep(args.sleep) 
    else: 
       for i in range(args.repeat): 
          conn = random.choice(args.conns.split(','))
          header, payloads = switch_get_data(args.dbms, args.sensor, args.mode, args.insert_size, args.sleep)
-         switch_store_data(args.store_format, conn, header, payloads)
+         switch_store_data(args.sensor, args.store_format, conn, header, payloads)
          time.sleep(args.sleep) 
 
 if __name__ == '__main__': 
