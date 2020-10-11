@@ -14,9 +14,13 @@ def validate_connection(conn:str)->bool:
       if node is accessible return True, else return False 
    """
    boolean = False 
-   r = requests.get('http://%s' % conn, headers={'type': 'info', 'details': 'get status'})
+   try:
+      r = requests.get('http://%s' % conn, headers={'type': 'info', 'details': 'get status'})
+   except Exception as e: 
+      print(e) 
+
    if 'running' in r.json()['Status']:
-      boolean=True 
+      boolean=True  
    return boolean 
 
 

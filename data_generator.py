@@ -127,11 +127,7 @@ def switch_store_data(store_format:str, sensor:str, conn:str, header:dict, paylo
    if store_format == 'rest': 
       if store_data_options.validate_connection(conn) == True: 
          for payload in payloads: 
-            if sensor == 'sin' or sensor == 'cos': 
-               for pyload in payload: 
-                  store_data_options.send_data(conn, header, pyload) 
-            else:
-               store_data_options.send_data(conn, header, payload) 
+            store_data_options.send_data(conn, header, payload) 
    elif store_format == 'file': 
       for payload in payloads: 
          if sensor == 'sin' or sensor == 'cos': 

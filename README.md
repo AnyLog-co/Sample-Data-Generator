@@ -4,12 +4,12 @@ The following is a support script to generate data for  AnyLog
    * [requests](https://pypi.org/project/requests/) 
 
 # Sample Data 
-   * machine - using psutil, provide information regarding a machine 
+   * machine (**Table Name**: `machine_data`) - using psutil, provide information regarding a machine 
    ```
    {"timestamp": "2020-10-11 03:25:53.698126", "boot_time": 2739.6981489658356, "cpu_percentge": 0.0, "swap_memory": 0.0, "disk_useage": 0.0}    
    ```
    
-   * ping - values from an array of devices that generate ping sensor data 
+   * ping (**Table Name**: `ping_sensor`) - values from an array of devices that generate ping sensor data 
    ```
    {"timestamp": "2020-10-11 03:15:11.078921", "device_name": "Ubiquiti OLT", "parentelement": "9a62728a-1a14-42e1-8c79-16fa7b37223f", "webid": "F1AbEfLbwwL8F6EiShvDV-QH70Ay9wV1b5Y6hG0bdSFZFT0ugxACfpGU7d1ojPpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxVQklRVUlUSSBPTFR8UElORw", "value": 0}
    {"timestamp": "2020-10-11 03:15:11.078978", "device_name": "VM Lit SL NMS", "parentelement": "031eabf8-740f-4f8f-bcaf-cf0fc75a0a12", "webid": "F1AbEfLbwwL8F6EiShvDV-QH70ATrGzGrGT6RG0ZdSFZFT0ugQW05a2rwdFojNpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxGLk8gTU9OSVRPUklORyBTRVJWRVJcVk0gTElUIFNMIE5NU3xQSU5H", "value": 1}
@@ -18,7 +18,7 @@ The following is a support script to generate data for  AnyLog
    {"timestamp": "2020-10-11 03:16:29.612628", "device_name": "GOOGLE_PING", "parentelement": "c98f8555-32ac-4bb4-8acd-f39c1201174a", "webid": "F1AbEfLbwwL8F6EiShvDV-QH70AMgi98B6o6hG0bdSFZFT0ugPdQ3gcXLd1ojPpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xHT09HTEVfUElOR3xQSU5H", "value": 23}  
    ```
 
-   * sin - sin values betweeen -π and π 
+   * sin (**Table Name**: `sin_data`) - sin values betweeen -π and π 
    ```
    {"timestamp": "2020-10-11 03:35:51.893689", "value": -1.2246467991473532e-16}
    {"timestamp": "2020-10-11 03:35:51.893723", "value": -1.0}
@@ -52,7 +52,7 @@ The following is a support script to generate data for  AnyLog
    {"timestamp": "2020-10-11 03:35:51.893907", "value": -1.2246467991473532e-16}
    ```
 
-   * cos - cosin valus between -π and π 
+   * cos (**Table Name**: `cos_data`) - cosin valus between -π and π 
    ```
    {"timestamp": "2020-10-11 03:40:37.720501", "value": -1.0}
    {"timestamp": "2020-10-11 03:40:37.720531", "value": 6.123233995736766e-17}
