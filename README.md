@@ -1,4 +1,7 @@
-The following is a support script to generate data for  AnyLog  
+The following is a support script to generate data for  AnyLog. A user has an option to recieve data via REST, print and file 
+   * For ping and machine data generate 10 rows for each iteration 
+   * For sin/cos data generate 30 rows for each iteraton, between -π and π   
+
 # Requirements 
    * [psutil](https://pypi.org/project/psutil/)
    * [requests](https://pypi.org/project/requests/) 
@@ -99,7 +102,6 @@ python3 data_generator.py  --help
          * cos     - cossign values over time 
    :optional arguments:
       -h, --help                            - show this help message and exit
-      -i, --insert-size INSERT_SIZE:int     - number of row set per iterattion (default: 10)
       -f, --stroe-format  INSERT_FORMAT:str - format to get data               (default: rest)
          * rest - send data via REST 
       -m, --mode MODE:str - insert type (default: streaming) 
