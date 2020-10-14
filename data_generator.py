@@ -81,14 +81,13 @@ def get_trig(dbms:str, sensor:str, mode:str, sleep:float)->(list, dict):
    return header, payloads
       
 
-def switch_get_data(dbms:str, sensor:str, mode:str, insert_size:int, sleep:float)->(dict, list):
+def switch_get_data(dbms:str, sensor:str, mode:str, sleep:float)->(dict, list):
    """
    Switch to get data based on sensor
    :args:
       dbms:str - logical database name 
       sensor:str - sensor to get data from 
       mode:str - mode to store data 
-      insert_size:float - number of rows to generate
       sleep:float - wait time between each row
    :param:
       data_list:list - list of data values 
@@ -99,20 +98,17 @@ def switch_get_data(dbms:str, sensor:str, mode:str, insert_size:int, sleep:float
    """
    data_list = [] 
    header = {} 
-   for i in range(insert_size): 
-      paylaod = None 
-      if sensor == 'machine': 
-         header, payload = get_machine_data(dbms, mode)         
-      elif sensor == 'ping': 
-         header, payload = get_ping_sensor(dbms, mode)
-      else: 
-         header, payload = get_trig(dbms, sensor, mode, sleep)
-
-      if sensor == 'sin' or sensor == 'cos': 
-         for val in payload: 
-             data_list.append(payload)
-      else: 
+   if sensor == 'machine' or sensor == 'ping':
+      for i in range(10): 
+         paylaod = None 
+         if sensor == 'machine': 
+            header, payload = get_machine_data(dbms, mode)         
+         elif sensor == 'ping': 
+            header, payload = get_ping_sensor(dbms, mode)
          data_list.append(payload) 
+   else: 
+      header, data_list = get_trig(dbms, sensor, mode, sleep)
+ 
    return header, data_list
 
 def switch_store_data(store_format:str, sensor:str, conn:str, header:dict, payloads:list): 
@@ -129,23 +125,16 @@ def switch_store_data(store_format:str, sensor:str, conn:str, header:dict, paylo
          for payload in payloads: 
             store_data_options.send_data(conn, header, payload) 
    elif store_format == 'file': 
-      for payload in payloads: 
-         if sensor == 'sin' or sensor == 'cos': 
-               for pylaod in payload: 
-                  store_data_options.write_data(header, pyload) 
-         else:
-            store_data_options.write_data(header, payload)
+      store_data_options.write_data(header, payloads) 
    else: 
       for payload in payloads: 
-         if sensor == 'sin' or sensor == 'cos': 
-            for pyload in payload: 
-               store_data_options.print_data(pyload) 
-         else:
-            store_data_options.print_data(payload)
+         store_data_options.print_data(payload)
 
 def main(): 
    """
-   Generate data into database via REST 
+   Generate data into database via REST / print / file  
+   * For ping and machine data generate 10 rows for each iteration 
+   * For sin/cos data generate 30 rows for each iteraton, between -π and π   
    :positional arguments:
       conn:str   - REST host and port
       dbms:str   - database name
@@ -156,7 +145,6 @@ def main():
          * cos     - cossign values over time 
    :optional arguments:
       -h, --help                            - show this help message and exit
-      -i, --insert-size INSERT_SIZE:int     - number of row set per iterattion (default: 10)
       -f, --stroe-format  INSERT_FORMAT:str - format to get data               (default: rest)
          * rest - send data via REST 
       -m, --mode MODE:str - insert type (default: streaming) 
@@ -169,7 +157,6 @@ def main():
    parser.add_argument('conns',  type=str, default='127.0.0.1:2049', help='REST host and port')
    parser.add_argument('dbms',   type=str, default='sample_data',    help='database name') 
    parser.add_argument('sensor', type=str, default='ping',  choices=['machine', 'ping', 'sin', 'cos'], help='type of sensor to get data from') 
-   parser.add_argument('-i', '--insert-size',  type=int,    default=10,           help='number of row set per iterattion')  
    parser.add_argument('-f', '--store-format', type=str,    default='rest',       choices=['rest', 'file', 'print'], help='format to get data') 
    parser.add_argument('-m', '--mode',         type=str,    default='streaming',  choices=['file', 'streaming'],     help='insert type') 
    parser.add_argument('-r', '--repeat',       type=int,    default=1,            help='number of iterations. IF set to 0 run continuesly') 
@@ -179,14 +166,15 @@ def main():
    if args.repeat == 0: 
       while True: 
          conn = random.choice(args.conns.split(','))
-         header, payloads = switch_get_data(args.dbms, args.sensor, args.mode, args.insert_size, args.sleep)
-         switch_store_data(args.sensor, rgs.store_format, conn, header, payload)
+         header, payloads = switch_get_data(args.dbms, args.sensor, args.mode,  args.sleep)
+         switch_store_data(args.store_format, args.sensor, conn, header, payloads)
          time.sleep(args.sleep) 
    else: 
       for i in range(args.repeat): 
          conn = random.choice(args.conns.split(','))
-         header, payloads = switch_get_data(args.dbms, args.sensor, args.mode, args.insert_size, args.sleep)
-         switch_store_data(args.sensor, args.store_format, conn, header, payloads)
+         header, payloads = switch_get_data(args.dbms, args.sensor, args.mode, args.sleep)
+         switch_store_data(args.store_format, args.sensor, conn, header, payloads)
+
          time.sleep(args.sleep) 
 
 if __name__ == '__main__': 
