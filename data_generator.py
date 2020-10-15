@@ -106,6 +106,7 @@ def switch_get_data(dbms:str, sensor:str, mode:str, sleep:float)->(dict, list):
          elif sensor == 'ping': 
             header, payload = get_ping_sensor(dbms, mode)
          data_list.append(payload) 
+         time.sleep(1) 
    else: 
       header, data_list = get_trig(dbms, sensor, mode, sleep)
  
