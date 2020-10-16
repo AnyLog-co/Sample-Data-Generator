@@ -14,15 +14,10 @@ def machine_credentials()->(str, str, str):
    :return: 
        hostname and remote ip 
    """
-   hostname = 'localhost' 
-   local_ip = '127.0.0.1' 
-   remote_ip = '127.0.0.1' 
-
    try:
       with open('/etc/hostname', 'r')  as f: 
          hostname = f.read().split('\n')[0]
    except: 
-      
       hostname = 'localhost' 
 
    try: 
