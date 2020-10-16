@@ -14,6 +14,10 @@ def machine_credentials()->(str, str, str):
    :return: 
        hostname and remote ip 
    """
+   hostname = 'localhost' 
+   local_ip = '127.0.0.1' 
+   remote_ip = '127.0.0.1' 
+
    try:
       with open('/etc/hostname', 'r')  as f: 
          hostname = f.read().split('\n')[0]
@@ -26,7 +30,6 @@ def machine_credentials()->(str, str, str):
    except: 
       hostname = '127.0.0.1' 
 
-   local_ip = '127.0.0.1'
    try: 
       s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
       s.connect(("8.8.8.8", 80))
