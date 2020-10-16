@@ -19,8 +19,10 @@ def machine_credentials()->(str, str, str):
    remote_ip = '127.0.0.1' 
 
    try:
-      hostname = socket.gethostname() 
+      with open('/etc/hostname', 'r')  as f: 
+         hostname = f.read().split('\n')[0]
    except: 
+      
       hostname = 'localhost' 
 
    try: 
