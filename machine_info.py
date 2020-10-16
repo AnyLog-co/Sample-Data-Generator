@@ -23,7 +23,7 @@ def machine_credentials()->(str, str, str):
    try: 
       remote_ip = requests.get('https://ipinfo.io/json').json()['ip']
    except: 
-      hostname = '127.0.0.1' 
+      remote_ip = '127.0.0.1' 
 
    try: 
       s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
