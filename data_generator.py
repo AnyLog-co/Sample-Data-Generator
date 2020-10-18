@@ -77,7 +77,8 @@ def get_trig(dbms:str, sensor:str, mode:str, sleep:float)->(list, dict):
       payloads = trig.sin_value(sleep)
    elif sensor == 'cos': 
       payloads = trig.cos_value(sleep) 
-
+   else: 
+      payloads = trig.rand_value(sleep) 
    return header, payloads
       
 
@@ -143,7 +144,8 @@ def main():
          * machine - boot time, cpu useage, swap memory percentage, disk useage percentege 
          * ping    - information regarding a PING sensor randomly selected form list 
          * sin     - sinsign values over time 
-         * cos     - cossign values over time 
+         * cos     - cossign values over time  
+         * rand    - random value between -π and π 
    :optional arguments:
       -h, --help                            - show this help message and exit
       -f, --stroe-format  INSERT_FORMAT:str - format to get data               (default: rest)
@@ -157,7 +159,7 @@ def main():
    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
    parser.add_argument('conns',  type=str, default='127.0.0.1:2049', help='REST host and port')
    parser.add_argument('dbms',   type=str, default='sample_data',    help='database name') 
-   parser.add_argument('sensor', type=str, default='ping',  choices=['machine', 'ping', 'sin', 'cos'], help='type of sensor to get data from') 
+   parser.add_argument('sensor', type=str, default='ping',  choices=['machine', 'ping', 'sin', 'cos', 'rand'], help='type of sensor to get data from') 
    parser.add_argument('-f', '--store-format', type=str,    default='rest',       choices=['rest', 'file', 'print'], help='format to get data') 
    parser.add_argument('-m', '--mode',         type=str,    default='streaming',  choices=['file', 'streaming'],     help='insert type') 
    parser.add_argument('-r', '--repeat',       type=int,    default=1,            help='number of iterations. IF set to 0 run continuesly') 

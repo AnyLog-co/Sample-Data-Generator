@@ -60,3 +60,22 @@ def cos_value(sleep:float)->list:
       time.sleep(sleep) 
    return data_list  
 
+def rand_value(sleep:float)->list: 
+   """
+   Get RAND values 
+   :args: 
+      sleep:float - wait time between each insert
+   :param:
+      timestamp:str
+      value:float - value from VALUE_ARRAY 
+      data:dict - data 
+   :return: 
+      list of values to insert
+   """
+   data_list = [] 
+   for value in VALUE_ARRAY: 
+      timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+      value = value * random.random()  
+      data_list.append({'timestamp': timestamp, 'value': value}) 
+      time.sleep(sleep) 
+   return data_list
