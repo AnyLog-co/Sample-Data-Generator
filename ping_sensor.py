@@ -34,6 +34,12 @@ PING_DATA = {
             'min_value': 20,
             'max_value': 880
         }
+        'ANYLOG_PING': {
+            'parentelement': str(uuid.uuid4()),
+            'webid': 'F1BbEfLbwwL8F6EiShvDV-QH70AMgi98B6o6hG0bdSFZFT0ugPdQ3gcXLd1ojPpadLPwI4gWE9NUEFTUy1MSVSTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xHT09HTEVfUElOR3xQSU5Y',
+            'min_value': 20,
+            'max_value': 880
+        }
 }
 
 def get_ping_data()->dict: 
