@@ -7,6 +7,35 @@ import requests
 import time 
 import store_data_options
 
+DEVICE_UUIDS = {
+   'machine': [
+      'df064fb5-4266-4994-8d24-408af6ab96e6', 
+      '94d0c54f-c182-4463-af2f-758342ac9189', 
+      '7f580287-56bc-44e9-8018-4338d088a2d0',
+      'c97cddd9-d63e-4c3e-bfc0-0319801488d4'
+   ],
+   'ping': [
+      'd311cde1-bfa1-478f-bedb-d00f457d70cf', 
+      '876cfe26-6575-4f30-af90-f6595a5dec40', 
+      '7f580287-56bc-44e9-8018-4338d088a2d0',
+      'c97cddd9-d63e-4c3e-bfc0-0319801488d4'
+   ],
+   'sin': [
+      'a4e772f1-78c2-4bee-8737-5a26d4b0496b',
+      '3bc62a84-5082-447b-9c9c-417c89c8cc33',
+      '7f580287-56bc-44e9-8018-4338d088a2d0'
+   ], 
+   'cos': [
+      '30663c80-0228-4684-8c16-31f1f93d370b',
+      '3bc62a84-5082-447b-9c9c-417c89c8cc33',
+      '7f580287-56bc-44e9-8018-4338d088a2d0'
+   ],  
+   'rand': [
+      '3645f6aa-2f80-4cb3-99e9-aa0000d62d0b', 
+      '3bc62a84-5082-447b-9c9c-417c89c8cc33',
+      '7f580287-56bc-44e9-8018-4338d088a2d0'
+   ] 
+}
 def get_machine_data(dbms:str, mode:str)->(dict, dict):
    """
    machine data     
@@ -113,11 +142,12 @@ def switch_get_data(dbms:str, sensor:str, mode:str, sleep:float)->(dict, list):
  
    return header, data_list
 
-def switch_store_data(store_format:str, sensor:str, conn:str, header:dict, payloads:list): 
+def switch_store_data(store_format:str, location:str, sensor:str, conn:str, header:dict, payloads:list): 
    """
    Switch to store data
    :args:
       store_format:str - format to store data 
+      location:str - Directory 
       conn:str - connection info 
       header:dict - header for query
       payload:dict - data to store in operator
@@ -127,7 +157,8 @@ def switch_store_data(store_format:str, sensor:str, conn:str, header:dict, paylo
          for payload in payloads: 
             store_data_options.send_data(conn, header, payload) 
    elif store_format == 'file': 
-      store_data_options.write_data(header, payloads) 
+      device_id = random.choice(DEVICE_UUIDS[sensor])
+      store_data_options.write_data(location, device_id, header, payloads) 
    else: 
       for payload in payloads: 
          store_data_options.print_data(payload)
@@ -148,6 +179,7 @@ def main():
          * rand    - random value between -π and π 
    :optional arguments:
       -h, --help                            - show this help message and exit
+
       -f, --stroe-format  INSERT_FORMAT:str - format to get data               (default: rest)
          * rest - send data via REST 
       -m, --mode MODE:str - insert type (default: streaming) 
@@ -161,22 +193,27 @@ def main():
    parser.add_argument('dbms',   type=str, default='sample_data',    help='database name') 
    parser.add_argument('sensor', type=str, default='ping',  choices=['machine', 'ping', 'sin', 'cos', 'rand'], help='type of sensor to get data from') 
    parser.add_argument('-f', '--store-format', type=str,    default='rest',       choices=['rest', 'file', 'print'], help='format to get data') 
+   parser.add_argument('-l', '--location',     type=str,    default='$HOME/AnyLog-Network/data/prep', help='For file format, location where data will be stored')
    parser.add_argument('-m', '--mode',         type=str,    default='streaming',  choices=['file', 'streaming'],     help='insert type') 
    parser.add_argument('-r', '--repeat',       type=int,    default=1,            help='number of iterations. IF set to 0 run continuesly') 
    parser.add_argument('-s', '--sleep',        type=float,  default=0,            help='wait between insert') 
    args = parser.parse_args()
 
+   args.location = os.path.expanduser(os.path.expandvars(args.location))
+   if not os.path.isdir(args.location):
+      os.makedirs(args.location) 
+
    if args.repeat == 0: 
       while True: 
          conn = random.choice(args.conns.split(','))
          header, payloads = switch_get_data(args.dbms, args.sensor, args.mode,  args.sleep)
-         switch_store_data(args.store_format, args.sensor, conn, header, payloads)
+         switch_store_data(args.store_format, args.location, args.sensor, conn, header, payloads)
          time.sleep(args.sleep) 
    else: 
       for i in range(args.repeat): 
          conn = random.choice(args.conns.split(','))
          header, payloads = switch_get_data(args.dbms, args.sensor, args.mode, args.sleep)
-         switch_store_data(args.store_format, args.sensor, conn, header, payloads)
+         switch_store_data(args.store_format, args.location, args.sensor, conn, header, payloads)
 
          time.sleep(args.sleep) 
 

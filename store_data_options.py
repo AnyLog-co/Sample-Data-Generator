@@ -53,7 +53,7 @@ def print_data(payload:dict):
    json_payload = json.dumps(payload) 
    print(json_payload) 
 
-def write_data(header:dict , payloads:list):
+def write_data(location, device_id, header:dict , payloads:list):
     """
     Write paylaods to file
     :args: 
@@ -65,18 +65,9 @@ def write_data(header:dict , payloads:list):
        file_name:str - file name
     :print:
        file_name 
+    #  [dbms name].[table name].[data source].[hash value].[instructions].json
     """
-    dbms = header['dbms'] 
-    table = header['table'] 
-    
-    root_dir = os.path.expanduser(os.path.expandvars('$HOME/Sample-Data-Generator'))
-
-    try: 
-       os.makedirs(root_dir + '/sample_data') 
-    except: 
-       pass 
-
-    file_name = root_dir + '/sample_data/%s.%s.%s.json' % (dbms, table, time.time())
+    file_name = '%s/%s.%s.%s.0.0.json' % (location, header['dbms'], header['table'], device_id) 
 
     open(file_name, 'w').close() 
     for payload in payloads:
