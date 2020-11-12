@@ -37,15 +37,15 @@ def write_data(device_id, header:dict , payloads:list, prep:str, watch:str):
        watch = os.path.expandvars(os.path.expanduser(watch))
        watch_file_name = '%s/%s.%s.%s.0.0.json' % (watch, header['dbms'], header['table'], device_id) 
 
-    open(file_name, 'w').close() 
+    open(prep_file_name, 'w').close() 
     for payload in payloads:
        json_payload = json.dumps(payload) 
-       with open(file_name, 'a') as f: 
+       with open(prep_file_name, 'a') as f: 
           f.write('%s\n' % json_payload) 
 
     if watch is not None: 
-      os.rename(prep_file_name, watch_file_name)
-      print('Data located in: %s' % watch_file_name) 
-   else:
-      print('Data located in: %s' % prep_file_name) 
+       os.rename(prep_file_name, watch_file_name)
+       print('Data located in: %s' % watch_file_name) 
+    else:
+       print('Data located in: %s' % prep_file_name) 
 
