@@ -101,12 +101,21 @@ python3 data_generator.py  --help
          * sin     - sinsign values over time 
          * cos     - cossign values over time 
    :optional arguments:
-      -h, --help                            - show this help message and exit
-      -f, --stroe-format  INSERT_FORMAT:str - format to get data               (default: rest)
-         * rest - send data via REST 
-      -m, --mode MODE:str - insert type (default: streaming) 
-         * streaming - insert data in memory once memory is full or after N seconds (configrured on AnyLog) 
-         * file - insert data one by one 
-      -r, --repeat REPEAT:int - number of iterations. If set to 0 run continuesly (default: 1)
-      -s, --sleep SLEEP:float - wait between insert (default: 0)
-```
+      -h, --help                        show this help message and exit
+      -f --store-format FILE_FORMAT     format to get data 
+                                            choices: {rest,file,print}
+                                            default: rest
+      -l, --location    LOCATION        location where script is located, used for import
+                                            default: /home/anylog/Sample-Data-Generator
+      -m, --mode        MODE            insert type
+                                            choices: {file,streaming}
+                                            default: streaming
+      -r, --repeat      REPEAT          number of iterations. If set to 0 run continuesly
+                                            default: 1
+      -s, --sleep       SLEEP           wait between insert 
+                                            default: 0
+      -p, --prep        PREP            Directoy where data is prepped when writing to fle
+                                            default: $HOME/AnyLog-Network/data/prep
+      -w, --watch       WATCH           When data in file is ready to be sent into AnyLog transfer from prep into this directory. 
+                                        If set to 'None', file doesen't get sent. 
+                                            default: None```
