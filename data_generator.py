@@ -5,7 +5,9 @@ import os
 import random
 import requests 
 import time 
-import store_data_options
+
+import send_protocols
+import write_file
 
 DEVICE_UUIDS = {
    'machine': [
@@ -153,15 +155,15 @@ def switch_store_data(store_format:str, location:str, sensor:str, conn:str, head
       payload:dict - data to store in operator
    """
    if store_format == 'rest': 
-      if store_data_options.validate_connection(conn) == True: 
+      if send_protocols.validate_connection(conn) == True: 
          for payload in payloads: 
-            store_data_options.send_data(conn, header, payload) 
+            send_protocols.send_data(conn, header, payload) 
    elif store_format == 'file': 
       device_id = random.choice(DEVICE_UUIDS[sensor])
-      store_data_options.write_data(location, device_id, header, payloads) 
+      write_file.write_data(location, device_id, header, payloads) 
    else: 
       for payload in payloads: 
-         store_data_options.print_data(payload)
+         write_file.print_data(payload)
 
 def main(): 
    """
