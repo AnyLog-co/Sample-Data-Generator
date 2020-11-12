@@ -4,10 +4,8 @@ import json
 import os 
 import random
 import requests 
+import sys 
 import time 
-
-import rest_protocols
-import write_file
 
 DEVICE_UUIDS = {
    'machine': [
@@ -38,6 +36,73 @@ DEVICE_UUIDS = {
       '7f580287-56bc-44e9-8018-4338d088a2d0'
    ] 
 }
+
+def import_modules(root_dir:str, sensor:str, frmt:str)->bool:
+   """
+   Import modules based on params
+   :args: 
+      root_dir:str - directory where Sample-Data-Scripts is stored 
+      sensor:str - type of sensor to recieve data from 
+      frmt:str - format of how data is stored
+   :param:
+      data_generators:str - path for data_generators dir 
+      protocols:str - path for protocols dir 
+   :return: 
+      status - if succcess True, else False
+   """
+   # Import data_generators based on sensor type 
+   try:
+      data_generators = os.path.expandvars(os.path.expanduser('%s/data_generators' % root_dir))
+   except: 
+      return False 
+
+   try:
+      sys.path.insert(0, data_generators) 
+   except: 
+      return False 
+
+   if sensor in ['sin', 'cos', 'rand']: 
+      try: 
+         import trig 
+      except: 
+         return False 
+   elif sensor == 'machine': 
+      try: 
+         import machine_info
+      except: 
+         return False 
+   elif sensor == 'ping': 
+      try: 
+         import ping_sensor
+      except: 
+         return False
+  
+
+
+   # Import protocols based on format (frmt) type 
+   try:
+      protocols = os.path.expandvars(os.path.expanduser('%s/protocols' % root_dir))
+   except: 
+      return False 
+
+   try: 
+      sys.path.insert(0, protocols) 
+   except:
+      return False
+
+   if frmt in ['file', 'print']:
+      try: 
+         import write_file
+      except: 
+         return False 
+   elif frmt == 'rest': 
+      try:
+         import rest_protocol
+      except: 
+         return False
+
+   return True 
+
 def get_machine_data(dbms:str, mode:str)->(dict, dict):
    """
    machine data     
@@ -155,10 +220,12 @@ def switch_store_data(store_format:str, location:str, sensor:str, conn:str, head
       payload:dict - data to store in operator
    """
    if store_format == 'rest': 
+      import rest_protocol
       if rest_protocols.validate_connection(conn) == True: 
          for payload in payloads: 
             rest_protocols.send_data(conn, header, payload) 
    elif store_format == 'file': 
+      import write_file 
       device_id = random.choice(DEVICE_UUIDS[sensor])
       write_file.write_data(location, device_id, header, payloads) 
    else: 
@@ -180,28 +247,44 @@ def main():
          * cos     - cossign values over time  
          * rand    - random value between -π and π 
    :optional arguments:
-      -h, --help                            - show this help message and exit
-
-      -f, --stroe-format  INSERT_FORMAT:str - format to get data               (default: rest)
-         * rest - send data via REST 
-      -m, --mode MODE:str - insert type (default: streaming) 
-         * streaming - insert data in memory once memory is full or after N seconds (configrured on AnyLog) 
-         * file - insert data one by one 
-      -r, --repeat REPEAT:int - number of iterations. If set to 0 run continuesly (default: 1)
-      -s, --sleep SLEEP:float - wait between insert (default: 0)
+      -h, --help                        show this help message and exit
+      -f --store-format FILE_FORMAT     format to get data 
+                                            choices: {rest,file,print}
+                                            default: rest
+      -l, --location    LOCATION        location where script is located, used for import
+                                            default: /home/anylog/Sample-Data-Generator
+      -m, --mode        MODE            insert type
+                                            choices: {file,streaming}
+                                            default: streaming
+      -r, --repeat      REPEAT          number of iterations. If set to 0 run continuesly
+                                            default: 1
+      -s, --sleep       SLEEP           wait between insert 
+                                            default: 0
+      -p, --prep        PREP            Directoy where data is prepped when writing to fle
+                                            default: $HOME/AnyLog-Network/data/prep
+      -w, --watch       WATCH           When data in file is ready to be sent into AnyLog transfer from prep into this directory. 
+                                        If set to 'None', file doesen't get sent. 
+                                            default: None
    """
    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
    parser.add_argument('conns',  type=str, default='127.0.0.1:2049', help='REST host and port')
    parser.add_argument('dbms',   type=str, default='sample_data',    help='database name') 
    parser.add_argument('sensor', type=str, default='ping',  choices=['machine', 'ping', 'sin', 'cos', 'rand'], help='type of sensor to get data from') 
-   parser.add_argument('-f', '--store-format', type=str,    default='rest',       choices=['rest', 'file', 'print'], help='format to get data') 
-   parser.add_argument('-l', '--location',     type=str,    default='$HOME/AnyLog-Network/data/prep', help='For file format, location where data will be stored')
-   parser.add_argument('-m', '--mode',         type=str,    default='streaming',  choices=['file', 'streaming'],     help='insert type') 
-   parser.add_argument('-r', '--repeat',       type=int,    default=1,            help='number of iterations. IF set to 0 run continuesly') 
-   parser.add_argument('-s', '--sleep',        type=float,  default=0,            help='wait between insert') 
+   parser.add_argument('-f', '--store-format', type=str,    default='rest', choices=['rest', 'file', 'print'],    help='format to get data') 
+   parser.add_argument('-l', '--location',     type=str,    default=os.path.realpath(__file__).rsplit('/', 1)[0], help='location where script is located, used for import')
+   parser.add_argument('-m', '--mode',   type=str,   default='streaming', choices=['file', 'streaming'], help='insert type') 
+   parser.add_argument('-r', '--repeat', type=int,   default=1,  help='number of iterations. If set to 0 run continuesly') 
+   parser.add_argument('-s', '--sleep',  type=float, default=0,  help='wait between insert') 
+   parser.add_argument('-p', '--prep',   type=str,   default='$HOME/AnyLog-Network/data/prep', help='Directoy where data is prepped when writing to fle')
+   parser.add_argument('-w', '--watch',  type=str,   default=None, help='When data in file is ready to be sent into AnyLog transfer from prep into this directory. If set to \'None\', file doesen\'t get sent.')
    args = parser.parse_args()
 
    args.location = os.path.expanduser(os.path.expandvars(args.location))
+   if import_modules(args.location, args.sensor, args.format) is False: 
+      print('Failed to import data_genrator and/or communication protocol module.\n') 
+      print('Please validate Sample-Data-Generator is located in: %s' % args.location.rsplit('/', 1)[0]) 
+      exit(1) 
+
    if not os.path.isdir(args.location):
       os.makedirs(args.location) 
 

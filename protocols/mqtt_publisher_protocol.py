@@ -5,7 +5,7 @@
 #    * Publisher: IoT device sending data 
 #    * Broker: Host (IP) of the MQTT Subscriber 
 #    * Topic: Type of information to subscribe to 
-#    # Client ID: ID for openning connection 
+#    * Client ID: ID for openning connection 
 # 
 # The following code is based on: https://medium.com/@emqtt/how-to-use-mqtt-in-python-paho-4e622cb359f9
 
