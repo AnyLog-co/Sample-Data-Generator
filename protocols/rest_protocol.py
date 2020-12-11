@@ -37,7 +37,7 @@ def send_data(payloads:list, conn:str, dbms:str, table_name:str, rest_format:str
     header = { 
         'type': 'json', 
         'dbms': dbms, 
-        'table': table_name
+        'table': table_name,
         'mode': rest_format, 
         'Content-Type': 'text/plain'
     }

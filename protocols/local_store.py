@@ -63,7 +63,11 @@ def file_store(payloads:list, dbms:str, table_name:str, prep_dir:str, watch_dir:
     prep_dir = __create_dir(prep_dir)
     watch_dir = __create_dir(watch_dir)
 
-    device_id = payloads[0]['parentelement'].replace('-', '')
+    try:
+        device_id = payloads[0]['parentelement'].replace('-', '')
+    except Exception as e: 
+        device_id = 0 
+    
     timestamp = payloads[0]['timestamp'].replace('-', '').replace(' ', '').replace(':', '').replace('.', '')
 
     file_name = '%s/%s.%s.%s.%s.json' % (prep_dir, dbms, table_name, device_id, timestamp) 
