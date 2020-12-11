@@ -8,35 +8,17 @@ PING_DATA = {
             'parentelement': '62e71893-92e0-11e9-b465-d4856454f4ba',
             'webid': 'F1AbEfLbwwL8F6EiShvDV-QH70AkxjnYuCS6RG0ZdSFZFT0ugnMRtEzvxdFojNpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxBRFZBIEZTUDMwMDBSN3xQSU5H',
             'min_value': 0,
-            'max_value': 4
-        },
-        'Ubiquiti OLT': {
-            'parentelement': 'd515dccb-58be-11ea-b46d-d4856454f4ba',
-            'webid': 'F1AbEfLbwwL8F6EiShvDV-QH70Ay9wV1b5Y6hG0bdSFZFT0ugxACfpGU7d1ojPpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxVQklRVUlUSSBPTFR8UElORw',
-            'min_value': 0,
-            'max_value': 49
-        },
-        'VM Lit SL NMS': {
-            'parentelement': '1ab3b14e-93b1-11e9-b465-d4856454f4ba',
-            'webid': 'F1AbEfLbwwL8F6EiShvDV-QH70ATrGzGrGT6RG0ZdSFZFT0ugQW05a2rwdFojNpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxGLk8gTU9OSVRPUklORyBTRVJWRVJcVk0gTElUIFNMIE5NU3xQSU5H',
-            'min_value': 0,
-            'max_value': 11
+            'max_value': 50
         },
         'Catalyst 3500XL': {
             'parentelement': '68ae8bef-92e1-11e9-b465-d4856454f4ba',
             'webid': 'F1AbEfLbwwL8F6EiShvDV-QH70A74uuaOGS6RG0ZdSFZFT0ug4FckGTrxdFojNpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxDQVRBTFlTVCAzNTAwWEx8UElORw',
             'min_value': 0,
-            'max_value': 49
-        },
-        'GOOGLE_PING': {
-            'parentelement': 'f0bd0832-a81e-11ea-b46d-d4856454f4ba',
-            'webid': 'F1AbEfLbwwL8F6EiShvDV-QH70AMgi98B6o6hG0bdSFZFT0ugPdQ3gcXLd1ojPpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xHT09HTEVfUElOR3xQSU5H',
-            'min_value': 2,
-            'max_value': 37
+            'max_value': 50
         },
 }
 
-def get_ping_data()->dict: 
+def get_percentagecpu_data()->dict: 
    """
    Generate dict forr ping_data  
    :args: 
