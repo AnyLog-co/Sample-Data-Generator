@@ -24,21 +24,22 @@ def validate_connection(conn:str)->bool:
    return boolean 
 
 
-def send_data(conn:str, header:dict, payload:dict):
+def send_data(conn:str, header:dict, payloads:dict):
    """
    Send payload to node (conn) based on header info
    :args: 
       conn:str - connection string 
       header:dict - information regarding how to store payload 
-      payload:dict - data to store in database 
+      payloads:list - data to store in database 
    :param:
       json_payload:str - payload as JSON 
    """
-   json_payload = json.dumps(payload) 
-   try: 
-      requests.put('http://%s' % conn, headers=header, data=json_payload)
-   except Exception as e:
-      print(e) 
+   for payload in payloads: 
+      json_payload = json.dumps(payload) 
+      try: 
+         requests.put('http://%s' % conn, headers=header, data=json_payload)
+      except Exception as e:
+         print(e) 
   
 def print_data(payload:dict): 
    """
@@ -53,11 +54,12 @@ def print_data(payload:dict):
    json_payload = json.dumps(payload) 
    print(json_payload) 
 
-def write_data(location, device_id, header:dict , payloads:list):
+def write_data(location, device_id:str, header:dict , payloads:list):
     """
     Write paylaods to file
     :args: 
        header:dict - header information 
+       device_id:str - device id
        payloads:list - list of payloads 
     :param: 
        dbms:str -  database name 
@@ -68,7 +70,6 @@ def write_data(location, device_id, header:dict , payloads:list):
     #  [dbms name].[table name].[data source].[hash value].[instructions].json
     """
     file_name = '%s/%s.%s.%s.0.0.json' % (location, header['dbms'], header['table'], device_id) 
-
     open(file_name, 'w').close() 
     for payload in payloads:
        json_payload = json.dumps(payload) 
