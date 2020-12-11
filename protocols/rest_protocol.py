@@ -1,3 +1,4 @@
+import json 
 import requests 
 
 def validate_connection(conn:str)->bool: 
@@ -21,19 +22,30 @@ def validate_connection(conn:str)->bool:
    return boolean 
 
 
-def send_data(conn:str, header:dict, payload:dict):
-   """
-   Send payload to node (conn) based on header info
-   :args: 
-      conn:str - connection string 
-      header:dict - information regarding how to store payload 
-      payload:dict - data to store in database 
-   :param:
-      json_payload:str - payload as JSON 
-   """
-   json_payload = json.dumps(payload) 
-   try: 
-      requests.put('http://%s' % conn, headers=header, data=json_payload)
-   except Exception as e:
-      print(e) 
+def send_data(payloads:list, conn:str, dbms:str, table_name:str, rest_format:str):
+    """
+    Send payload to node via REST 
+    :args: 
+        payloads:dict - data to store in database 
+        conn:str - connection string 
+        dbms:str - logical database to store data in 
+        table_name:str - logical table to store data in 
+        rest_format:str - format by which to send data via REST 
+    :param:
+        header:dict - REST PUT header info        
+    """
+    header = { 
+        'type': 'json', 
+        'dbms': dbms, 
+        'table': table_name
+        'mode': rest_format, 
+        'Content-Type': 'text/plain'
+    }
 
+    for payload in payloads: 
+        json_payload = json.dumps(payload) 
+        try: 
+            requests.put('http://%s' % conn, headers=header, data=json_payload)
+        except Exception as e:
+            print(e) 
+            
