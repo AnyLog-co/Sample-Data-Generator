@@ -4,19 +4,8 @@ import json
 import os 
 import random
 import requests 
-import sys 
 import time 
-
-data_generators = os.path.expandvars(os.path.expanduser('$HOME/Sample-Data-Generator/data_generators'))
-sys.path.insert(0, data_generators) 
-import trig 
-import machine_info
-import ping_sensor
-
-protocols = os.path.expandvars(os.path.expanduser('$HOME/Sample-Data-Generator/protocols'))
-sys.path.insert(0, protocols) 
-import write_file
-import rest_protocol
+import store_data_options
 
 DEVICE_UUIDS = {
    'machine': [
@@ -47,7 +36,6 @@ DEVICE_UUIDS = {
       '7f580287-56bc-44e9-8018-4338d088a2d0'
    ] 
 }
-
 def get_machine_data(dbms:str, mode:str)->(dict, dict):
    """
    machine data     
@@ -123,13 +111,14 @@ def get_trig(dbms:str, sensor:str, mode:str, sleep:float)->(list, dict):
    return header, payloads
       
 
-def switch_get_data(dbms:str, sensor:str, mode:str, sleep:float)->(dict, list):
+def switch_get_data(dbms:str, sensor:str, mode:str, repeat:int, sleep:float)->(dict, list):
    """
    Switch to get data based on sensor
    :args:
       dbms:str - logical database name 
       sensor:str - sensor to get data from 
       mode:str - mode to store data 
+      repeatint - number of rows for machine/ping data 
       sleep:float - wait time between each row
    :param:
       data_list:list - list of data values 
@@ -141,7 +130,7 @@ def switch_get_data(dbms:str, sensor:str, mode:str, sleep:float)->(dict, list):
    data_list = [] 
    header = {} 
    if sensor == 'machine' or sensor == 'ping':
-      for i in range(10): 
+      for i in range(repeat): 
          paylaod = None 
          if sensor == 'machine': 
             header, payload = get_machine_data(dbms, mode)         
@@ -154,27 +143,25 @@ def switch_get_data(dbms:str, sensor:str, mode:str, sleep:float)->(dict, list):
  
    return header, data_list
 
-def switch_store_data(store_format:str, sensor:str, conn:str, header:dict, payloads:list, prep:str, watch:dir): 
+def switch_store_data(store_format:str, location:str, sensor:str, conn:str, header:dict, payloads:list): 
    """
    Switch to store data
    :args:
       store_format:str - format to store data 
+      location:str - Directory 
       conn:str - connection info 
       header:dict - header for query
       payload:dict - data to store in operator
-      prep:str - prep dir (relevent only for file format)
-      watch:str - watch dir (relevent only for watch dir) 
    """
    if store_format == 'rest': 
-      if rest_protocol.validate_connection(conn) == True: 
-         for payload in payloads: 
-            rest_protocol.send_data(conn, header, payload) 
+      if store_data_options.validate_connection(conn) == True: 
+        store_data_options.send_data(conn, header, payloads) 
    elif store_format == 'file': 
       device_id = random.choice(DEVICE_UUIDS[sensor])
-      write_file.write_data(device_id, header, payloads, prep, watch) 
+      store_data_options.write_data(location, device_id, header, payloads) 
    else: 
       for payload in payloads: 
-         write_file.print_data(payload)
+         store_data_options.print_data(payload)
 
 def main(): 
    """
@@ -191,46 +178,43 @@ def main():
          * cos     - cossign values over time  
          * rand    - random value between -π and π 
    :optional arguments:
-      -h, --help                        show this help message and exit
-      -f --store-format FILE_FORMAT     format to get data 
-                                            choices: {rest,file,print}
-                                            default: rest
-      -m, --mode        MODE            insert type
-                                            choices: {file,streaming}
-                                            default: streaming
-      -r, --repeat      REPEAT          number of iterations. If set to 0 run continuesly
-                                            default: 1
-      -s, --sleep       SLEEP           wait between insert 
-                                            default: 0
-      -p, --prep        PREP            Directoy where data is prepped when writing to fle
-                                            default: $HOME/AnyLog-Network/data/prep
-      -w, --watch       WATCH           When data in file is ready to be sent into AnyLog transfer from prep into this directory. 
-                                        If set to 'None', file doesen't get sent. 
-                                            default: None
+      -h, --help                            - show this help message and exit
+
+      -f, --stroe-format  INSERT_FORMAT:str - format to get data               (default: rest)
+         * rest - send data via REST 
+      -m, --mode MODE:str - insert type (default: streaming) 
+         * streaming - insert data in memory once memory is full or after N seconds (configrured on AnyLog) 
+         * file - insert data one by one 
+      -r, --iteration REPEAT:int - number of iterations. If set to 0 run continuesly (default: 1)
+      -s, --sleep SLEEP:float - wait between insert (default: 0)
    """
    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
    parser.add_argument('conns',  type=str, default='127.0.0.1:2049', help='REST host and port')
    parser.add_argument('dbms',   type=str, default='sample_data',    help='database name') 
    parser.add_argument('sensor', type=str, default='ping',  choices=['machine', 'ping', 'sin', 'cos', 'rand'], help='type of sensor to get data from') 
-   parser.add_argument('-f', '--store-format', type=str,    default='rest', choices=['rest', 'file', 'print'],    help='format to get data') 
-   parser.add_argument('-m', '--mode',   type=str,   default='streaming', choices=['file', 'streaming'], help='insert type') 
-   parser.add_argument('-r', '--repeat', type=int,   default=1,  help='number of iterations. If set to 0 run continuesly') 
-   parser.add_argument('-s', '--sleep',  type=float, default=0,  help='wait between insert') 
-   parser.add_argument('-p', '--prep',   type=str,   default='$HOME/AnyLog-Network/data/prep', help='Directoy where data is prepped when writing to fle')
-   parser.add_argument('-w', '--watch',  type=str,   default=None, help='When data in file is ready to be sent into AnyLog transfer from prep into this directory. If set to \'None\', file doesen\'t get sent.')
+   parser.add_argument('-f', '--store-format', type=str,    default='rest',       choices=['rest', 'file', 'print'], help='format to get data') 
+   parser.add_argument('-l', '--location',     type=str,    default='$HOME/AnyLog-Network/data/prep', help='For file format, location where data will be stored')
+   parser.add_argument('-m', '--mode',         type=str,    default='streaming',  choices=['file', 'streaming'],     help='insert type') 
+   parser.add_argument('-i', '--iteration',    type=int,    default=1,            help='number of iterations. IF set to 0 run continuesly') 
+   parser.add_argument('-r', '--repeat',    type=int,    default=10,           help='For machine & ping data number of rows to generate per iteration') 
+   parser.add_argument('-s', '--sleep',        type=float,  default=0,            help='wait between insert') 
    args = parser.parse_args()
 
-   if args.repeat == 0: 
+   args.location = os.path.expanduser(os.path.expandvars(args.location))
+   if not os.path.isdir(args.location):
+      os.makedirs(args.location) 
+
+   if args.iteration == 0: 
       while True: 
          conn = random.choice(args.conns.split(','))
-         header, payloads = switch_get_data(args.dbms, args.sensor, args.mode,  args.sleep)
-         switch_store_data(args.store_format, args.sensor, conn, header, payloads, args.prep, args.watch)
+         header, payloads = switch_get_data(args.dbms, args.sensor, args.mode, args.repeat,  args.sleep)
+         switch_store_data(args.store_format, args.location, args.sensor, conn, header, payloads)
          time.sleep(args.sleep) 
    else: 
-      for i in range(args.repeat): 
+      for i in range(args.iteration): 
          conn = random.choice(args.conns.split(','))
-         header, payloads = switch_get_data(args.dbms, args.sensor, args.mode, args.sleep)
-         switch_store_data(args.store_format, args.sensor, conn, header, payloads, args.prep, args.watch)
+         header, payloads = switch_get_data(args.dbms, args.sensor, args.mode, args.repeat, args.sleep)
+         switch_store_data(args.store_format, args.location, args.sensor, conn, header, payloads)
 
          time.sleep(args.sleep) 
 
