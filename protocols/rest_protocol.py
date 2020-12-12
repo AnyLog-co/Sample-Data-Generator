@@ -41,11 +41,12 @@ def send_data(payloads:list, conn:str, dbms:str, table_name:str, mode:str):
         'mode': mode, 
         'Content-Type': 'text/plain'
     }
-
     for payload in payloads: 
         json_payload = json.dumps(payload) 
         try: 
             requests.put('http://%s' % conn, headers=header, data=json_payload)
         except Exception as e:
             print(e) 
+        else:
+            print(json_payload) 
             

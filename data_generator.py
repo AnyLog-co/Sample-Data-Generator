@@ -95,7 +95,7 @@ def store_data(payloads:list, conn:str, dbms:str, table_name:str, store_type:str
     if store_type == 'rest': 
         status = rest_protocol.validate_connection(conn)
         if status == True: 
-            status = rest_protocol.send_rest(payloads, conn, dbms, table_name, mode)
+            status = rest_protocol.send_data(payloads, conn, dbms, table_name, mode)
     elif store_type == 'file': 
         status = local_store.file_store(payloads, dbms, table_name, prep_dir, watch_dir) 
     elif store_type == 'print': 
@@ -143,12 +143,12 @@ def main():
     table_name = __table_name(args.sensor) 
     if args.iteration == 0: 
         while True: 
-            paylddoads = get_data(args.sensor, args.repeat, args.sleep) 
-            store_data(payloads=payloads, conn=args.conn, dbms=args.dbms, table_name=table_name, store_type=args.ares.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir) 
+            payloads = get_data(args.sensor, args.repeat, args.sleep) 
+            store_data(payloads=payloads, conn=args.conn, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir) 
 
     for row in range(args.iteration): 
-        paylddoads = get_data(args.sensor, args.repeat, args.sleep) 
-        store_data(payloads=payloads, conn=args.conn, dbms=args.dbms, table_name=table_name, store_type=args.ares.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir) 
+        payloads = get_data(args.sensor, args.repeat, args.sleep) 
+        store_data(payloads=payloads, conn=args.conn, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir) 
 
 if __name__ == '__main__': 
     main() 
