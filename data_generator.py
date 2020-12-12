@@ -1,224 +1,154 @@
 import argparse
-import datetime 
-import json 
-import os 
-import random
-import requests 
-import time 
+import time
 
-import store_data_options
+from data_generators import machine_info, percentagecpu_sensor, ping_sensor, trig
+from protocols import rest_protocol, local_store
 
-DEVICE_UUIDS = {
-   'machine': [
-      'df064fb5-4266-4994-8d24-408af6ab96e6', 
-      '94d0c54f-c182-4463-af2f-758342ac9189', 
-      '7f580287-56bc-44e9-8018-4338d088a2d0',
-      'c97cddd9-d63e-4c3e-bfc0-0319801488d4'
-   ],
-   'ping': [
-      'd311cde1-bfa1-478f-bedb-d00f457d70cf', 
-      '876cfe26-6575-4f30-af90-f6595a5dec40', 
-      '7f580287-56bc-44e9-8018-4338d088a2d0',
-      'c97cddd9-d63e-4c3e-bfc0-0319801488d4'
-   ],
-   'sin': [
-      'a4e772f1-78c2-4bee-8737-5a26d4b0496b',
-      '3bc62a84-5082-447b-9c9c-417c89c8cc33',
-      '7f580287-56bc-44e9-8018-4338d088a2d0'
-   ], 
-   'cos': [
-      '30663c80-0228-4684-8c16-31f1f93d370b',
-      '3bc62a84-5082-447b-9c9c-417c89c8cc33',
-      '7f580287-56bc-44e9-8018-4338d088a2d0'
-   ],  
-   'rand': [
-      '3645f6aa-2f80-4cb3-99e9-aa0000d62d0b', 
-      '3bc62a84-5082-447b-9c9c-417c89c8cc33',
-      '7f580287-56bc-44e9-8018-4338d088a2d0'
-   ] 
-}
-def get_machine_data(dbms:str, mode:str)->(dict, dict):
-   """
-   machine data     
-   :args: 
-      conn:str - connection info
-      dbms:str - database name 
-      mode:str - insert mode
-   :param: 
-      header:dict - info regarding insert 
-      payload:dict - data to insert  
-   """
-   import machine_info  
-   header = { 
-       'type': 'json', 
-       'dbms': dbms, 
-       'table': 'machine_data', 
-       'mode': mode, 
-       'Content-Type': 'text/plain'
-   } 
-   payload = machine_info.get_device_data() 
-   return header, payload 
+def __validate_values(iteration:int, repeat:int, sleep:float)->bool: 
+    """
+    Validate values are within range
+    :args: 
+        iteration:int -  >= 0
+        repeat:int -  >= 1
+        sleep:float - >= 0 
+    :param: 
+        status:bool
+    :return: 
+        status
+    """
+    status = True 
+    if not isinstance(iteration, int) or iteration < 0:
+        print('Value %s is invalid for iteration' % iteration) 
+        status = False 
+    if not isinstance(repeat, int) or repeat < 1: 
+        print('Value %s is invalid for repeat' % repeat) 
+        status = False 
+    if not isinstance(sleep, float) or sleep < 0: 
+        print('Value %s is invalid for sleep' % sleep) 
+        status = False 
 
-def get_ping_sensor(dbms:str, mode:str)->(dict, dict):
-   """
-   ping sensor data     
-   :args: 
-      conn:str - connection info
-      dbms:str - database name 
-      mode:str - insert mode
-   :param: 
-      header:dict - info regarding insert 
-      payload:dict - data to insert  
-   """
-   import ping_sensor
-   header = {
-       'type': 'json',
-       'dbms': dbms,
-       'table': 'ping_sensor',
-       'mode': mode,
-       'Content-Type': 'text/plain'
-   }
-   payload = ping_sensor.get_ping_data()
-   return header, payload 
+    return status 
 
-def get_trig(dbms:str, sensor:str, mode:str, sleep:float)->(list, dict): 
-   """
-   trig (sin/cos) data      
-   :args: 
-      conn:str - connection info
-      dbms:str - database name 
-      mode:str - insert mode
-      sensor:str - sensor name (sin/cos) 
-      sleep:float - wait between each get 
-   :param: 
-      header:dict - info regarding insert 
-      payloads:list - list of payload (dict) values 
-   """
-   import trig 
-   header = {
-       'type': 'json',
-       'dbms': dbms,
-       'table': '%s_data' % sensor,
-       'mode': mode,
-       'Content-Type': 'text/plain'
-   }
-   payloads = [] 
-   if sensor == 'sin': 
-      payloads = trig.sin_value(sleep)
-   elif sensor == 'cos': 
-      payloads = trig.cos_value(sleep) 
-   else: 
-      payloads = trig.rand_value(sleep) 
-   return header, payloads
-      
+def __table_name(sensor:str)->str:
+    """
+    convert sensor to table_name
+    :args:
+        senesor:str - sensor to generate data for 
+    :param: 
+        table_name:str - table name 
+    :return: 
+        table_name
+    """
+    table_name = ''
+    if sensor == 'ping' or sensor == 'percentagecpu': 
+        table_name = '%s_sensor' % sensor 
+    else: 
+        table_name = '%s_data' % sensor 
 
-def switch_get_data(dbms:str, sensor:str, mode:str, repeat:int, sleep:float)->(dict, list):
-   """
-   Switch to get data based on sensor
-   :args:
-      dbms:str - logical database name 
-      sensor:str - sensor to get data from 
-      mode:str - mode to store data 
-      repeatint - number of rows for machine/ping data 
-      sleep:float - wait time between each row
-   :param:
-      data_list:list - list of data values 
-      header:dict - header value  
-      payload - payload for device 
-   :return:
-      data_list 
-   """
-   data_list = [] 
-   header = {} 
-   if sensor == 'machine' or sensor == 'ping':
-      for i in range(repeat): 
-         paylaod = None 
-         if sensor == 'machine': 
-            header, payload = get_machine_data(dbms, mode)         
-         elif sensor == 'ping': 
-            header, payload = get_ping_sensor(dbms, mode)
-         data_list.append(payload) 
-         time.sleep(1) 
-   else: 
-      header, data_list = get_trig(dbms, sensor, mode, sleep)
- 
-   return header, data_list
+    return table_name
 
-def switch_store_data(store_format:str, location:str, sensor:str, conn:str, header:dict, payloads:list): 
-   """
-   Switch to store data
-   :args:
-      store_format:str - format to store data 
-      location:str - Directory 
-      conn:str - connection info 
-      header:dict - header for query
-      payload:dict - data to store in operator
-   """
-   if store_format == 'rest': 
-      if store_data_options.validate_connection(conn) == True: 
-        store_data_options.send_data(conn, header, payloads) 
-   elif store_format == 'file': 
-      device_id = random.choice(DEVICE_UUIDS[sensor])
-      store_data_options.write_data(location, device_id, header, payloads) 
-   else: 
-      for payload in payloads: 
-         store_data_options.print_data(payload)
+def get_data(sensor:str, row_count:int, sleep:float)->list: 
+    """
+    Based on sensor type get set values
+    :args: 
+        sensors:str - type of sensor [machine, ping, sin, cos, rand] 
+        rows:int - number of data sets to generate for machine / ping sensor. All others have 30 rows by default 
+        sleep:float - wait time between each row 
+    :param: 
+        rows:list - rows genenrated
+    :return: 
+        rows
+    """
+    rows = [] 
+    if sensor == 'machine': 
+        for row in range(row_count): 
+            rows.append(machine_info.get_device_data())
+            time.sleep(sleep) 
+    elif sensor == 'ping': 
+        for row in range(row_count): 
+            rows.append(ping_sensor.get_ping_data()) 
+            time.sleep(sleep) 
+    elif sensor == 'sin':  
+        rows = trig.sin_value(0)
+    elif sensor == 'cos': 
+        rows = trig.cos_value(0)
+    elif sensor == 'rand': 
+         rows = trig.rand_value(0)
+    return rows 
+
+def store_data(payloads:list, conn:str, dbms:str, table_name:str, store_type:str, mode:str, prep_dir:str, watch_dir:str)->bool:
+    """
+    Store data
+    :args: 
+        payloads:list - Data to store 
+        conn:str - IP + Port (required for REST only) 
+        dbms:str - logical database name (required for REST + file) 
+        table_name:str - logical table tname (required for REST + file)
+        store_type:str - Format by which to store (print, file, REST) 
+        mode:str - Format by which to send REST (file or streaming) 
+        prep_dir:str - Directory to prep data in (file only) 
+        watch_dir:dir - Directory data ready to be sent onto AnyLog (file only) 
+    :param: 
+        status:bool - status 
+    """
+    status = True 
+    if store_type == 'rest': 
+        status = rest_protocol.validate_connection(conn)
+        if status == True: 
+            status = rest_protocol.send_rest(payloads, conn, dbms, table_name, mode)
+    elif store_type == 'file': 
+        status = local_store.file_store(payloads, dbms, table_name, prep_dir, watch_dir) 
+    elif store_type == 'print': 
+        status = local_store.print_store(payloads) 
+
+    return status  
 
 def main(): 
-   """
-   Generate data into database via REST / print / file  
-   * For ping and machine data generate 10 rows for each iteration 
-   * For sin/cos data generate 30 rows for each iteraton, between -π and π   
-   :positional arguments:
-      conn:str   - REST host and port
-      dbms:str   - database name
-      sensor:str - type of sensor to get data from 
-         * machine - boot time, cpu useage, swap memory percentage, disk useage percentege 
-         * ping    - information regarding a PING sensor randomly selected form list 
-         * sin     - sinsign values over time 
-         * cos     - cossign values over time  
-         * rand    - random value between -π and π 
-   :optional arguments:
-      -h, --help                            - show this help message and exit
+    """
+    Based on the configuration set by a user, generate data and store it either to file, directly in AnyLog or print to screen
+    :positional arguments:
+        dbms       database name
+        sensor     type of sensor to get data from    {machine,percentagecpu,ping,sin,cos,rand}
+    :optional arguments:
+        -h, --help             show this help message and exit
+        -c, --conn             REST host and port                                                    (default: None)
+        -f, --store-format     format to get data                                                    (default: rest)         {rest,file,print}
+        -m, --mode             insert type                                                           (default: streaming)    {file,streaming}
+        -i, --iteration        number of iterations. if set to 0 run continuesly                     (default: 1)
+        -r, --repeat           For machine & ping data number of rows to generate per iteration      (default: 10)
+        -s, --sleep            wait between insert                                                   (default: 0)
+        -p, --prep-dir         directory to prepare data in                                          (default: $HOME/AnyLog-Network/data/prep)
+        -w, --watch-dir        directory for data ready to be stored                                 (default: $HOME/AnyLog-Network/data/watch)
+    :param:
+        table_name:str - based on the sensor type generate table_name 
+        payloads:dict - data generated for a given sensor 
+    """
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('dbms',                 type=str,   default='sample_data',                                                                   help='database name') 
+    parser.add_argument('sensor',               type=str,   default='ping',      choices=['machine', 'percentagecpu', 'ping', 'sin', 'cos', 'rand'], help='type of sensor to get data from') 
+    parser.add_argument('-c', '--conn',         type=str,   default=None,                                                                            help='REST host and port')
+    parser.add_argument('-f', '--store-format', type=str,   default='rest',      choices=['rest', 'file', 'print'],                                  help='format to get data') 
+    parser.add_argument('-m', '--mode',         type=str,   default='streaming', choices=['file', 'streaming'],                                      help='insert type') 
+    parser.add_argument('-i', '--iteration',    type=int,   default=1,                                                                               help='number of iterations. if set to 0 run continuesly') 
+    parser.add_argument('-r', '--repeat',       type=int,   default=10,                                                                              help='For machine & ping data number of rows to generate per iteration') 
+    parser.add_argument('-s', '--sleep',        type=float, default=0,                                                                               help='wait between insert') 
+    parser.add_argument('-p', '--prep-dir',     type=str,   default='$HOME/AnyLog-Network/data/prep',                                                help='directory to prepare data in') 
+    parser.add_argument('-w', '--watch-dir',    type=str,   default='$HOME/AnyLog-Network/data/watch',                                               help='directory for data ready to be stored') 
+    args = parser.parse_args()
+    
+    if not __validate_values(args.iteration, args.repeat, args.sleep): 
+        print('Invalid Options') 
+        exit(1)
 
-      -f, --stroe-format  INSERT_FORMAT:str - format to get data               (default: rest)
-         * rest - send data via REST 
-      -m, --mode MODE:str - insert type (default: streaming) 
-         * streaming - insert data in memory once memory is full or after N seconds (configrured on AnyLog) 
-         * file - insert data one by one 
-      -r, --iteration REPEAT:int - number of iterations. If set to 0 run continuesly (default: 1)
-      -s, --sleep SLEEP:float - wait between insert (default: 0)
-   """
-   parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-   parser.add_argument('conns',  type=str, default='127.0.0.1:2049', help='REST host and port')
-   parser.add_argument('dbms',   type=str, default='sample_data',    help='database name') 
-   parser.add_argument('sensor', type=str, default='ping',  choices=['machine', 'ping', 'sin', 'cos', 'rand'], help='type of sensor to get data from') 
-   parser.add_argument('-f', '--store-format', type=str,    default='rest',       choices=['rest', 'file', 'print'], help='format to get data') 
-   parser.add_argument('-l', '--location',     type=str,    default='$HOME/AnyLog-Network/data/prep', help='For file format, location where data will be stored')
-   parser.add_argument('-m', '--mode',         type=str,    default='streaming',  choices=['file', 'streaming'],     help='insert type') 
-   parser.add_argument('-i', '--iteration',    type=int,    default=1,            help='number of iterations. IF set to 0 run continuesly') 
-   parser.add_argument('-r', '--repeat',    type=int,    default=10,           help='For machine & ping data number of rows to generate per iteration') 
-   parser.add_argument('-s', '--sleep',        type=float,  default=0,            help='wait between insert') 
-   args = parser.parse_args()
+    table_name = __table_name(args.sensor) 
+    if args.iteration == 0: 
+        while True: 
+            paylddoads = get_data(args.sensor, args.repeat, args.sleep) 
+            store_data(payloads=payloads, conn=args.conn, dbms=args.dbms, table_name=table_name, store_type=args.ares.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir) 
 
-   args.location = os.path.expanduser(os.path.expandvars(args.location))
-   if not os.path.isdir(args.location):
-      os.makedirs(args.location) 
-
-   if args.iteration == 0: 
-      while True: 
-         conn = random.choice(args.conns.split(','))
-         header, payloads = switch_get_data(args.dbms, args.sensor, args.mode, args.repeat,  args.sleep)
-         switch_store_data(args.store_format, args.location, args.sensor, conn, header, payloads)
-         time.sleep(args.sleep) 
-   else: 
-      for i in range(args.iteration): 
-         conn = random.choice(args.conns.split(','))
-         header, payloads = switch_get_data(args.dbms, args.sensor, args.mode, args.repeat, args.sleep)
-         switch_store_data(args.store_format, args.location, args.sensor, conn, header, payloads)
-
-         time.sleep(args.sleep) 
+    for row in range(args.iteration): 
+        paylddoads = get_data(args.sensor, args.repeat, args.sleep) 
+        store_data(payloads=payloads, conn=args.conn, dbms=args.dbms, table_name=table_name, store_type=args.ares.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir) 
 
 if __name__ == '__main__': 
-   main() 
-
+    main() 

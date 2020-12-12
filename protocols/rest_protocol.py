@@ -22,7 +22,7 @@ def validate_connection(conn:str)->bool:
    return boolean 
 
 
-def send_data(payloads:list, conn:str, dbms:str, table_name:str, rest_format:str):
+def send_data(payloads:list, conn:str, dbms:str, table_name:str, mode:str):
     """
     Send payload to node via REST 
     :args: 
@@ -30,7 +30,7 @@ def send_data(payloads:list, conn:str, dbms:str, table_name:str, rest_format:str
         conn:str - connection string 
         dbms:str - logical database to store data in 
         table_name:str - logical table to store data in 
-        rest_format:str - format by which to send data via REST 
+        mode:str - format by which to send data via REST 
     :param:
         header:dict - REST PUT header info        
     """
@@ -38,7 +38,7 @@ def send_data(payloads:list, conn:str, dbms:str, table_name:str, rest_format:str
         'type': 'json', 
         'dbms': dbms, 
         'table': table_name,
-        'mode': rest_format, 
+        'mode': mode, 
         'Content-Type': 'text/plain'
     }
 
