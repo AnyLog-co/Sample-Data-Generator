@@ -112,7 +112,7 @@ def main():
     :optional arguments:
         -h, --help             show this help message and exit
         -c, --conn             REST host and port                                                    (default: None)
-        -f, --store-format     format to get data                                                    (default: rest)         {rest,file,print}
+        -f, --store-format     format to get data                                                    (default: print)        {rest,file,print}
         -m, --mode             insert type                                                           (default: streaming)    {file,streaming}
         -i, --iteration        number of iterations. if set to 0 run continuesly                     (default: 1)
         -r, --repeat           For machine & ping data number of rows to generate per iteration      (default: 10)
@@ -127,7 +127,7 @@ def main():
     parser.add_argument('dbms',                 type=str,   default='sample_data',                                                                   help='database name') 
     parser.add_argument('sensor',               type=str,   default='ping',      choices=['machine', 'percentagecpu', 'ping', 'sin', 'cos', 'rand'], help='type of sensor to get data from') 
     parser.add_argument('-c', '--conn',         type=str,   default=None,                                                                            help='REST host and port')
-    parser.add_argument('-f', '--store-format', type=str,   default='rest',      choices=['rest', 'file', 'print'],                                  help='format to get data') 
+    parser.add_argument('-f', '--store-format', type=str,   default='print',      choices=['rest', 'file', 'print'],                                  help='format to get data') 
     parser.add_argument('-m', '--mode',         type=str,   default='streaming', choices=['file', 'streaming'],                                      help='insert type') 
     parser.add_argument('-i', '--iteration',    type=int,   default=1,                                                                               help='number of iterations. if set to 0 run continuesly') 
     parser.add_argument('-r', '--repeat',       type=int,   default=10,                                                                              help='For machine & ping data number of rows to generate per iteration') 

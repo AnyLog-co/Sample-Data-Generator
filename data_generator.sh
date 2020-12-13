@@ -1,10 +1,11 @@
+# The following allows for a Docker deployment of AnyLog's data generator 
 #    :positional arguments:
 #        dbms       database name
 #        sensor     type of sensor to get data from    {machine,percentagecpu,ping,sin,cos,rand}
 #    :optional arguments:
 #        -h, --help             show this help message and exit
 #        -c, --conn             REST host and port                                                    (default: None)
-#        -f, --store-format     format to get data                                                    (default: rest)         {rest,file,print}
+#        -f, --store-format     format to get data                                                    (default: print)        {rest,file,print}
 #        -m, --mode             insert type                                                           (default: streaming)    {file,streaming}
 #        -i, --iteration        number of iterations. if set to 0 run continuesly                     (default: 1)
 #        -r, --repeat           For machine & ping data number of rows to generate per iteration      (default: 10)
@@ -45,15 +46,17 @@ then
 fi 
 
 
-# configure optional arguments
+# configure optional arguments, if empty 
 if [[ -z ${conn}         ]] ; then conn=None                 ; fi 
-if [[ -z ${store_format} ]] ; then store_format=rest         ; fi 
+if [[ -z ${store_format} ]] ; then store_format='print'      ; fi 
 if [[ -z ${mode}         ]] ; then mode=streaming            ; fi 
 if [[ -z ${iteration}    ]] ; then iteration=1               ; fi 
 if [[ -z ${repeat}       ]] ; then repeat=10                 ; fi 
-if [[ -e ${sleep}        ]] ; then sleep=0                   ; fi 
-if [[ -e ${prep_dir}     ]] ; then prep_dir=/app/data/prep   ; fi 
-if [[ -e ${watch_dir}    ]] ; then watch_dir=/app/data/watch ; fi 
+if [[ -z ${sleep}        ]] ; then sleep=0                   ; fi 
+if [[ -z ${prep_dir}     ]] ; then prep_dir=/app/data/prep   ; fi 
+if [[ -z ${watch_dir}    ]] ; then watch_dir=/app/data/watch ; fi 
 
 
+# Run python script 
+python3 /app/Sample-Data-Generator/data_generator.py ${dbms} ${sensor} -c ${conn} -f ${store_format} -m ${mode} -i ${iteration} -r ${repeat} -s ${sleep} -p ${prep_dir} -w ${watch_dir}
 
