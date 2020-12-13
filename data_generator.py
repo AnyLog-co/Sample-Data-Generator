@@ -23,7 +23,8 @@ def __validate_values(iteration:int, repeat:int, sleep:float)->bool:
     if not isinstance(repeat, int) or repeat < 1: 
         print('Value %s is invalid for repeat' % repeat) 
         status = False 
-    if not isinstance(sleep, float) or sleep < 0: 
+    if (not isinstance(sleep, float) and not isinstance(sleep, int)) or sleep < 0: 
+        print(type(sleep))
         print('Value %s is invalid for sleep' % sleep) 
         status = False 
 
@@ -47,12 +48,13 @@ def __table_name(sensor:str)->str:
 
     return table_name
 
-def get_data(sensor:str, row_count:int, sleep:float)->list: 
+def get_data(sensor:str, row_count:int, frequency:float, sleep:float)->list: 
     """
     Based on sensor type get set values
     :args: 
         sensors:str - type of sensor [machine, ping, sin, cos, rand] 
         rows:int - number of data sets to generate for machine / ping sensor. All others have 30 rows by default 
+        frequency:float - frequency by which to multiple th generated value 
         sleep:float - wait time between each row 
     :param: 
         rows:list - rows genenrated
@@ -66,14 +68,17 @@ def get_data(sensor:str, row_count:int, sleep:float)->list:
             time.sleep(sleep) 
     elif sensor == 'ping': 
         for row in range(row_count): 
-            rows.append(ping_sensor.get_ping_data()) 
+            rows.append(ping_sensor.get_ping_data(frequency)) 
+    elif sensor == 'percentagecpu': 
+        for row in range(row_count): 
+            rows.append(percentagecpu_sensor.get_percentagecpu_data(frequency)) 
             time.sleep(sleep) 
     elif sensor == 'sin':  
-        rows = trig.sin_value(0)
+        rows = trig.sin_value(frequency, sleep)
     elif sensor == 'cos': 
-        rows = trig.cos_value(0)
+        rows = trig.cos_value(frequency, sleep)
     elif sensor == 'rand': 
-         rows = trig.rand_value(0)
+         rows = trig.rand_value(frequency, sleep)
     return rows 
 
 def store_data(payloads:list, conn:str, dbms:str, table_name:str, store_type:str, mode:str, prep_dir:str, watch_dir:str)->bool:
@@ -116,6 +121,7 @@ def main():
         -m, --mode             insert type                                                           (default: streaming)    {file,streaming}
         -i, --iteration        number of iterations. if set to 0 run continuesly                     (default: 1)
         -r, --repeat           For machine & ping data number of rows to generate per iteration      (default: 10)
+        -x, --frequency        Value by which to multiply generated value(s)                         (default: 1) 
         -s, --sleep            wait between insert                                                   (default: 0)
         -p, --prep-dir         directory to prepare data in                                          (default: $HOME/AnyLog-Network/data/prep)
         -w, --watch-dir        directory for data ready to be stored                                 (default: $HOME/AnyLog-Network/data/watch)
@@ -130,6 +136,7 @@ def main():
     parser.add_argument('-f', '--store-format', type=str,   default='print',      choices=['rest', 'file', 'print'],                                  help='format to get data') 
     parser.add_argument('-m', '--mode',         type=str,   default='streaming', choices=['file', 'streaming'],                                      help='insert type') 
     parser.add_argument('-i', '--iteration',    type=int,   default=1,                                                                               help='number of iterations. if set to 0 run continuesly') 
+    parser.add_argument('-x', '--frequency',    type=float, default=1,                                                                               help='Value by which to multiply generated value(s)') 
     parser.add_argument('-r', '--repeat',       type=int,   default=10,                                                                              help='For machine & ping data number of rows to generate per iteration') 
     parser.add_argument('-s', '--sleep',        type=float, default=0,                                                                               help='wait between insert') 
     parser.add_argument('-p', '--prep-dir',     type=str,   default='$HOME/AnyLog-Network/data/prep',                                                help='directory to prepare data in') 
@@ -143,11 +150,11 @@ def main():
     table_name = __table_name(args.sensor) 
     if args.iteration == 0: 
         while True: 
-            payloads = get_data(args.sensor, args.repeat, args.sleep) 
+            payloads = get_data(args.sensor, args.repeat, args.frequency, args.sleep) 
             store_data(payloads=payloads, conn=args.conn, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir) 
 
     for row in range(args.iteration): 
-        payloads = get_data(args.sensor, args.repeat, args.sleep) 
+        payloads = get_data(args.sensor, args.repeat, args.frequency, args.sleep) 
         store_data(payloads=payloads, conn=args.conn, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir) 
 
 if __name__ == '__main__': 

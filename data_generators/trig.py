@@ -1,3 +1,9 @@
+"""
+The following generatees data between -pi and pi in terms of 
+- sin 
+- cos 
+- random value between the two 
+"""
 import datetime 
 import math 
 import random 
@@ -20,10 +26,11 @@ VALUE_ARRAY = [
    -1 * math.pi/3, -1 * math.pi/2, -1 * math.pi 
 ]
 
-def sin_value(sleep:float)->list: 
+def sin_value(frequency:float, sleep:float)->list: 
    """
    Get SIN values 
    :args: 
+      frequency:float - multiplication of generated value 
       sleep:float - wait time between each insert
    :param:
       timestamp:str
@@ -35,15 +42,16 @@ def sin_value(sleep:float)->list:
    data_list = [] 
    for value in VALUE_ARRAY: 
       timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-      value = math.sin(value) 
+      value = math.sin(value) * frequency  
       data_list.append({'timestamp': timestamp, 'value': value}) 
       time.sleep(sleep) 
    return data_list 
 
-def cos_value(sleep:float)->list: 
+def cos_value(frequency:float, sleep:float)->list: 
    """
    Get COS values 
    :args: 
+      frequency:float - multiplication of generated value 
       sleep:float - wait time between each insert
    :param:
       timestamp:str
@@ -55,15 +63,16 @@ def cos_value(sleep:float)->list:
    data_list = [] 
    for value in VALUE_ARRAY: 
       timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-      value = math.cos(value) 
+      value = math.cos(value) * frequency 
       data_list.append({'timestamp': timestamp, 'value': value}) 
       time.sleep(sleep) 
    return data_list  
 
-def rand_value(sleep:float)->list: 
+def rand_value(frequency:float, sleep:float)->list: 
    """
    Get RAND values 
    :args: 
+      frequency:float - multiplication of generated value 
       sleep:float - wait time between each insert
    :param:
       timestamp:str
@@ -75,7 +84,7 @@ def rand_value(sleep:float)->list:
    data_list = [] 
    for value in VALUE_ARRAY: 
       timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-      value = value * random.random()  
+      value = value * random.random() * frequency 
       data_list.append({'timestamp': timestamp, 'value': value}) 
       time.sleep(sleep) 
    return data_list
