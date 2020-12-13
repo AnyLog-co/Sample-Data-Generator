@@ -9,8 +9,8 @@ For local install
 
 Alternative users can run via [Docker](https://docs.docker.com/engine/install/) package
 
-# How to use 
-## Python based
+# How to Run 
+## Python 
 ```
 python3 data_generator.py  --help
    :positional arguments:
