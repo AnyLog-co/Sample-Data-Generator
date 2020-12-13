@@ -51,6 +51,7 @@ if [[ -z ${conn}         ]] ; then conn=None                 ; fi
 if [[ -z ${store_format} ]] ; then store_format='print'      ; fi 
 if [[ -z ${mode}         ]] ; then mode=streaming            ; fi 
 if [[ -z ${iteration}    ]] ; then iteration=1               ; fi 
+if [[ -z ${frequency}    ]] ; then frequency=1               ; fi 
 if [[ -z ${repeat}       ]] ; then repeat=10                 ; fi 
 if [[ -z ${sleep}        ]] ; then sleep=0                   ; fi 
 if [[ -z ${prep_dir}     ]] ; then prep_dir=/app/data/prep   ; fi 
@@ -58,5 +59,5 @@ if [[ -z ${watch_dir}    ]] ; then watch_dir=/app/data/watch ; fi
 
 
 # Run python script 
-python3 /app/Sample-Data-Generator/data_generator.py ${dbms} ${sensor} -c ${conn} -f ${store_format} -m ${mode} -i ${iteration} -r ${repeat} -s ${sleep} -p ${prep_dir} -w ${watch_dir}
+python3 /app/Sample-Data-Generator/data_generator.py ${dbms} ${sensor} -c ${conn} -f ${store_format} -m ${mode} -i ${iteration} -x ${frequency} -r ${repeat} -s ${sleep} -p ${prep_dir} -w ${watch_dir}
 
