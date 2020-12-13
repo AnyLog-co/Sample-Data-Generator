@@ -143,9 +143,14 @@ def main():
     parser.add_argument('-w', '--watch-dir',    type=str,   default='$HOME/AnyLog-Network/data/watch',                                               help='directory for data ready to be stored') 
     args = parser.parse_args()
     
+    # validate values 
     if not __validate_values(args.iteration, args.repeat, args.sleep): 
         print('Invalid Options') 
         exit(1)
+
+    if args.conn is None and args.store_format is 'rest': 
+        print('Unableee to send data via REST when conn is set to None') 
+        exit(1) 
 
     table_name = __table_name(args.sensor) 
     if args.iteration == 0: 
