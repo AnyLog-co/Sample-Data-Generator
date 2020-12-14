@@ -1,112 +1,56 @@
-The following is a support script to generate data for  AnyLog. A user has an option to recieve data via REST, print and file 
-   * For ping and machine data generate 10 rows for each iteration 
-   * For sin/cos data generate 30 rows for each iteraton, between -π and π   
+# Data Generator 
+Python package providing an array of data types that can be sent to storage in the ways by which AnyLog supports. 
+Ping and Percentage CPU data are based on data originally provided by a Fiber-optic comapny located in the Bay Area.
 
-# Requirements 
+## Requirements 
+For local install 
    * [psutil](https://pypi.org/project/psutil/)
    * [requests](https://pypi.org/project/requests/) 
 
-# Sample Data 
-   * machine (**Table Name**: `machine_data`) - using psutil, provide information regarding a machine 
-   ```
-   {"timestamp": "2020-10-11 03:25:53.698126", "boot_time": 2739.6981489658356, "cpu_percentge": 0.0, "swap_memory": 0.0, "disk_useage": 0.0}    
-   ```
-   
-   * ping (**Table Name**: `ping_sensor`) - values from an array of devices that generate ping sensor data 
-   ```
-   {"timestamp": "2020-10-11 03:15:11.078921", "device_name": "Ubiquiti OLT", "parentelement": "9a62728a-1a14-42e1-8c79-16fa7b37223f", "webid": "F1AbEfLbwwL8F6EiShvDV-QH70Ay9wV1b5Y6hG0bdSFZFT0ugxACfpGU7d1ojPpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxVQklRVUlUSSBPTFR8UElORw", "value": 0}
-   {"timestamp": "2020-10-11 03:15:11.078978", "device_name": "VM Lit SL NMS", "parentelement": "031eabf8-740f-4f8f-bcaf-cf0fc75a0a12", "webid": "F1AbEfLbwwL8F6EiShvDV-QH70ATrGzGrGT6RG0ZdSFZFT0ugQW05a2rwdFojNpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxGLk8gTU9OSVRPUklORyBTRVJWRVJcVk0gTElUIFNMIE5NU3xQSU5H", "value": 1}
-   {"timestamp": "2020-10-11 03:15:11.078992", "device_name": "ADVA FSP3000R7", "parentelement": "d4157fd9-1c34-4a0e-a55a-5ba3035d4590", "webid": "F1AbEfLbwwL8F6EiShvDV-QH70AkxjnYuCS6RG0ZdSFZFT0ugnMRtEzvxdFojNpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxBRFZBIEZTUDMwMDBSN3xQSU5H", "value": 1}
-   {"timestamp": "2020-10-11 03:15:11.079002", "device_name": "Catalyst 3500XL", "parentelement": "ee3cd571-019e-4ef6-b64a-4529c637fcb3", "webid": "F1AbEfLbwwL8F6EiShvDV-QH70A74uuaOGS6RG0ZdSFZFT0ug4FckGTrxdFojNpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxDQVRBTFlTVCAzNTAwWEx8UElORw", "value": 9}
-   {"timestamp": "2020-10-11 03:16:29.612628", "device_name": "GOOGLE_PING", "parentelement": "c98f8555-32ac-4bb4-8acd-f39c1201174a", "webid": "F1AbEfLbwwL8F6EiShvDV-QH70AMgi98B6o6hG0bdSFZFT0ugPdQ3gcXLd1ojPpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xHT09HTEVfUElOR3xQSU5H", "value": 23}  
-   ```
+Alternative users can run via [Docker](https://docs.docker.com/engine/install/) package
 
-   * sin (**Table Name**: `sin_data`) - sin values betweeen -π and π 
-   ```
-   {"timestamp": "2020-10-11 03:35:51.893689", "value": -1.2246467991473532e-16}
-   {"timestamp": "2020-10-11 03:35:51.893723", "value": -1.0}
-   {"timestamp": "2020-10-11 03:35:51.893730", "value": -0.8660254037844386}
-   {"timestamp": "2020-10-11 03:35:51.893735", "value": -0.8414709848078965}
-   {"timestamp": "2020-10-11 03:35:51.893739", "value": -0.7071067811865475}
-   {"timestamp": "2020-10-11 03:35:51.893743", "value": -0.49999999999999994}
-   {"timestamp": "2020-10-11 03:35:51.893747", "value": -0.3826834323650898}
-   {"timestamp": "2020-10-11 03:35:51.893809", "value": 0.0}
-   {"timestamp": "2020-10-11 03:35:51.893817", "value": 0.3826834323650898}
-   {"timestamp": "2020-10-11 03:35:51.893822", "value": 0.49999999999999994}
-   {"timestamp": "2020-10-11 03:35:51.893826", "value": 0.7071067811865475}
-   {"timestamp": "2020-10-11 03:35:51.893830", "value": 0.8414709848078965}
-   {"timestamp": "2020-10-11 03:35:51.893834", "value": 0.8660254037844386}
-   {"timestamp": "2020-10-11 03:35:51.893838", "value": 1.0}
-   {"timestamp": "2020-10-11 03:35:51.893842", "value": 1.2246467991473532e-16}
-   {"timestamp": "2020-10-11 03:35:51.893847", "value": 1.2246467991473532e-16}
-   {"timestamp": "2020-10-11 03:35:51.893851", "value": 1.0}
-   {"timestamp": "2020-10-11 03:35:51.893855", "value": 0.8660254037844386}
-   {"timestamp": "2020-10-11 03:35:51.893859", "value": 0.8414709848078965}
-   {"timestamp": "2020-10-11 03:35:51.893863", "value": 0.7071067811865475}
-   {"timestamp": "2020-10-11 03:35:51.893867", "value": 0.49999999999999994}
-   {"timestamp": "2020-10-11 03:35:51.893871", "value": 0.3826834323650898}
-   {"timestamp": "2020-10-11 03:35:51.893875", "value": 0.0}
-   {"timestamp": "2020-10-11 03:35:51.893879", "value": -0.3826834323650898}
-   {"timestamp": "2020-10-11 03:35:51.893883", "value": -0.49999999999999994}
-   {"timestamp": "2020-10-11 03:35:51.893890", "value": -0.7071067811865475}
-   {"timestamp": "2020-10-11 03:35:51.893894", "value": -0.8414709848078965}
-   {"timestamp": "2020-10-11 03:35:51.893899", "value": -0.8660254037844386}
-   {"timestamp": "2020-10-11 03:35:51.893903", "value": -1.0}
-   {"timestamp": "2020-10-11 03:35:51.893907", "value": -1.2246467991473532e-16}
-   ```
-
-   * cos (**Table Name**: `cos_data`) - cosin valus between -π and π 
-   ```
-   {"timestamp": "2020-10-11 03:40:37.720501", "value": -1.0}
-   {"timestamp": "2020-10-11 03:40:37.720531", "value": 6.123233995736766e-17}
-   {"timestamp": "2020-10-11 03:40:37.720543", "value": 0.5000000000000001}
-   {"timestamp": "2020-10-11 03:40:37.720548", "value": 0.5403023058681398}
-   {"timestamp": "2020-10-11 03:40:37.720552", "value": 0.7071067811865476}
-   {"timestamp": "2020-10-11 03:40:37.720557", "value": 0.8660254037844387}
-   {"timestamp": "2020-10-11 03:40:37.720561", "value": 0.9238795325112867}
-   {"timestamp": "2020-10-11 03:40:37.720565", "value": 1.0}
-   {"timestamp": "2020-10-11 03:40:37.720569", "value": 0.9238795325112867}
-   {"timestamp": "2020-10-11 03:40:37.720573", "value": 0.8660254037844387}
-   {"timestamp": "2020-10-11 03:40:37.720577", "value": 0.7071067811865476}
-   {"timestamp": "2020-10-11 03:40:37.720580", "value": 0.5403023058681398}
-   {"timestamp": "2020-10-11 03:40:37.720584", "value": 0.5000000000000001}
-   {"timestamp": "2020-10-11 03:40:37.720588", "value": 6.123233995736766e-17}
-   {"timestamp": "2020-10-11 03:40:37.720592", "value": -1.0}
-   {"timestamp": "2020-10-11 03:40:37.720596", "value": -1.0}
-   {"timestamp": "2020-10-11 03:40:37.720600", "value": 6.123233995736766e-17}
-   {"timestamp": "2020-10-11 03:40:37.720605", "value": 0.5000000000000001}
-   {"timestamp": "2020-10-11 03:40:37.720608", "value": 0.5403023058681398}
-   {"timestamp": "2020-10-11 03:40:37.720612", "value": 0.7071067811865476}
-   {"timestamp": "2020-10-11 03:40:37.720616", "value": 0.8660254037844387}
-   {"timestamp": "2020-10-11 03:40:37.720620", "value": 0.9238795325112867}
-   {"timestamp": "2020-10-11 03:40:37.720624", "value": 1.0}
-   {"timestamp": "2020-10-11 03:40:37.720628", "value": 0.9238795325112867}
-   {"timestamp": "2020-10-11 03:40:37.720632", "value": 0.8660254037844387}
-   {"timestamp": "2020-10-11 03:40:37.720638", "value": 0.7071067811865476}
-   {"timestamp": "2020-10-11 03:40:37.720642", "value": 0.5403023058681398}
-   {"timestamp": "2020-10-11 03:40:37.720646", "value": 0.5000000000000001}
-   {"timestamp": "2020-10-11 03:40:37.720650", "value": 6.123233995736766e-17}
-   {"timestamp": "2020-10-11 03:40:37.720654", "value": -1.0}
-   ```
-
-# How to use 
+# How to Run 
+## Python 
 ```
 python3 data_generator.py  --help
    :positional arguments:
-      conn:str   - REST host and port
-      dbms:str   - database name
-      sensor:str - type of sensor to get data from 
-         * machine - boot time, cpu useage, swap memory percentage, disk useage percentege 
-         * ping    - information regarding a PING sensor randomly selected form list 
-         * sin     - sinsign values over time 
-         * cos     - cossign values over time 
+       dbms:str   - database name 
+       sensor:str - type of sensor to get data from
+         * machine          - boot time, cpu useage, swap memory percentage, disk useage percentege 
+         * ping             - information regarding a ping sensor, data originally generated by Lite San Leandro devicies
+         * percentagecpu    - information regarding a percentagecpu sensor, data originally generated by Lite San Leandro devicies
+         * sin              - sin values over time 
+         * cos              - cossin values over time      
+         * rand             - random value generated 
    :optional arguments:
-      -h, --help                            - show this help message and exit
-      -f, --stroe-format  INSERT_FORMAT:str - format to get data               (default: rest)
-         * rest - send data via REST 
-      -m, --mode MODE:str - insert type (default: streaming) 
-         * streaming - insert data in memory once memory is full or after N seconds (configrured on AnyLog) 
-         * file - insert data one by one 
-      -r, --repeat REPEAT:int - number of iterations. If set to 0 run continuesly (default: 1)
-      -s, --sleep SLEEP:float - wait between insert (default: 0)
+       -h, --help                          show this help message and exit
+       -c, --conn         CONN             REST host and port                                                 (default: None)
+       -f, --store-format STORE-FORMAT     format to get data                                                 (default: print)       {rest,file,print}
+       -m, --mode         MODE             insert type                                                        (default: streamning)  {file,streaming}
+       -i, --iteration    ITERATION        number of iterations. if set to 0 run continuesly                  (default: 1)
+       -x, --frequency    FREQUENCY        value by which to multiply generated value(s)                      (default: 1)
+       -r, --repeat       REPEAT           for machine & ping data number of rows to generate per iteration   (default: 10)
+       -s, --sleep        SLEEP            wait between insert                                                (default: 0)
+       -p, --prep-dir     PREP-DIR         directory to prepare data in                                       (default: $HOME/AnyLog-Network/data/prep)
+       -w, --watch-dir    WATCH_DIR        directory for data ready to be stored                              (default: $HOME/AnyLog-Network/data/watch)
 ```
+
+## Docker 
+For Docker, a user is required to specify `dbms` and `sensor` enviorment variables. All others are optional, just like Python.  
+
+```
+docker run \
+   -e dbms=${DATABASE_NAME} \ 
+   -e sensor=${SENSOR} \ 
+   -e conn=${CONN} \ 
+   -e store_format=${STORE-FORMAT} \ 
+   -e mode=${MODE} \
+   -e iteration=${ITERATION} \ 
+   -e frequency=${FREQUENCY} \ 
+   -e repeat=${REPEAT} \ 
+   -e sleep=${SLEEP} \ 
+   -e prep_dir=${PREP-DIR} \ 
+   -e watch_dir=${WATCH_DIR} \ 
+   anylog/sample-data-generator --name data-generator 
+```
+
