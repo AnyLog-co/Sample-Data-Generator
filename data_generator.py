@@ -69,6 +69,7 @@ def get_data(sensor:str, row_count:int, frequency:float, sleep:float)->list:
     elif sensor == 'ping': 
         for row in range(row_count): 
             rows.append(ping_sensor.get_ping_data(frequency)) 
+            time.sleep(sleep) 
     elif sensor == 'percentagecpu': 
         for row in range(row_count): 
             rows.append(percentagecpu_sensor.get_percentagecpu_data(frequency)) 
