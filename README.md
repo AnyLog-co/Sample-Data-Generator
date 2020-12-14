@@ -39,11 +39,11 @@ python3 data_generator.py  --help
 For Docker, a user is required to specify `dbms` and `sensor` enviorment variables. All others are optional, just like Python.  
 
 ```
-docker run \
+docker run --name ${SENSOR}-data \
    -e dbms=${DATABASE_NAME} \ 
    -e sensor=${SENSOR} \ 
    -e conn=${CONN} \ 
-   -e store_format=${STORE-FORMAT} \ 
+   -e store_format=${STORE_FORMAT} \ 
    -e mode=${MODE} \
    -e iteration=${ITERATION} \ 
    -e frequency=${FREQUENCY} \ 
@@ -51,6 +51,6 @@ docker run \
    -e sleep=${SLEEP} \ 
    -e prep_dir=${PREP-DIR} \ 
    -e watch_dir=${WATCH_DIR} \ 
-   anylog/sample-data-generator --name data-generator 
+   --network host anylogco/sample-data-generator
 ```
 

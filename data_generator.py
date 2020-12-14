@@ -148,7 +148,7 @@ def main():
         print('Invalid Options') 
         exit(1)
 
-    if args.conn is None and args.store_format is 'rest': 
+    if args.conn == None and args.store_format == 'rest': 
         print('Unableee to send data via REST when conn is set to None') 
         exit(1) 
 
