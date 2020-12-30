@@ -48,14 +48,13 @@ def __table_name(sensor:str)->str:
 
     return table_name
 
-def get_data(sensor:str, row_count:int, frequency:float, sleep:float)->list: 
+def get_data(sensor:str, row_count:int, frequency:float)->list: 
     """
     Based on sensor type get set values
     :args: 
         sensors:str - type of sensor [machine, ping, sin, cos, rand] 
         rows:int - number of data sets to generate for machine / ping sensor. All others have 30 rows by default 
         frequency:float - frequency by which to multiple th generated value 
-        sleep:float - wait time between each row 
     :param: 
         rows:list - rows genenrated
     :return: 
@@ -65,7 +64,7 @@ def get_data(sensor:str, row_count:int, frequency:float, sleep:float)->list:
     if sensor == 'machine': 
         for row in range(row_count): 
             rows.append(machine_info.get_device_data())
-            time.sleep(sleep) 
+            time.sleep(0.5) 
     elif sensor == 'ping': 
         for row in range(row_count): 
             rows.append(ping_sensor.get_ping_data(frequency)) 
@@ -73,13 +72,13 @@ def get_data(sensor:str, row_count:int, frequency:float, sleep:float)->list:
     elif sensor == 'percentagecpu': 
         for row in range(row_count): 
             rows.append(percentagecpu_sensor.get_percentagecpu_data(frequency)) 
-            time.sleep(sleep) 
+            time.sleep(0.5) 
     elif sensor == 'sin':  
-        rows = trig.sin_value(frequency, sleep)
+        rows = trig.sin_value(frequency, 0.5)
     elif sensor == 'cos': 
-        rows = trig.cos_value(frequency, sleep)
+        rows = trig.cos_value(frequency, 0.5)
     elif sensor == 'rand': 
-         rows = trig.rand_value(frequency, sleep)
+         rows = trig.rand_value(frequency, 0.5)
     return rows 
 
 def store_data(payloads:list, conn:str, dbms:str, table_name:str, store_type:str, mode:str, prep_dir:str, watch_dir:str)->bool:
@@ -158,10 +157,12 @@ def main():
         while True: 
             payloads = get_data(args.sensor, args.repeat, args.frequency, args.sleep) 
             store_data(payloads=payloads, conn=args.conn, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir) 
+             time.sleep(args.sleep) 
 
     for row in range(args.iteration): 
         payloads = get_data(args.sensor, args.repeat, args.frequency, args.sleep) 
         store_data(payloads=payloads, conn=args.conn, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir) 
+        time.sleep(args.sleep)
 
 if __name__ == '__main__': 
     main() 
