@@ -49,6 +49,7 @@ def __send_mqtt_cmd(conn:str, cmd:str)->bool:
       "details": cmd
    }
    
+   print(header) 
    try:
       r = requests.get('http://%s' % conn, headers=header)
    except Exception as e: 
