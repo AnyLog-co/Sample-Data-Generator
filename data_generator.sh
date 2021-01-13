@@ -4,7 +4,7 @@
 #        sensor     type of sensor to get data from    {machine,percentagecpu,ping,sin,cos,rand}
 #    :optional arguments:
 #        -h,  --help             show this help message and exit
-#        -c,  --conn             REST host and port                                                    (default: None)
+#        -c,  --conn             REST host and port                                                    (default: '')
 #        -f,  --store-format     format to get data                                                    (default: print)        {rest,file,print}
 #        -m,  --mode             insert type                                                           (default: streaming)    {file,streaming}
 #        -i,  --iteration        number of iterations. if set to 0 run continuesly                     (default: 1)
@@ -50,32 +50,20 @@ fi
 
 
 # configure optional arguments, if empty 
-if [[ -z ${CONN}         ]] ; then CONN=None                 ; fi 
-if [[ -z ${STORE_FORMAT} ]] ; then STORE_FORMAT='print'      ; fi 
-if [[ -z ${MODE}         ]] ; then MODE=None                 ; fi 
-if [[ -z ${ITERATION}    ]] ; then ITERATION=1               ; fi 
-if [[ -z ${FREQUENCY}    ]] ; then FREQUENCY=1               ; fi 
-if [[ -z ${REPEAT}       ]] ; then REPEAT=10                 ; fi 
-if [[ -z ${SLEEP}        ]] ; then SLEEP=0                   ; fi 
-if [[ -z ${PREP_DIR}     ]] ; then PREP_DIR=None             ; fi 
-if [[ -z ${WATCH_DIR}    ]] ; then WATCH_DIR=None            ; fi 
-if [[ -z ${MQTT_CONN}    ]] ; then MQTT_CONN=None            ; fi 
-if [[ -z ${MQTT_PORT}    ]] ; then MQTT_PORT=None            ; fi 
-if [[ -z ${MQTT_TOPIC}   ]] ; then MQTT_TOPIC=None           ; fi  
+if [[ -z ${CONN}         ]] ; then CONN=None            				  ; fi 
+if [[ -z ${STORE_FORMAT} ]] ; then STORE_FORMAT='print' 				  ; fi 
+if [[ -z ${MODE}         ]] ; then MODE='streaming'     				  ; fi 
+if [[ -z ${ITERATION}    ]] ; then ITERATION=1          				  ; fi 
+if [[ -z ${FREQUENCY}    ]] ; then FREQUENCY=1          			          ; fi 
+if [[ -z ${REPEAT}       ]] ; then REPEAT=10            				  ; fi 
+if [[ -z ${SLEEP}        ]] ; then SLEEP=0                                                ; fi 
+if [[ -z ${PREP_DIR}     ]] ; then PREP_DIR='/app/AnyLog-Network/data/prep_dir'           ; fi 
+if [[ -z ${WATCH_DIR}    ]] ; then WATCH_DIR='/app/AnyLog-Network/data/watch_dir/'        ; fi 
+if [[ -z ${MQTT_CONN}    ]] ; then MQTT_CONN='mqwdtklv@driver.cloudmqtt.com:uRimssLO4dIo' ; fi 
+if [[ -z ${MQTT_PORT}    ]] ; then MQTT_PORT=18975         				  ; fi 
+if [[ -z ${MQTT_TOPIC}   ]] ; then MQTT_TOPIC='test'       				  ; fi  
 
 
 # Run python script 
-python3 /app/Sample-Data-Generator/data_generator.py ${DBMS} ${SENSOR} \
-	-c ${CONN} \
-	-f ${STORE_FORMAT} \
-	-m ${MODE} \
-	-i ${ITERATION} \
-	-x ${FREQUENCY} \
-	-r ${REPEAT} \
-	-s ${SLEEP} \
-	-p ${PREP_DIR} \
-	-w ${WATCH_DIR} \
-	-mc ${MQTT_CONN} \ 
-	-mp ${MQTT_PORT} 
-        -mt ${MQTT_TOPIC} 
+python3 ~/Sample-Data-Generator/data_generator.py ${DBMS} ${SENSOR} -c ${CONN} -f ${STORE_FORMAT} -m ${MODE} -i ${ITERATION} -x ${FREQUENCY} -r ${REPEAT} -s ${SLEEP} -p ${PREP_DIR} -w ${WATCH_DIR} -mc ${MQTT_CONN} -mp ${MQTT_PORT} -mt ${MQTT_TOPIC}
 
