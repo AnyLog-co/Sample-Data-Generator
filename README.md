@@ -23,16 +23,19 @@ python3 data_generator.py  --help
          * cos              - cossin values over time      
          * rand             - random value generated 
    :optional arguments:
-       -h, --help                          show this help message and exit
-       -c, --conn         CONN             REST host and port                                                 (default: None)
-       -f, --store-format STORE-FORMAT     format to get data                                                 (default: print)       {rest,file,print}
-       -m, --mode         MODE             insert type                                                        (default: streamning)  {file,streaming}
-       -i, --iteration    ITERATION        number of iterations. if set to 0 run continuesly                  (default: 1)
-       -x, --frequency    FREQUENCY        value by which to multiply generated value(s)                      (default: 1)
-       -r, --repeat       REPEAT           for machine & ping data number of rows to generate per iteration   (default: 10)
-       -s, --sleep        SLEEP            wait between insert                                                (default: 0)
-       -p, --prep-dir     PREP-DIR         directory to prepare data in                                       (default: $HOME/AnyLog-Network/data/prep)
-       -w, --watch-dir    WATCH_DIR        directory for data ready to be stored                              (default: $HOME/AnyLog-Network/data/watch)
+       -h,  --help                          show this help message and exit
+       -c,  --conn         CONN             REST host and port                                                 (default: None)
+       -f,  --store-format STORE-FORMAT     format to get data                                                 (default: print)       {rest,mqtt,file,print}
+       -m,  --mode         MODE             insert type                                                        (default: streamning)  {file,streaming}
+       -i,  --iteration    ITERATION        number of iterations. if set to 0 run continuesly                  (default: 1)
+       -x,  --frequency    FREQUENCY        value by which to multiply generated value(s)                      (default: 1)
+       -r,  --repeat       REPEAT           for machine & ping data number of rows to generate per iteration   (default: 10)
+       -s,  --sleep        SLEEP            wait between insert                                                (default: 0)
+       -p,  --prep-dir     PREP-DIR         directory to prepare data in                                       (default: $HOME/AnyLog-Network/data/prep)
+       -w,  --watch-dir    WATCH_DIR        directory for data ready to be stored                              (default: $HOME/AnyLog-Network/data/watch)
+       -mc, --mqtt-conn    MQTT_CONN        MQTT connection info                                               (default: mqwdtklv@driver.cloudmqtt.com:uRimssLO4dIo)
+       -mp, --mqtt-port    MQTT_PORT        MQTT port 							       (default: 18975)
+       -mt, --mqtt-topic   MQTT_TOPIC       MQTT topic 							       (default: test)
 ```
 
 ## Docker 

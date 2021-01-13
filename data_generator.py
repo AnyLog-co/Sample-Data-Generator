@@ -120,16 +120,19 @@ def main():
         dbms       database name
         sensor     type of sensor to get data from    {machine,percentagecpu,ping,sin,cos,rand}
     :optional arguments:
-        -h, --help             show this help message and exit
-        -c, --conn             REST host and port                                                    (default: None)
-        -f, --store-format     format to get data                                                    (default: print)        {rest,file,print}
-        -m, --mode             insert type                                                           (default: streaming)    {file,streaming}
-        -i, --iteration        number of iterations. if set to 0 run continuesly                     (default: 1)
-        -r, --repeat           For machine & ping data number of rows to generate per iteration      (default: 10)
-        -x, --frequency        Value by which to multiply generated value(s)                         (default: 1) 
-        -s, --sleep            wait between insert                                                   (default: 0)
-        -p, --prep-dir         directory to prepare data in                                          (default: $HOME/AnyLog-Network/data/prep)
-        -w, --watch-dir        directory for data ready to be stored                                 (default: $HOME/AnyLog-Network/data/watch)
+        -h,  --help             show this help message and exit
+        -c,  --conn             REST host and port                                                    (default: None)
+        -f,  --store-format     format to get data                                                    (default: print)        {rest,file,print}
+        -m,  --mode             insert type                                                           (default: streaming)    {file,streaming}
+        -i,  --iteration        number of iterations. if set to 0 run continuesly                     (default: 1)
+        -r,  --repeat           For machine & ping data number of rows to generate per iteration      (default: 10)
+        -x,  --frequency        Value by which to multiply generated value(s)                         (default: 1) 
+        -s,  --sleep            wait between insert                                                   (default: 0)
+        -p,  --prep-dir         directory to prepare data in                                          (default: $HOME/AnyLog-Network/data/prep)
+        -w,  --watch-dir        directory for data ready to be stored                                 (default: $HOME/AnyLog-Network/data/watch)
+        -mc, --mqtt-conn        MQTT connection info                                                  (default: mqwdtklv@driver.cloudmqtt.com:uRimssLO4dIo)
+        -mp, --mqtt-port        MQTT port 			       			              (default: 18975)
+        -mt, --mqtt-topic       MQTT topic 							      (default: test)
     :param:
         table_name:str - based on the sensor type generate table_name 
         payloads:dict - data generated for a given sensor 
