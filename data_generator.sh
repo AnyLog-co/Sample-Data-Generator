@@ -65,5 +65,5 @@ if [[ -z ${MQTT_TOPIC}   ]] ; then MQTT_TOPIC='test'       				  ; fi
 
 
 # Run python script 
-python3 ~/Sample-Data-Generator/data_generator.py ${DBMS} ${SENSOR} -c ${CONN} -f ${STORE_FORMAT} -m ${MODE} -i ${ITERATION} -x ${FREQUENCY} -r ${REPEAT} -s ${SLEEP} -p ${PREP_DIR} -w ${WATCH_DIR} -mc ${MQTT_CONN} -mp ${MQTT_PORT} -mt ${MQTT_TOPIC}
+python3 Sample-Data-Generator/data_generator.py ${DBMS} ${SENSOR} -c ${CONN} -f ${STORE_FORMAT} -m ${MODE} -i ${ITERATION} -x ${FREQUENCY} -r ${REPEAT} -s ${SLEEP} -p ${PREP_DIR} -w ${WATCH_DIR} -mc ${MQTT_CONN} -mp ${MQTT_PORT} -mt ${MQTT_TOPIC}
 
