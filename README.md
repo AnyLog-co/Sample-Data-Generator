@@ -39,21 +39,24 @@ python3 data_generator.py  --help
 ```
 
 ## Docker 
-For Docker, a user is required to specify `dbms` and `sensor` enviorment variables. All others are optional, just like Python.  
+For Docker, a user is required to specify `DBMS` and `SENSOR` enviorment variables. All other params are optional and will be ignored if not used.
 
 ```
 docker run --name ${SENSOR}-data \
-   -e dbms=${DATABASE_NAME} \ 
-   -e sensor=${SENSOR} \ 
-   -e conn=${CONN} \ 
-   -e store_format=${STORE_FORMAT} \ 
-   -e mode=${MODE} \
-   -e iteration=${ITERATION} \ 
-   -e frequency=${FREQUENCY} \ 
-   -e repeat=${REPEAT} \ 
-   -e sleep=${SLEEP} \ 
-   -e prep_dir=${PREP-DIR} \ 
-   -e watch_dir=${WATCH_DIR} \ 
-   --network host anylogco/sample-data-generator
+   -e DBMS=${DATABASE_NAME} \
+   -e SENSOR=${SENSOR} \
+   -e CONN=${CONN} \
+   -e STORE_FORMAT=${STORE_FORMAT} \
+   -e MODE=${MODE} \
+   -e ITERATION=${ITERATION} \
+   -e FREQUENCY=${FREQUENCY} \
+   -e REPEAT=${REPEAT} \
+   -e SLEEP=${SLEEP} \
+   -e PREP_DIR=${PREP_DIR} 
+   -e WATCH_DIR=${WATCH_DIR} 
+   -e MQTT_CONN=${MQTT_CONN} 
+   -e MQTT_PORT=${MQTT_PORT} 
+   -e MQTT_TOPIC=${MQTT_TOPIC} 
+   --network host anylogco/sample-data-generator:latest  
 ```
 
