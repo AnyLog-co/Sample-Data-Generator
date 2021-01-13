@@ -52,11 +52,11 @@ docker run --name ${SENSOR}-data \
    -e FREQUENCY=${FREQUENCY} \
    -e REPEAT=${REPEAT} \
    -e SLEEP=${SLEEP} \
-   -e PREP_DIR=${PREP_DIR} 
-   -e WATCH_DIR=${WATCH_DIR} 
-   -e MQTT_CONN=${MQTT_CONN} 
-   -e MQTT_PORT=${MQTT_PORT} 
-   -e MQTT_TOPIC=${MQTT_TOPIC} 
+   -e PREP_DIR=${PREP_DIR} \ 
+   -e WATCH_DIR=${WATCH_DIR} \
+   -e MQTT_CONN=${MQTT_CONN} \
+   -e MQTT_PORT=${MQTT_PORT} \
+   -e MQTT_TOPIC=${MQTT_TOPIC} \  
    --network host anylogco/sample-data-generator:latest  
 ```
 
