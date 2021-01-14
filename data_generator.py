@@ -149,9 +149,9 @@ def main():
     parser.add_argument('-s', '--sleep',        type=float, default=0,                                                                               help='wait between insert') 
     parser.add_argument('-p', '--prep-dir',     type=str,   default='$HOME/AnyLog-Network/data/prep',                                                help='directory to prepare data in') 
     parser.add_argument('-w', '--watch-dir',    type=str,   default='$HOME/AnyLog-Network/data/watch',                                               help='directory for data ready to be stored') 
-    parser.add_argument('-mc', '--mqtt-conn',  type=str,  default='mqwdtklv@driver.cloudmqtt.com:uRimssLO4dIo', help='MQTT connection info') 
-    parser.add_argument('-mp', '--mqtt-port',  type=int,  default=18975,                                        help='MQTT port') 
-    parser.add_argument('-mt', '--mqtt-topic', type=str,  default='test',                                       help='MQTT topic')  
+    parser.add_argument('-mc', '--mqtt-conn',   type=str,   default='mqwdtklv@driver.cloudmqtt.com:uRimssLO4dIo', help='MQTT connection info') 
+    parser.add_argument('-mp', '--mqtt-port',   type=int,   default=18975,                                        help='MQTT port') 
+    parser.add_argument('-mt', '--mqtt-topic',  type=str,   default='test',                                       help='MQTT topic')  
     args = parser.parse_args()
     
     if (args.sensor == 'machine' or args.sensor == 'ping' or args.sensor == 'percentagecpu') and args.store_format == 'mqtt': 
