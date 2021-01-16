@@ -36,14 +36,21 @@ def sin_value(frequency:float, sleep:float)->list:
       timestamp:str
       value:float - value from VALUE_ARRAY 
       data:dict - data 
+   :sample:
+      {
+         "timestamp": "2020-01-01 00:00:00",
+         "value": 1
+      }
    :return: 
       list of values to insert
    """
    data_list = [] 
    for value in VALUE_ARRAY: 
-      timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
       value = math.sin(value) * frequency  
-      data_list.append({'timestamp': timestamp, 'value': value}) 
+      data_list.append({
+         'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 
+         'value': math.sin(value) * frequency
+      }) 
       time.sleep(sleep) 
    return data_list 
 
@@ -57,14 +64,20 @@ def cos_value(frequency:float, sleep:float)->list:
       timestamp:str
       value:float - value from VALUE_ARRAY 
       data:dict - data 
+   :sample:
+      {
+         "timestamp": "2020-01-01 00:00:00",
+         "value": 1
+      }
    :return: 
       list of values to insert
    """
    data_list = [] 
    for value in VALUE_ARRAY: 
-      timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-      value = math.cos(value) * frequency 
-      data_list.append({'timestamp': timestamp, 'value': value}) 
+      data_list.append({
+         'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+         'value': math.cos(value) * frequency
+      }) 
       time.sleep(sleep) 
    return data_list  
 
@@ -78,13 +91,19 @@ def rand_value(frequency:float, sleep:float)->list:
       timestamp:str
       value:float - value from VALUE_ARRAY 
       data:dict - data 
+   :sample:
+      {
+         "timestamp": "2020-01-01 00:00:00",
+         "value": 1
+      }
    :return: 
       list of values to insert
    """
    data_list = [] 
    for value in VALUE_ARRAY: 
-      timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-      value = value * random.random() * frequency 
-      data_list.append({'timestamp': timestamp, 'value': value}) 
+      data_list.append({
+         'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 
+         'value': value * random.random() * frequency
+      }) 
       time.sleep(sleep) 
    return data_list

@@ -52,7 +52,7 @@ def boot_time()->float:
    except: 
       return 0.0 
 
-def cpu_percentge()->float: 
+def cpu_percentage()->float: 
    """
    Get CPU percentage
    """
@@ -63,16 +63,16 @@ def cpu_percentge()->float:
 
 def swap_memory()->float: 
    """
-   Get SWAP memory useage
+   Get SWAP memory usage
    """
    try:
       return psutil.swap_memory().percent
    except: 
       return 0.0 
 
-def disk_useage()->float: 
+def disk_usage()->float: 
    """
-   Get disk useage percentage 
+   Get disk usage percentage 
    """
    try: 
       return psutil.disk_usage().percenet 
@@ -89,15 +89,37 @@ def get_device_data()->dict:
       swap:float 
       disk:float 
       data:dict - dict of generated values 
+   :Sample:
+      {
+         "boot_time": 9103.919608592987,
+         "cpu_percentage": 2.0,
+         "disk_usage": 0.0,
+         "hostname": "al-live-publisher",
+         "local_ip": "172.104.180.110/32",
+         "remote_ip": "172.104.180.110/32",
+         "swap_memory": 4.8,
+         "timestamp": "2021-01-01 00:00:19.695053"
+      }
    :return: 
       dict
    """
    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
    hostname, local_ip, remote_ip = machine_credentials() 
    boot = boot_time() 
-   cpu = cpu_percentge() 
+   cpu = cpu_percentage() 
    swap = swap_memory() 
-   disk = disk_useage() 
+   disk = disk_usage() 
 
-   data = {'timestamp': timestamp, 'hostname': hostname, 'local_ip': local_ip, 'remote_ip': remote_ip, 'boot_time': boot, 'cpu_percentge': cpu, 'swap_memory': swap, 'disk_useage': disk}
+
+   data = {
+      'timestamp': timestamp, 
+      'hostname': hostname, 
+      'local_ip': local_ip, 
+      'remote_ip': remote_ip, 
+      'boot_time': boot, 
+      'cpu_percentage': cpu, 
+      'swap_memory': swap, 
+      'disk_usage': disk
+   }
+
    return data 
