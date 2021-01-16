@@ -75,7 +75,7 @@ def cos_value(frequency:float, sleep:float)->list:
    data_list = [] 
    for value in VALUE_ARRAY: 
       data_list.append({
-         'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+         'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 
          'value': math.cos(value) * frequency
       }) 
       time.sleep(sleep) 
