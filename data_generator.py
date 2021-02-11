@@ -187,7 +187,7 @@ def main():
         if conns: 
             conn = random.choice(conns) # Randomly select a node to send data to
         payloads = get_data(args.sensor, args.repeat, args.frequency, args.sleep) 
-        store_data(payloads=payloads, conn=args.conn, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic) 
+        store_data(payloads=payloads, conn=conn, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic) 
 
 if __name__ == '__main__': 
     main() 

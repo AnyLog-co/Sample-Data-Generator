@@ -2,8 +2,6 @@ FROM ubuntu:latest
 
 # declare params 
 ARG ANYLOG_ROOT_DIR=/app
-ARG ANYLOG_TCP_PORT=$ANYLOG_TCP_PORT 
-ARG ANYLOG_TCP_PORT=$ANYLOG_REST_PORT 
 
 # update / upgrade 
 RUN apt-get -y update 	
@@ -11,8 +9,6 @@ RUN apt-get -y upgrade
 RUN apt-get -y update	
 
 # install requirements via apt 
-RUN apt-get -y install curl git
-
 RUN apt-get -y install python3 python3-pip
 RUN apt-get -y install python3-psycopg2
 RUN pip3 install --upgrade pip
