@@ -1,15 +1,16 @@
+# The following is based on: https://www.emqx.io/blog/how-to-use-mqtt-in-python
+import json 
 from paho.mqtt import client as mqtt_client
 import random 
 
-def connect_mqtt(conn:str, port:int, topic:str)->paho.mqtt.client.Client:
+def connect_mqtt(conn:str, port:int)->mqtt_client.Client:
     """
     The following code connects to MQTT for publishing
     :args:
        conn:str  - MQTT connection info (user@broker:passwd) 
        port:str  - MQTT port 
-       topic:str - MQTT topic 
     :param:
-       client:paho.mqtt.client.Client- MQTT client connection 
+       client:mqtt_client.Client- MQTT client connection 
        broker:str - IP from conn 
        user:str - Username from conn (optional) 
        passwd:str - password for conn (optional) 
@@ -52,6 +53,35 @@ def connect_mqtt(conn:str, port:int, topic:str)->paho.mqtt.client.Client:
             client = None 
     return client
 
-if __name__ == '__main__': 
-    mqtt_conn = connect_mqtt('ibglowct@driver.cloudmqtt.com:MSY4e009J7ts', 18785, 'anylogedgex') 
-    print(type(mqtt_conn))
+def publisher_message(client:mqtt_client.Client, topic:str, message:str)->bool:
+    """
+    Publish messages via MQTT 
+    :args:
+       client:mqtt_client.Client - connection to MQTT publisher
+       topic:str - MQTT topic info 
+       message:str - message to send to broker 
+    :param:
+       status:bool - status
+    :return:
+       If success True, else False 
+    """
+    status = True 
+    if isinstance(message, dict):
+        message = json.dumps(message)
+    if not isinstance(message, str) and not isinstance(message, (float, int)):
+        print('Invalid message "%s" due to %s data-type' % (message, type(message)))
+        status = False 
+    try: 
+        result = client.publish(topic, message)
+    except Exception as e: 
+        print('Failed to publisher message: "%s" (Error: %s)' % (message, e))
+        status = False 
+        
+    if result[0] != 0: 
+        status = False 
+        
+    return status 
+
+#if __name__ == '__main__': 
+#    mqtt_conn = connect_mqtt('ibglowct@driver.cloudmqtt.com:MSY4e009J7ts', 18785) 
+#    print(result)
