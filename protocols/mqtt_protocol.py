@@ -82,6 +82,6 @@ def publisher_message(client:mqtt_client.Client, topic:str, message:str)->bool:
         
     return status 
 
-#if __name__ == '__main__': 
-#    mqtt_conn = connect_mqtt('ibglowct@driver.cloudmqtt.com:MSY4e009J7ts', 18785) 
-#    print(result)
+if __name__ == '__main__': 
+    mqtt_conn = connect_mqtt('10.0.0.89', 2050)  
+    print(publisher_message(mqtt_conn, 'demo', '{"value": "-1.0", "ts": "2021-03-25 04:07:50.932658", "protocol": "trig", "measurement": "cos", "metadata": {"company": "litsanleandro", "machine_name": "cos", "serial_number": "data"}}'))
