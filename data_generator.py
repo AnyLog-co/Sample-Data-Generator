@@ -83,7 +83,7 @@ def get_data(sensor:str, row_count:int, frequency:float, sleep:float)->list:
          rows = trig.rand_value(frequency, sleep)
     return rows 
 
-def store_data(payloads:list, conn:str, dbms:str, table_name:str, store_type:str, mode:str, prep_dir:str, watch_dir:str, mqtt_conn:str, mqtt_port:int, mqtt_topic:str)->bool:
+def store_data(payloads:list, conn:str, dbms:str, table_name:str, store_type:str, mode:str, prep_dir:str, watch_dir:str, mqtt_conn:str, mqtt_port:int, mqtt_topic:str, al_broker:bool)->bool:
     """
     Store data
     :args: 
@@ -93,8 +93,14 @@ def store_data(payloads:list, conn:str, dbms:str, table_name:str, store_type:str
         table_name:str - logical table tname (required for REST + file)
         store_type:str - Format by which to store (print, file, REST) 
         mode:str - Format by which to send REST (file or streaming) 
+        
         prep_dir:str - Directory to prep data in (file only) 
         watch_dir:dir - Directory data ready to be sent onto AnyLog (file only) 
+
+        mqtt_conn:str - MQTT connection info (MQTT Only)
+        mqtt_port:int - MQTT port (MQTT Only) 
+        mqtt_topic:str - MQTT topic (MQTT Only)
+        al_broker:bool - Whether to use AnyLog broker (MQTT only) 
     :param: 
         status:bool - status 
     """
@@ -133,25 +139,27 @@ def main():
         -mc, --mqtt-conn        MQTT connection info                                                  (default: mqwdtklv@driver.cloudmqtt.com:uRimssLO4dIo)
         -mp, --mqtt-port        MQTT port 			       			              (default: 18975)
         -mt, --mqtt-topic       MQTT topic 							      (default: test)
+        -ab, --al-broker        If MQTT broker is AnyLog                                              (default: false) 
     :param:
         table_name:str - based on the sensor type generate table_name 
         payloads:dict - data generated for a given sensor 
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('dbms',                 type=str,   default='sample_data',                                                                   help='database name') 
-    parser.add_argument('sensor',               type=str,   default='ping', choices=['machine', 'percentagecpu', 'ping', 'sin', 'cos', 'rand'], help='type of sensor to get data from') 
-    parser.add_argument('-c', '--conn',         type=str,   default=None,   help='REST host and port, use commas for multiple IPs and ports')
-    parser.add_argument('-f', '--store-format', type=str,   default='print',    choices=['rest', 'file', 'print', 'mqtt'], help='format to get data') 
-    parser.add_argument('-m', '--mode',         type=str,   default='streaming', choices=['file', 'streaming'],                                      help='insert type') 
-    parser.add_argument('-i', '--iteration',    type=int,   default=1,                                                                               help='number of iterations. if set to 0 run continuesly') 
-    parser.add_argument('-x', '--frequency',    type=float, default=1,                                                                               help='Value by which to multiply generated value(s)') 
-    parser.add_argument('-r', '--repeat',       type=int,   default=10,                                                                              help='For machine & ping data number of rows to generate per iteration') 
-    parser.add_argument('-s', '--sleep',        type=float, default=0,                                                                               help='wait between insert') 
-    parser.add_argument('-p', '--prep-dir',     type=str,   default='$HOME/AnyLog-Network/data/prep',                                                help='directory to prepare data in') 
-    parser.add_argument('-w', '--watch-dir',    type=str,   default='$HOME/AnyLog-Network/data/watch',                                               help='directory for data ready to be stored') 
+    parser.add_argument('dbms',                 type=str,   default='sample_data', help='database name') 
+    parser.add_argument('sensor',               type=str,   default='ping',        choices=['machine', 'percentagecpu', 'ping', 'sin', 'cos', 'rand'], help='type of sensor to get data from') 
+    parser.add_argument('-c', '--conn',         type=str,   default=None,          help='REST host and port, use commas for multiple IPs and ports')
+    parser.add_argument('-f', '--store-format', type=str,   default='print',       choices=['rest', 'file', 'print', 'mqtt'], help='format to get data') 
+    parser.add_argument('-m', '--mode',         type=str,   default='streaming',   choices=['file', 'streaming'],             help='insert type') 
+    parser.add_argument('-i', '--iteration',    type=int,   default=1,                                            help='number of iterations. if set to 0 run continuesly') 
+    parser.add_argument('-x', '--frequency',    type=float, default=1,                                            help='Value by which to multiply generated value(s)') 
+    parser.add_argument('-r', '--repeat',       type=int,   default=10,                                           help='For machine & ping data number of rows to generate per iteration') 
+    parser.add_argument('-s', '--sleep',        type=float, default=0,                                            help='wait between insert') 
+    parser.add_argument('-p', '--prep-dir',     type=str,   default='$HOME/AnyLog-Network/data/prep',             help='directory to prepare data in') 
+    parser.add_argument('-w', '--watch-dir',    type=str,   default='$HOME/AnyLog-Network/data/watch',            help='directory for data ready to be stored') 
     parser.add_argument('-mc', '--mqtt-conn',   type=str,   default='mqwdtklv@driver.cloudmqtt.com:uRimssLO4dIo', help='MQTT connection info') 
     parser.add_argument('-mp', '--mqtt-port',   type=int,   default=18975,                                        help='MQTT port') 
     parser.add_argument('-mt', '--mqtt-topic',  type=str,   default='test',                                       help='MQTT topic')  
+    parser.add_argument('-ab', '--al-broker',   type=bool,  default=False, nargs='?', const=True,                 help='If MQTT broker is AnyLog set configs accordingly') 
     args = parser.parse_args()
     
     if (args.sensor == 'machine' or args.sensor == 'ping' or args.sensor == 'percentagecpu') and args.store_format == 'mqtt': 
@@ -169,25 +177,23 @@ def main():
 
     table_name = __table_name(args.sensor) 
 
-    conns = args.conn 
     if args.conn != None: 
         conns = args.conn.split(',') # convert conn(s) in to a list 
-    
+    else:
+        conns = args.conn 
+
+    conn = None 
     if args.iteration == 0: 
-        while True: 
-            # Randomly select a node to send data to
-            if conns: 
-                conn = randm.choice(conns) # Randomly select a node to send data to 
-            else: 
-                conn = conns
-            payloads = get_data(args.sensor, args.repeat, args.frequency, args.sleep) 
-            store_data(payloads=payloads, conn=conn, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic) 
+        payloads = get_data(args.sensor, args.repeat, args.frequency, args.sleep) 
+        if conns != None: 
+            conn = random.choice(conns) 
+        store_data(payloads=payloads, conn=conn, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, al_broker=args.al_broker) 
 
     for row in range(args.iteration): 
-        if conns: 
-            conn = random.choice(conns) # Randomly select a node to send data to
         payloads = get_data(args.sensor, args.repeat, args.frequency, args.sleep) 
-        store_data(payloads=payloads, conn=conn, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic) 
+        if conns != None:
+            conn = random.choice(conns) 
+        store_data(payloads=payloads, conn=conn, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, al_broker=args.al_broker) 
 
 if __name__ == '__main__': 
     main() 
