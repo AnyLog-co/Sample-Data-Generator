@@ -115,7 +115,7 @@ def store_data(payloads:list, conn:str, dbms:str, table_name:str, store_type:str
         status = local_store.print_store(payloads) 
     elif store_type == 'mqtt': 
         if status == True: 
-            status = rest_mqtt_protocol.mqtt_protocol(payloads, conn, dbms, table_name, mqtt_conn, mqtt_port, mqtt_topic)
+            status = rest_mqtt_protocol.mqtt_protocol(payloads, conn, dbms, table_name, mqtt_conn, mqtt_port, mqtt_topic, al_broker)
     return status  
 
 def main(): 

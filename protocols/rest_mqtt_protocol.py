@@ -79,7 +79,6 @@ def __send_mqtt_cmd(conn:str, cmd:str)->bool:
    except Exception as e: 
       print('Failed to post MQTT request to %s. (Error: %s)' % (conn, e)) 
       boolean = False 
-
    try: 
       if int(r.status_code) != 200:
          boolean = False 
@@ -89,7 +88,7 @@ def __send_mqtt_cmd(conn:str, cmd:str)->bool:
 
    return boolean
 
-def mqtt_protocol(payloads:list, conn:str, dbms:str, table_name:str, mqtt_conn:str, mqtt_port:int, mqtt_topic:str)->bool:
+def mqtt_protocol(payloads:list, conn:str, dbms:str, table_name:str, mqtt_conn:str, mqtt_port:int, mqtt_topic:str, anylog_broker:bool)->bool:
     """
     Send requests to MQTT broker via AnyLog using REST call 
     :Steps: 
@@ -105,6 +104,8 @@ def mqtt_protocol(payloads:list, conn:str, dbms:str, table_name:str, mqtt_conn:s
         mqtt_conn:str - MQTT usr@ip:passwd 
         mqtt_port:int - Port for MQTT
         mqtt_topic:str - MQTT topic 
+
+        anylog_broker:bool - AnyLog acts as broker 
     :param: 
         sensor:str - from table name get sensor name 
 
@@ -112,11 +113,6 @@ def mqtt_protocol(payloads:list, conn:str, dbms:str, table_name:str, mqtt_conn:s
         mqtt_broker:str - MQTT broker 
         mqtt_user:str - MQTT password   
         mqtt_passwd:str - password for MQTT uusr 
-
-    :sample call: 
-        headers = {
-            'type': 'info',
-            'details': 'mqtt publish where broker=driver.cloudmqtt.com and port=18975 and user=mqwdtklv and password="uRimssLO4dIo" and topic=test and message= {"value": -1.2246467991473532e-16, "ts": "2021-01-10 02:00:34.553093", "protocol": "trig", "measurement": "sin", "metadata": {"company": "test", "machine_name": "sin", "serial_number": "data"}}'
     :output: 
        if success return True, else returns False 
     """
@@ -126,16 +122,24 @@ def mqtt_protocol(payloads:list, conn:str, dbms:str, table_name:str, mqtt_conn:s
     sensor = table_name.split('_')[0] 
     statuses = [] 
     status = True 
+     
+    try:  
+        mqtt_broker = mqtt_conn.split('@')[1].split(':')[0] 
+    except: 
+        mqtt_broker = mqtt_conn 
 
-    mqtt_broker = mqtt_conn.split('@')[1].split(':')[0] 
-    mqtt_user = mqtt_conn.split('@')[0] 
-    mqtt_passwd = mqtt_conn.split(':')[-1] 
-    statuses = [] 
+    mqtt_cmd = 'mqtt publish where broker=%s and port=%s and topic=%s and message=%s'
+    if anylog_broker is False: 
+        mqtt_user = mqtt_conn.split('@')[0] 
+        mqtt_passwd = mqtt_conn.split(':')[-1] 
+        mqtt_cmd = 'mqtt publish where broker=%s and port=%s and user=%s and password="%s" and topic=%s and message=%s'
 
-    mqtt_cmd = 'mqtt publish where broker=%s and port=%s and user=%s and password="%s" and topic=%s and message=%s'
     for payload in payloads: 
         message = __mqtt_format(payload, dbms, sensor)
-        mqtt = mqtt_cmd % (mqtt_broker, mqtt_port, mqtt_user, mqtt_passwd, mqtt_topic, message) 
+        if anylog_broker is False: 
+            mqtt = mqtt_cmd % (mqtt_broker, mqtt_port, mqtt_user, mqtt_passwd, mqtt_topic, message) 
+        else: 
+            mqtt = mqtt_cmd % (mqtt_broker, mqtt_port, mqtt_topic, message) 
         stat = __send_mqtt_cmd(conn, mqtt)
         statuses.append(stat) 
 
