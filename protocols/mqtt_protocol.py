@@ -83,7 +83,7 @@ def publisher_message(client:mqtt_client.Client, topic:str, message:str)->bool:
         
     return status 
 
-def publish_mqtt(dbms:str, conn:str, port:int, topic:str, payloads:list)->bool:
+def publish_mqtt(conn:str, port:int, topic:str, dbms:str, sensor:str, payloads:list)->bool:
     """
     Publish data directly to MQTT broker
     :args:
@@ -98,7 +98,7 @@ def publish_mqtt(dbms:str, conn:str, port:int, topic:str, payloads:list)->bool:
     :return:
         if success return True, else return False
     """
-    return_status = True 
+    status = []
     try:
         broker = conn.split('@')[-1].split(':')[0] 
     except: 

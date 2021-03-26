@@ -114,7 +114,7 @@ def store_data(payloads:list, conn:str, dbms:str, table_name:str, store_type:str
     elif store_type == 'rest_mqtt': # Send to MQTT broker via AnyLogs' REST interface 
         status = rest_mqtt_protocol.mqtt_protocol(payloads, conn, dbms, table_name, mqtt_conn, mqtt_port, mqtt_topic, al_broker)
     elif store_type == 'mqtt': # Send directly to MQTT broker 
-        status = mqtt_protocol.publish_mqtt(dbms, mqtt_conn, mqtt_port, mqtt_topic, payloads)
+        status = mqtt_protocol.publish_mqtt(mqtt_conn, mqtt_port, mqtt_topic, dbms, table_name, payloads)
 
     return status  
 
