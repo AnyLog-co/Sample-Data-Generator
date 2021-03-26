@@ -1,6 +1,5 @@
 import json 
 import requests 
-from protocols import common 
 
 def validate_connection(conn:str)->bool: 
    """
