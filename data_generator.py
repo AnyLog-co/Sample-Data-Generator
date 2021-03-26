@@ -3,7 +3,7 @@ import random
 import time
 
 from data_generators import machine_info, percentagecpu_sensor, ping_sensor, trig
-from protocols import rest_protocol, local_store, rest_mqtt_protocol
+from protocols import rest_protocol, local_store, rest_mqtt_protocol, mqtt_protocol
 
 def __validate_values(iteration:int, repeat:int, sleep:float)->bool: 
     """
@@ -106,16 +106,16 @@ def store_data(payloads:list, conn:str, dbms:str, table_name:str, store_type:str
     """
     status = True 
     if store_type == 'rest': 
-        status = rest_protocol.validate_connection(conn)
-        if status == True: 
-            status = rest_protocol.send_data(payloads, conn, dbms, table_name, mode)
+        status = rest_protocol.send_data(payloads, conn, dbms, table_name, mode)
     elif store_type == 'file': 
         status = local_store.file_store(payloads, dbms, table_name, prep_dir, watch_dir) 
     elif store_type == 'print': 
         status = local_store.print_store(payloads) 
-    elif store_type == 'mqtt': 
-        if status == True: 
-            status = rest_mqtt_protocol.mqtt_protocol(payloads, conn, dbms, table_name, mqtt_conn, mqtt_port, mqtt_topic, al_broker)
+    elif store_type == 'rest_mqtt': # Send to MQTT broker via AnyLogs' REST interface 
+        status = rest_mqtt_protocol.mqtt_protocol(payloads, conn, dbms, table_name, mqtt_conn, mqtt_port, mqtt_topic, al_broker)
+    elif store_type == 'mqtt': # Send directly to MQTT broker 
+        status = mqtt_protocol.publish_mqtt(dbms, mqtt_conn, mqtt_port, mqtt_topic, payloads)
+
     return status  
 
 def main(): 
@@ -147,7 +147,7 @@ def main():
     parser.add_argument('dbms',                 type=str,   default='sample_data', help='database name') 
     parser.add_argument('sensor',               type=str,   default='ping',        choices=['machine', 'percentagecpu', 'ping', 'sin', 'cos', 'rand'], help='type of sensor to get data from') 
     parser.add_argument('-c', '--conn',         type=str,   default=None,          help='REST host and port, use commas for multiple IPs and ports')
-    parser.add_argument('-f', '--store-format', type=str,   default='print',       choices=['rest', 'file', 'print', 'mqtt'], help='format to get data') 
+    parser.add_argument('-f', '--store-format', type=str,   default='print',       choices=['rest', 'file', 'print', 'rest_mqtt', 'mqtt'], help='format to get data') 
     parser.add_argument('-m', '--mode',         type=str,   default='streaming',   choices=['file', 'streaming'],             help='insert type') 
     parser.add_argument('-i', '--iteration',    type=int,   default=1,                                            help='number of iterations. if set to 0 run continuesly') 
     parser.add_argument('-x', '--frequency',    type=float, default=1,                                            help='Value by which to multiply generated value(s)') 

@@ -1,59 +1,7 @@
 import json 
 import requests 
-#from rest_protocol import validate_connection
+from protocols import rest_protocol, mqtt_format
 
-
-
-def __mqtt_format(payload:dict, dbms:str, sensor:str)->str: 
-    """
-    The following converts data into MQTT formatted object
-    :args: 
-        payload:dict - data to send via MQTT 
-        dbms:str - database name
-        sensor:str - sensor name 
-    :param: 
-        message:dict - MQTT object to send 
-    :MQTT Format: 
-        dbms=!company_name 
-        table = "bring [metadata][machine_name] _ [metadata][serial_number]" 
-        column.timestamp.timestamp = "bring [ts]" 
-        column.value.int = "bring [value]")
-    :return: 
-        JSON formatted mesesage 
-    :smaple-output: 
-        machine: {'value': {'hostname': 'os-anylog-develop', 'local_ip': '10.0.0.89', 'remote_ip': '24.23.250.144', 'boot_time': 25460.645260095596, 'cpu_percentage': 29.6, 'swap_memory': 0.0, 'disk_usage': 0.0}, 'ts': '2021-03-26 00:17:44.437186', 'metadata': {'protocol': None, 'company': 'dmci', 'machine_name': 'machine', 'serial_number': 'data'}, 'protocol': 'system info'}
-
-        trig: {'value': -1.9476794448335322, 'ts': '2021-03-26 00:19:25.223752', 'metadata': {'protocol': None, 'company': 'dmci', 'machine_name': 'rand', 'serial_number': 'data'}, 'protocol': 'trig'}
-        networking: {'value': 43, 'ts': '2021-03-26 00:19:46.222511', 'metadata': {'protocol': None, 'company': 'dmci', 'machine_name': 'ping', 'serial_number': 'sensor'}, 'protocol': 'networking'}
-    """
-    message = {
-        "value": None,
-        "ts": None,
-        "metadata":{
-            "protocol": None,
-            "company": dbms, 
-            "machine_name": sensor,
-            "serial_number": None
-        }
-    }
-    if sensor in ['ping', 'percentagecpu']: 
-        message['value'] = payload['value']
-        message['ts'] = payload['timestamp'] 
-        message['metadata']['protocol'] = 'networking' 
-        message['metadata']['serial_number'] = 'sensor'  
-    elif sensor in ['sin', 'cos', 'rand']: 
-        message['value'] = payload['value']
-        message['ts'] = payload['timestamp'] 
-        message['metadata']['protocol'] = 'trig' 
-        message['metadata']['serial_number'] = 'data'  
-    elif sensor == 'machine': 
-        message['ts'] = payload['timestamp'] 
-        del payload['timestamp'] 
-        message['value'] = payload 
-        message['metadata']['protocol'] = 'system info' 
-        message['metadata']['serial_number'] = 'data'  
-
-    return message
 
 def __send_mqtt_cmd(conn:str, cmd:str)->bool: 
    """
@@ -116,12 +64,8 @@ def mqtt_protocol(payloads:list, conn:str, dbms:str, table_name:str, mqtt_conn:s
     :output: 
        if success return True, else returns False 
     """
-    #if not validate_connection(conn): 
-    #    return False 
-
     sensor = table_name.split('_')[0] 
-    statuses = [] 
-    status = True 
+    status = [] 
      
     try:  
         mqtt_broker = mqtt_conn.split('@')[1].split(':')[0] 
@@ -134,15 +78,26 @@ def mqtt_protocol(payloads:list, conn:str, dbms:str, table_name:str, mqtt_conn:s
         mqtt_passwd = mqtt_conn.split(':')[-1] 
         mqtt_cmd = 'mqtt publish where broker=%s and port=%s and user=%s and password="%s" and topic=%s and message=%s'
 
+    if not rest_protocol.validate_connection(conn): 
+        return False 
+
     for payload in payloads: 
+        if sensor in ['ping', 'percentagecpu']: 
+            message = mqtt_format.format_network_data(payload, dbms, sensor) 
+        elif sensor == 'machine': 
+            message = mqtt_format.format_machine_data(payload, dbms, sensor) 
+        else:
+            message = mqtt_format.format_trig_data(payload, dbms, sensor) 
+
         message = __mqtt_format(payload, dbms, sensor)
         if anylog_broker is False: 
             mqtt = mqtt_cmd % (mqtt_broker, mqtt_port, mqtt_user, mqtt_passwd, mqtt_topic, message) 
         else: 
             mqtt = mqtt_cmd % (mqtt_broker, mqtt_port, mqtt_topic, message) 
         stat = __send_mqtt_cmd(conn, mqtt)
-        statuses.append(stat) 
+        status.append(stat) 
 
-    if False in statuses: 
-        status = False 
-    return status
+    if status.count(False)  > status.count(True):
+        return False
+    return True 
+

@@ -2,6 +2,7 @@
 import json 
 from paho.mqtt import client as mqtt_client
 import random 
+from protocols import mqtt_format
 
 def connect_mqtt(conn:str, port:int)->mqtt_client.Client:
     """
@@ -82,6 +83,41 @@ def publisher_message(client:mqtt_client.Client, topic:str, message:str)->bool:
         
     return status 
 
-if __name__ == '__main__': 
+def publish_mqtt(dbms:str, conn:str, port:int, topic:str, payloads:list)->bool:
+    """
+    Publish data directly to MQTT broker
+    :args:
+        dbms:str - database name 
+        conn:str - MQTT Connection info (IP) 
+        port:int - MQTT port number 
+        topic:str - MQTT topic 
+        payloads:list - list of data to send 
+    :param:
+        mqtt_conn:mqtt_client.Client - MQTT connection 
+        broker:str - broker info from conn 
+    :return:
+        if success return True, else return False
+    """
+    return_status = True 
+    try:
+        broker = conn.split('@')[-1].split(':')[0] 
+    except: 
+        broker = conn 
+
     mqtt_conn = connect_mqtt('10.0.0.89', 2050)  
-    print(publisher_message(mqtt_conn, 'demo', '{"value": "-1.0", "ts": "2021-03-25 04:07:50.932658", "protocol": "trig", "measurement": "cos", "metadata": {"company": "litsanleandro", "machine_name": "cos", "serial_number": "data"}}'))
+    if mqtt_conn is None: 
+        return False 
+
+    for payload in payloads: 
+        if sensor in ['ping', 'percentagecpu']: 
+            message = mqtt_format.format_network_data(payload, dbms, sensor) 
+        elif sensor == 'machine': 
+            message = mqtt_format.format_machine_data(payload, dbms, sensor) 
+        else:
+            message = mqtt_format.format_trig_data(payload, dbms, sensor) 
+        status.append(publisher_message(mqtt_conn, topic, message))
+
+    if status.count(False)  > status.count(True):
+        return False
+    return True 
+

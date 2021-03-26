@@ -1,5 +1,6 @@
 import json 
 import requests 
+from protocols import common 
 
 def validate_connection(conn:str)->bool: 
    """
@@ -20,6 +21,7 @@ def validate_connection(conn:str)->bool:
    if 'running' in r.json()['Status']:
       boolean=True  
    return boolean 
+
 
 
 def send_data(payloads:list, conn:str, dbms:str, table_name:str, mode:str)->bool:
