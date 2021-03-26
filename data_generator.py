@@ -3,7 +3,7 @@ import random
 import time
 
 from data_generators import machine_info, percentagecpu_sensor, ping_sensor, trig
-from protocols import rest_protocol, local_store
+from protocols import rest_protocol, local_store, rest_mqtt_protocol
 
 def __validate_values(iteration:int, repeat:int, sleep:float)->bool: 
     """
@@ -115,7 +115,7 @@ def store_data(payloads:list, conn:str, dbms:str, table_name:str, store_type:str
         status = local_store.print_store(payloads) 
     elif store_type == 'mqtt': 
         if status == True: 
-            status = rest_protocol.mqtt_protocol(payloads, conn, dbms, table_name, mqtt_conn, mqtt_port, mqtt_topic)
+            status = rest_mqtt_protocol.mqtt_protocol(payloads, conn, dbms, table_name, mqtt_conn, mqtt_port, mqtt_topic)
     return status  
 
 def main(): 
@@ -161,9 +161,9 @@ def main():
     parser.add_argument('-ab', '--al-broker',   type=bool,  default=False, nargs='?', const=True,                 help='If MQTT broker is AnyLog set configs accordingly') 
     args = parser.parse_args()
     
-    if (args.sensor == 'machine' or args.sensor == 'ping' or args.sensor == 'percentagecpu') and args.store_format == 'mqtt': 
-        print("MQTT isn't supported with sensor type: %s" % args.sensor) 
-        exit(1) 
+    #if (args.sensor == 'machine' or args.sensor == 'ping' or args.sensor == 'percentagecpu') and args.store_format == 'mqtt': 
+    #    print("MQTT isn't supported with sensor type: %s" % args.sensor) 
+    #    exit(1) 
 
     # validate values 
     if not __validate_values(args.iteration, args.repeat, args.sleep): 
