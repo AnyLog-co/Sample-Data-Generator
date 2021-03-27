@@ -99,12 +99,7 @@ def publish_mqtt(conn:str, port:int, topic:str, dbms:str, sensor:str, payloads:l
         if success return True, else return False
     """
     status = []
-    try:
-        broker = conn.split('@')[-1].split(':')[0] 
-    except: 
-        broker = conn 
-
-    mqtt_conn = connect_mqtt('10.0.0.89', 2050)  
+    mqtt_conn = connect_mqtt(conn, port)  
     if mqtt_conn is None: 
         return False 
 
