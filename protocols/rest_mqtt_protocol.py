@@ -88,7 +88,6 @@ def mqtt_protocol(payloads:list, conn:str, dbms:str, table_name:str, mqtt_conn:s
             message = mqtt_format.format_machine_data(payload, dbms, sensor) 
         else:
             message = mqtt_format.format_trig_data(payload, dbms, sensor) 
-
         if anylog_broker is False: 
             mqtt = mqtt_cmd % (mqtt_broker, mqtt_port, mqtt_user, mqtt_passwd, mqtt_topic, message) 
         else: 

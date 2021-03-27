@@ -16,6 +16,7 @@ RUN pip3 install --upgrade pip
 # install requirements via pip 
 RUN pip3 install requests
 RUN pip3 install psutil
+RUN pip3 install paho-mqtt
 
 # Add user 
 RUN adduser appuser 
