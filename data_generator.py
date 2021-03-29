@@ -170,7 +170,7 @@ def main():
         print('Invalid Options') 
         exit(1)
 
-    if args.conn == None and (args.store_format == 'rest' or args.store_format == 'mqtt'):
+    if args.conn == None and (args.store_format == 'rest' or args.store_format == 'rest_mqtt'):
         print('Unable to send data via REST when conn is set to None') 
         exit(1) 
 
