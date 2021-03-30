@@ -1,8 +1,12 @@
-# The following is based on: https://www.emqx.io/blog/how-to-use-mqtt-in-python
+"""
+The following is code is based on: 
+--> https://www.emqx.io/blog/how-to-use-mqtt-in-python
+--> http://www.steves-internet-guide.com/publishing-messages-mqtt-client/
+"""
 import json 
 from paho.mqtt import client as mqtt_client
 import random 
-from protocols import mqtt_format
+from protocols import mqtt_support
 
 def connect_mqtt(conn:str, port:int)->mqtt_client.Client:
     """
@@ -19,18 +23,7 @@ def connect_mqtt(conn:str, port:int)->mqtt_client.Client:
     :return: 
        connection to MQTT if success, else none
     """
-    try: 
-        broker = conn.split('@')[1].split(':')[0]
-    except: 
-        broker = conn 
-    try: 
-        user = conn.split('@')[0]
-    except:
-        user = '' 
-    try: 
-        passwd = conn.split(':')[1] 
-    except:
-        passwd = '' 
+    broker, user, passwd = mqtt_support.extract_conn_info(conn)
 
     client_id = 'python-mqtt-%s' % random.randint(random.choice(range(0, 500)), random.choice(range(501, 1000)))
 
@@ -54,12 +47,13 @@ def connect_mqtt(conn:str, port:int)->mqtt_client.Client:
             client = None 
     return client
 
-def publisher_message(client:mqtt_client.Client, topic:str, message:str)->bool:
+def publisher_message(client:mqtt_client.Client, qos_value:int, topic:str, message:str)->bool:
     """
     Publish messages via MQTT 
     :args:
        client:mqtt_client.Client - connection to MQTT publisher
        topic:str - MQTT topic info 
+       qos_value:int - MQTT Quality of Service 
        message:str - message to send to broker 
     :param:
        status:bool - status
@@ -72,6 +66,7 @@ def publisher_message(client:mqtt_client.Client, topic:str, message:str)->bool:
     if not isinstance(message, str) and not isinstance(message, (float, int)):
         print('Invalid message "%s" due to %s data-type' % (message, type(message)))
         status = False 
+
     try: 
         result = client.publish(topic, message)
     except Exception as e: 
@@ -83,20 +78,23 @@ def publisher_message(client:mqtt_client.Client, topic:str, message:str)->bool:
         
     return status 
 
-def publish_mqtt(conn:str, port:int, topic:str, dbms:str, sensor:str, payloads:list)->bool:
+def publish_mqtt(conn:str, port:int, qos_value:int, topic:str, dbms:str, table_name:str, payloads:list)->bool:
     """
     Publish data directly to MQTT broker
     :args:
-        dbms:str - database name 
-        conn:str - MQTT Connection info (IP) 
-        port:int - MQTT port number 
-        topic:str - MQTT topic 
-        payloads:list - list of data to send 
+       conn:str - MQTT Connection info (IP) 
+       port:int - MQTT port number 
+       qos_value:int - MQTT Quality of Service 
+       topic:str - MQTT topic 
+
+       dbms:str - database name 
+       table_name:str - table_name 
+       payloads:list - list of data to send 
     :param:
-        mqtt_conn:mqtt_client.Client - MQTT connection 
-        broker:str - broker info from conn 
+       mqtt_conn:mqtt_client.Client - MQTT connection 
+       broker:str - broker info from conn 
     :return:
-        if success return True, else return False
+       if success return True, else return False
     """
     status = []
     mqtt_conn = connect_mqtt(conn, port)  
@@ -104,13 +102,13 @@ def publish_mqtt(conn:str, port:int, topic:str, dbms:str, sensor:str, payloads:l
         return False 
 
     for payload in payloads: 
-        if sensor in ['ping', 'percentagecpu']: 
-            message = mqtt_format.format_network_data(payload, dbms, sensor) 
-        elif sensor == 'machine': 
-            message = mqtt_format.format_machine_data(payload, dbms, sensor) 
+        if table_name in ['ping_sensor', 'percentagecpu_sensor']: 
+            message = mqtt_support.format_network_data(payload, dbms, table_name) 
+        elif table_name == 'machine_data': 
+            message = mqtt_support.format_machine_data(payload, dbms, table_name) 
         else:
-            message = mqtt_format.format_trig_data(payload, dbms, sensor) 
-        status.append(publisher_message(mqtt_conn, topic, message))
+            message = mqtt_support.format_trig_data(payload, dbms, table_name) 
+        status.append(publisher_message(mqtt_conn, qos_value, topic, message))
 
     if status.count(False)  > status.count(True):
         return False

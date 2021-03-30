@@ -1,6 +1,6 @@
 import json 
 import requests 
-from protocols import rest_protocol, mqtt_format
+from protocols import rest_protocol, mqtt_support 
 
 
 def __send_mqtt_cmd(conn:str, cmd:str)->bool: 
@@ -36,7 +36,7 @@ def __send_mqtt_cmd(conn:str, cmd:str)->bool:
 
    return boolean
 
-def mqtt_protocol(payloads:list, conn:str, dbms:str, table_name:str, mqtt_conn:str, mqtt_port:int, mqtt_topic:str, anylog_broker:bool)->bool:
+def mqtt_protocol(payloads:list, conn:str, dbms:str, table_name:str, mqtt_conn:str, mqtt_port:int, mqtt_topic:str)->bool:
     """
     Send requests to MQTT broker via AnyLog using REST call 
     :Steps: 
@@ -53,45 +53,39 @@ def mqtt_protocol(payloads:list, conn:str, dbms:str, table_name:str, mqtt_conn:s
         mqtt_port:int - Port for MQTT
         mqtt_topic:str - MQTT topic 
 
-        anylog_broker:bool - AnyLog acts as broker 
     :param: 
         sensor:str - from table name get sensor name 
 
         mqtt_cmd:str - command to execute MQTT 
-        mqtt_broker:str - MQTT broker 
-        mqtt_user:str - MQTT password   
-        mqtt_passwd:str - password for MQTT uusr 
+        broker:str - MQTT broker 
+        user:str - MQTT password   
+        passwd:str - password for MQTT uusr 
     :output: 
        if success return True, else returns False 
     """
     sensor = table_name.split('_')[0] 
     status = [] 
-     
-    try:  
-        mqtt_broker = mqtt_conn.split('@')[1].split(':')[0] 
-    except: 
-        mqtt_broker = mqtt_conn 
+    mqtt_cmd = 'mqtt publish where'
 
-    mqtt_cmd = 'mqtt publish where broker=%s and port=%s and topic=%s and message=%s'
-    if anylog_broker is False: 
-        mqtt_user = mqtt_conn.split('@')[0] 
-        mqtt_passwd = mqtt_conn.split(':')[-1] 
-        mqtt_cmd = 'mqtt publish where broker=%s and port=%s and user=%s and password="%s" and topic=%s and message=%s'
+    broker, user, passwd = mqtt_support.extract_conn_info(mqtt_conn)
 
-    if not rest_protocol.validate_connection(conn): 
-        return False 
-
+    mqtt_cmd += " broker=%s and port=%s" % (broker, mqtt_port) 
+    if user != '': 
+        mqtt_cmd += " and user=%s" % user 
+    if passwd != '': 
+        mqtt_cmd += " and password=%s" % passwd
+    mqtt_cmd += (" and topic=%s" % mqtt_topic) + " and message=%s"
+   
     for payload in payloads: 
         if sensor in ['ping', 'percentagecpu']: 
-            message = mqtt_format.format_network_data(payload, dbms, sensor) 
+            message = mqtt_support.format_network_data(payload, dbms, sensor) 
+            print(message) 
         elif sensor == 'machine': 
-            message = mqtt_format.format_machine_data(payload, dbms, sensor) 
+            message = mqtt_support.format_machine_data(payload, dbms, sensor) 
         else:
-            message = mqtt_format.format_trig_data(payload, dbms, sensor) 
-        if anylog_broker is False: 
-            mqtt = mqtt_cmd % (mqtt_broker, mqtt_port, mqtt_user, mqtt_passwd, mqtt_topic, message) 
-        else: 
-            mqtt = mqtt_cmd % (mqtt_broker, mqtt_port, mqtt_topic, message) 
+            message = mqtt_support.format_trig_data(payload, dbms, sensor) 
+        exit(1) 
+        mqtt = mqtt_cmd %  message
         stat = __send_mqtt_cmd(conn, mqtt)
         status.append(stat) 
 

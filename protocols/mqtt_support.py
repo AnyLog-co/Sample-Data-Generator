@@ -1,10 +1,37 @@
-def format_machine_data(payload:dict, dbms:str, sensor:str)->dict: 
+def extract_conn_info(conn:str)->(str, str, str): 
+    """
+    The following code extracts connection information from conn
+    :args: 
+        conn:str - connection info (user@broker:passwd) 
+    :params: 
+        broker:str - MQTT broker info 
+        user:str - MQTT user info 
+        passwd:str - MQTT user password 
+    :return: 
+        broker, user and password info 
+    """
+    try: 
+        broker = conn.split('@')[1].split(':')[0]
+    except: 
+        broker = conn 
+    try: 
+        user = conn.split('@')[0]
+    except:
+        user = '' 
+    try: 
+        passwd = conn.split(':')[1] 
+    except:
+        passwd = '' 
+
+    return broker, user, passwd 
+
+def format_machine_data(payload:dict, dbms:str, table_name:str)->dict: 
     """
     Format machine data 
     :args: 
         payload:dict - data to store 
         dbms:str - database name 
-        sensor:str - sensor name
+        table_name:str - table_name name
     :param:
         message:dict - MQTT object to send 
     :return: 
@@ -22,7 +49,7 @@ def format_machine_data(payload:dict, dbms:str, sensor:str)->dict:
         'ts': payload['timestamp'],
         'metadata': {
             'company': dbms,
-            'machine_name': '%s_data' % sensor,
+            'machine_name': table_name,
             'hostname': payload['hostname'], 
             'local_ip': payload['local_ip'], 
             'remote_ip': payload['remote_ip']
@@ -30,13 +57,13 @@ def format_machine_data(payload:dict, dbms:str, sensor:str)->dict:
     }
     return message 
 
-def format_trig_data(payload:dict, dbms:str, sensor:str)->dict: 
+def format_trig_data(payload:dict, dbms:str, table_name:str)->dict: 
     """
     Format sin/cos/rand data   
     :args: 
         payload:dict - data to store 
         dbms:str - database name 
-        sensor:str - sensor name
+        table_name:str - table_name name
     :param:
         message:dict - MQTT object to send 
     :return: 
@@ -49,18 +76,18 @@ def format_trig_data(payload:dict, dbms:str, sensor:str)->dict:
         'ts': payload['timestamp'],
         'metadata': {
             'company': dbms,
-            'machine_name': '%s_data' % sensor,
+            'machine_name': table_name,
         }
     }
     return message 
 
-def format_network_data(payload:dict, dbms:str, sensor:str)->dict: 
+def format_network_data(payload:dict, dbms:str, table_name:str)->dict: 
     """
-    Format percentagecpu and ping sensor data 
+    Format percentagecpu and ping table_name data 
     :args: 
         payload:dict - data to store 
         dbms:str - database name 
-        sensor:str - sensor name
+        table_name:str - table name
     :param:
         message:dict - MQTT object to send 
     :return: 
@@ -73,7 +100,7 @@ def format_network_data(payload:dict, dbms:str, sensor:str)->dict:
         'ts': payload['timestamp'],
         'metadata': {
             'company': dbms,
-            'machine_name': '%s_sensor' % sensor,
+            'machine_name': table_name,
             'device_name': payload['device_name'], 
             'parentelement': payload['parentelement'],
             'webid': payload['webid']
