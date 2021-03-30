@@ -67,12 +67,13 @@ def publisher_message(client:mqtt_client.Client, qos_value:int, topic:str, messa
         print('Invalid message "%s" due to %s data-type' % (message, type(message)))
         status = False 
 
+    print('Topic: %s | Message: %s | QoS: %s' % (topic, message, qos_value))
     try: 
-        result = client.publish(topic, message)
+        result = client.publish(topic, message, qos=qos_value, retain=False)
     except Exception as e: 
         print('Failed to publisher message: "%s" (Error: %s)' % (message, e))
         status = False 
-        
+    print('Result: %s' % result) 
     if result[0] != 0: 
         status = False 
         
