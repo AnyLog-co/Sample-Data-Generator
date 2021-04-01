@@ -83,6 +83,7 @@ def mqtt_protocol(payloads:list, conn:str, dbms:str, table_name:str, mqtt_conn:s
         else:
             message = mqtt_support.format_trig_data(payload, dbms, table_name) 
         mqtt = mqtt_cmd %  message
+        print(mqtt) 
         stat = __send_mqtt_cmd(conn, mqtt)
         status.append(stat) 
 
