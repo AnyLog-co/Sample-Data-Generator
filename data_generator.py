@@ -203,7 +203,7 @@ def main():
                            mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, quality_service=args.quality_service)
             elif args.store_format == 'mqtt': 
                 store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, quality_service=args.quality_service)
-
+            time.sleep(args.sleep) 
 
     for row in range(args.iteration): 
         payloads = get_data(args.sensor, args.repeat, args.frequency, args.sleep) 
@@ -220,6 +220,7 @@ def main():
                        mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, quality_service=args.quality_service)
         elif args.store_format == 'mqtt': 
             store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, quality_service=args.quality_service)
+        time.sleep(args.sleep) 
 
 
 if __name__ == '__main__': 

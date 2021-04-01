@@ -4,8 +4,10 @@ The following is code is based on:
 --> http://www.steves-internet-guide.com/publishing-messages-mqtt-client/
 """
 import json 
-from paho.mqtt import client as mqtt_client
 import random 
+import time
+
+from paho.mqtt import client as mqtt_client
 from protocols import mqtt_support
 
 def connect_mqtt(conn:str, port:int)->mqtt_client.Client:
@@ -67,13 +69,13 @@ def publisher_message(client:mqtt_client.Client, qos_value:int, topic:str, messa
         print('Invalid message "%s" due to %s data-type' % (message, type(message)))
         status = False
 
-    print('Topic: %s | Message: %s | QoS: %s' % (topic, message, qos_value))
     try: 
         result = client.publish(topic, message, qos=qos_value, retain=False)
     except Exception as e: 
         print('Failed to publisher message: "%s" (Error: %s)' % (message, e))
         status = False 
-    print('Result: %s' % result) 
+    time.sleep(5)
+    #print(topic, message, qos_value, result) 
     if result[0] != 0: 
         status = False 
         

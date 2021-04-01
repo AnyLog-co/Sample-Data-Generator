@@ -75,17 +75,15 @@ def mqtt_protocol(payloads:list, conn:str, dbms:str, table_name:str, mqtt_conn:s
     if passwd != '': 
         mqtt_cmd += " and password=%s" % passwd
     mqtt_cmd += (" and topic=%s" % mqtt_topic) + " and message=%s"
-   
     for payload in payloads: 
         if sensor in ['ping', 'percentagecpu']: 
-            message = mqtt_support.format_network_data(payload, dbms, sensor) 
-            print(message) 
+            message = mqtt_support.format_network_data(payload, dbms, table_name) 
         elif sensor == 'machine': 
-            message = mqtt_support.format_machine_data(payload, dbms, sensor) 
+            message = mqtt_support.format_machine_data(payload, dbms, table_name) 
         else:
-            message = mqtt_support.format_trig_data(payload, dbms, sensor) 
-        exit(1) 
+            message = mqtt_support.format_trig_data(payload, dbms, table_name) 
         mqtt = mqtt_cmd %  message
+        print(mqtt) 
         stat = __send_mqtt_cmd(conn, mqtt)
         status.append(stat) 
 

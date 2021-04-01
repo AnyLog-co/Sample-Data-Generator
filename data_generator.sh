@@ -50,20 +50,31 @@ fi
 
 
 # configure optional arguments, if empty 
-if [[ -z ${CONN}         ]] ; then CONN=None            				  ; fi 
-if [[ -z ${STORE_FORMAT} ]] ; then STORE_FORMAT='print' 				  ; fi 
-if [[ -z ${MODE}         ]] ; then MODE='streaming'     				  ; fi 
-if [[ -z ${ITERATION}    ]] ; then ITERATION=1          				  ; fi 
-if [[ -z ${FREQUENCY}    ]] ; then FREQUENCY=1          			          ; fi 
-if [[ -z ${REPEAT}       ]] ; then REPEAT=10            				  ; fi 
-if [[ -z ${SLEEP}        ]] ; then SLEEP=0                                                ; fi 
-if [[ -z ${PREP_DIR}     ]] ; then PREP_DIR='/app/AnyLog-Network/data/prep_dir'           ; fi 
-if [[ -z ${WATCH_DIR}    ]] ; then WATCH_DIR='/app/AnyLog-Network/data/watch_dir/'        ; fi 
-if [[ -z ${MQTT_CONN}    ]] ; then MQTT_CONN='mqwdtklv@driver.cloudmqtt.com:uRimssLO4dIo' ; fi 
-if [[ -z ${MQTT_PORT}    ]] ; then MQTT_PORT=18975         				  ; fi 
-if [[ -z ${MQTT_TOPIC}   ]] ; then MQTT_TOPIC='test'       				  ; fi  
+if [[ -z ${STORE_FORMAT} ]] ; then STORE_FORMAT='print' ; fi 
+if [[ -z ${MODE}         ]] ; then MODE='streaming'     ; fi 
+if [[ -z ${ITERATION}    ]] ; then ITERATION=1          ; fi 
+if [[ -z ${FREQUENCY}    ]] ; then FREQUENCY=1          ; fi 
+if [[ -z ${REPEAT}       ]] ; then REPEAT=10            ; fi 
+if [[ -z ${SLEEP}        ]] ; then SLEEP=0              ; fi 
+PARAMS="--store-format ${STORE_FORMAT} --mode ${MODE} --iteration ${ITERATION} --frequency ${FREQUENCY} --repeat ${REPEAT} --sleep ${SLEEP} "
 
-
-# Run python script 
-python3 Sample-Data-Generator/data_generator.py ${DBMS} ${SENSOR} -c ${CONN} -f ${STORE_FORMAT} -m ${MODE} -i ${ITERATION} -x ${FREQUENCY} -r ${REPEAT} -s ${SLEEP} -p ${PREP_DIR} -w ${WATCH_DIR} -mc ${MQTT_CONN} -mp ${MQTT_PORT} -mt ${MQTT_TOPIC}
+if [[ ${STORE_FROMAT} == "file" ]] 
+then 
+    if [[ -z ${PREP_DIR}  ]] ; then PREP_DIR='/app/AnyLog-Network/data/prep_dir' ; fi 
+    if [[ -z ${WATCH_DIR} ]] ; then WATCH_DIR='/app/AnyLog-Network/data/watch_dir' ; fi 
+    PARAMS="${PARAMS} --prep-dir ${PREP_DIR} --watch-dir ${WATCH_DIR}" 
+elif [[ ${STORE_FORMAT} == "rest" ]] || [[ ${STORE_FORMAT} == "rest_mqtt" ]]  
+then 
+    if [[ -z ${CONN} ]] ; then CONN=None ; fi 
+    PARAMS="${PARAMS} --conn ${CONN}" 
+elif [[ ${STORE_FORMAT} == "rest_mqtt" ]] || [[ ${STORE_FORMAT} == "mqtt" ]]  
+then 
+    if [[ -z ${MQTT_CONN}      ]] ; then MQTT_CONN='mqwdtklv@driver.cloudmqtt.com:uRimssLO4dIo'   ; fi 
+    if [[ -z ${MQTT_PORT}      ]] ; then MQTT_PORT=18975         				  ; fi 
+    if [[ -z ${MQTT_TOPIC}     ]] ; then MQTT_TOPIC='test'       				  ; fi  
+    #if [[ -z {QUALITY_SERVICE} ]] ; then QUALITY_SERVICE=0                                        ; fi 
+    PARAMS="${PARAMS} --mqtt-conn ${MQTT_CONN} --mqtt-port ${MQTT_PORT} --mqtt-topic ${MQTT_TOPIC}"
+fi 
+#echo "python3 Sample-Data-Generator/data_generator.py ${DBMS} ${SENSOR} ${PARAMS}"
+python3 Sample-Data-Generator/data_generator.py ${DBMS} ${SENSOR} ${PARAMS}
 
