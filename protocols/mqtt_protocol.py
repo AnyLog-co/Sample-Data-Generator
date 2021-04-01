@@ -65,7 +65,7 @@ def publisher_message(client:mqtt_client.Client, qos_value:int, topic:str, messa
         message = json.dumps(message)
     if not isinstance(message, str) and not isinstance(message, (float, int)):
         print('Invalid message "%s" due to %s data-type' % (message, type(message)))
-        status = False 
+        status = False
 
     print('Topic: %s | Message: %s | QoS: %s' % (topic, message, qos_value))
     try: 
