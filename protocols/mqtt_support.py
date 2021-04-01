@@ -14,14 +14,14 @@ def extract_conn_info(conn:str)->(str, str, str):
         broker = conn.split('@')[1].split(':')[0]
     except: 
         broker = conn 
-    try: 
+
+    user = '' 
+    if '@' in conn: 
         user = conn.split('@')[0]
-    except:
-        user = '' 
-    try: 
-        passwd = conn.split(':')[1] 
-    except:
-        passwd = '' 
+
+    passwd = '' 
+    if ':' in conn: 
+        passwd = conn.split(':')[-1] 
 
     return broker, user, passwd 
 
