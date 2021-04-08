@@ -64,6 +64,7 @@ then
    PARAMS="${PARAMS} --file-name ${FILE_NAME} "
 else 
    echo "For sensor of type 'file', a FILE_NAME variable must be set" 
+   exit 1
 fi 
 
 if [[ ${STORE_FROMAT} == "file" ]] 

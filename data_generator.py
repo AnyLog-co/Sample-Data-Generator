@@ -49,7 +49,7 @@ def __table_name(sensor:str)->str:
 
     return table_name
 
-def get_data(sensor:str, row_count:int, frequency:float, sleep:float)->list: 
+def get_data(sensor:str, row_count:int, frequency:float, file_name, sleep:float)->list: 
     """
     Based on sensor type get set values
     :args: 
@@ -191,9 +191,11 @@ def main():
         conns = args.conn 
 
     conn = None 
+    if args.sensor == 'file': 
+        args.iteration = 1 
     if args.iteration == 0: 
         while True: 
-            payloads = get_data(args.sensor, args.repeat, args.frequency, args.file, args.sleep) 
+            payloads = get_data(args.sensor, args.repeat, args.frequency, args.file_name, args.sleep) 
             if conns != None and args.store_format in ['rest', 'rest_mqtt']: 
                 conn = random.choice(conns) 
 
@@ -210,8 +212,9 @@ def main():
                 store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, quality_service=args.quality_service)
             time.sleep(args.sleep) 
 
+       
     for row in range(args.iteration): 
-        payloads = get_data(args.sensor, args.repeat, args.frequency, args.sleep) 
+        payloads = get_data(args.sensor, args.repeat, args.frequency, args.file_name, args.sleep) 
         if conns != None and args.store_format in ['rest', 'rest_mqtt']: 
             conn = random.choice(conns) 
         if args.store_format == 'print': 

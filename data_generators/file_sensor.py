@@ -27,4 +27,5 @@ def read_file(file_name:str)->list:
          for line in f.read().split('\n'): 
             if line != '\n' and isinstance(ast.literal_eval(line), dict):
                data.append(line)
+   print(data)
    return data
