@@ -25,7 +25,10 @@ def read_file(file_name:str)->list:
    if status is True: 
       with open(file_name, 'r') as f: 
          for line in f.read().split('\n'): 
-            if line != '\n' and isinstance(ast.literal_eval(line), dict):
-               data.append(line)
-   print(data)
+            try: 
+               dict_line = ast.literal_eval(line)
+            except:
+               dict_line = {} 
+            if dict_line != {}: 
+               data.append(dict_line)
    return data
