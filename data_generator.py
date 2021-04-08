@@ -79,10 +79,10 @@ def get_data(sensor:str, row_count:int, frequency:float, file_name, sleep:float)
         rows = trig.sin_value(frequency, sleep)
     elif sensor == 'cos': 
         rows = trig.cos_value(frequency, sleep)
-    elif sensor == 'file': 
-        rows = file_sensor.read_file(file_name)
     elif sensor == 'rand': 
          rows = trig.rand_value(frequency, sleep)
+    elif sensor == 'file': 
+        rows = file_sensor.read_file(file_name)
     return rows 
 
 def store_data(payloads:list, dbms:str, table_name:str, store_type:str, mode:str, conn:str=None, prep_dir:str=None, watch_dir:str=None, mqtt_conn:str=None, mqtt_port:int=None, mqtt_topic:str=None, quality_service:int=None)->bool:

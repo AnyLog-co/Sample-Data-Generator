@@ -103,12 +103,13 @@ def publish_mqtt(conn:str, port:int, qos_value:int, topic:str, dbms:str, table_n
     mqtt_conn = connect_mqtt(conn, port)  
     if mqtt_conn is None: 
         return False 
-
     for payload in payloads: 
         if table_name in ['ping_sensor', 'percentagecpu_sensor']: 
             message = mqtt_support.format_network_data(payload, dbms, table_name) 
         elif table_name == 'machine_data': 
             message = mqtt_support.format_machine_data(payload, dbms, table_name) 
+        elif table_name == 'file_data': 
+            message = payload 
         else:
             message = mqtt_support.format_trig_data(payload, dbms, table_name) 
         status.append(publisher_message(mqtt_conn, qos_value, topic, message))
