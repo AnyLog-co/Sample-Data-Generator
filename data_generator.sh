@@ -58,6 +58,14 @@ if [[ -z ${REPEAT}       ]] ; then REPEAT=10            ; fi
 if [[ -z ${SLEEP}        ]] ; then SLEEP=0              ; fi 
 PARAMS="--store-format ${STORE_FORMAT} --mode ${MODE} --iteration ${ITERATION} --frequency ${FREQUENCY} --repeat ${REPEAT} --sleep ${SLEEP} "
 
+
+if [[ ${SENSOR} == "file" ]] && [[ ! -z ${FILE_NAME} ]] 
+then 
+   PARAMS="${PARAMS} --file-name ${FILE_NAME} "
+else 
+   echo "For sensor of type 'file', a FILE_NAME variable must be set" 
+fi 
+
 if [[ ${STORE_FROMAT} == "file" ]] 
 then 
     if [[ -z ${PREP_DIR}  ]] ; then PREP_DIR='/app/AnyLog-Network/data/prep_dir' ; fi 
