@@ -67,7 +67,7 @@ def publisher_message(client:mqtt_client.Client, qos_value:int, topic:str, messa
         message = json.dumps(message)
     if not isinstance(message, str) and not isinstance(message, (float, int)):
         print('Invalid message "%s" due to %s data-type' % (message, type(message)))
-        status = False 
+        status = False
 
     try: 
         result = client.publish(topic, message, qos=qos_value, retain=False)
@@ -103,12 +103,13 @@ def publish_mqtt(conn:str, port:int, qos_value:int, topic:str, dbms:str, table_n
     mqtt_conn = connect_mqtt(conn, port)  
     if mqtt_conn is None: 
         return False 
-
     for payload in payloads: 
         if table_name in ['ping_sensor', 'percentagecpu_sensor']: 
             message = mqtt_support.format_network_data(payload, dbms, table_name) 
         elif table_name == 'machine_data': 
             message = mqtt_support.format_machine_data(payload, dbms, table_name) 
+        elif table_name == 'file_data': 
+            message = payload 
         else:
             message = mqtt_support.format_trig_data(payload, dbms, table_name) 
         status.append(publisher_message(mqtt_conn, qos_value, topic, message))

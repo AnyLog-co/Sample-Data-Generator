@@ -7,7 +7,6 @@ The following generatees data between -pi and pi in terms of
 import datetime 
 import math 
 import random 
-import time 
 
 VALUE_ARRAY = [
    -1 * math.pi, -1 * math.pi/2, -1 * math.pi/3,
@@ -26,7 +25,7 @@ VALUE_ARRAY = [
    -1 * math.pi/3, -1 * math.pi/2, -1 * math.pi 
 ]
 
-def sin_value(frequency:float, sleep:float)->list: 
+def sin_value(frequency:float)->list: 
    """
    Get SIN values 
    :args: 
@@ -51,15 +50,14 @@ def sin_value(frequency:float, sleep:float)->list:
          'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 
          'value': math.sin(value) * frequency
       }) 
-      time.sleep(sleep) 
+       
    return data_list 
 
-def cos_value(frequency:float, sleep:float)->list: 
+def cos_value(frequency:float)->list: 
    """
    Get COS values 
    :args: 
       frequency:float - multiplication of generated value 
-      sleep:float - wait time between each insert
    :param:
       timestamp:str
       value:float - value from VALUE_ARRAY 
@@ -78,15 +76,14 @@ def cos_value(frequency:float, sleep:float)->list:
          'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 
          'value': math.cos(value) * frequency
       }) 
-      time.sleep(sleep) 
+       
    return data_list  
 
-def rand_value(frequency:float, sleep:float)->list: 
+def rand_value(frequency:float)->list: 
    """
    Get RAND values 
    :args: 
       frequency:float - multiplication of generated value 
-      sleep:float - wait time between each insert
    :param:
       timestamp:str
       value:float - value from VALUE_ARRAY 
@@ -105,5 +102,5 @@ def rand_value(frequency:float, sleep:float)->list:
          'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 
          'value': value * random.random() * frequency
       }) 
-      time.sleep(sleep) 
+       
    return data_list

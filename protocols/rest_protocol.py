@@ -13,11 +13,11 @@ def validate_connection(conn:str)->bool:
    """
    boolean = False 
    try:
-      r = requests.get('http://%s' % conn, headers={'type': 'info', 'details': 'get status'})
+      r = requests.get('http://%s' % conn, headers={'command': 'get status', 'User-Agent': 'AnyLog/1.23'})
    except Exception as e: 
       print(e) 
 
-   if 'running' in r.json()['Status']:
+   if 'running' in r.text:
       boolean=True  
    return boolean 
 

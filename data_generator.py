@@ -2,7 +2,7 @@ import argparse
 import random 
 import time
 
-from data_generators import machine_info, percentagecpu_sensor, ping_sensor, trig
+from data_generators import machine_info, percentagecpu_sensor, ping_sensor, trig, file_sensor
 from protocols import rest_protocol, local_store, rest_mqtt_protocol, mqtt_protocol
 
 def __validate_values(iteration:int, repeat:int, sleep:float)->bool: 
@@ -49,7 +49,7 @@ def __table_name(sensor:str)->str:
 
     return table_name
 
-def get_data(sensor:str, row_count:int, frequency:float, sleep:float)->list: 
+def get_data(sensor:str, row_count:int, frequency:float, file_name, sleep:float)->list: 
     """
     Based on sensor type get set values
     :args: 
@@ -81,6 +81,8 @@ def get_data(sensor:str, row_count:int, frequency:float, sleep:float)->list:
         rows = trig.cos_value(frequency, sleep)
     elif sensor == 'rand': 
          rows = trig.rand_value(frequency, sleep)
+    elif sensor == 'file': 
+        rows = file_sensor.read_file(file_name)
     return rows 
 
 def store_data(payloads:list, dbms:str, table_name:str, store_type:str, mode:str, conn:str=None, prep_dir:str=None, watch_dir:str=None, mqtt_conn:str=None, mqtt_port:int=None, mqtt_topic:str=None, quality_service:int=None)->bool:
@@ -123,7 +125,7 @@ def main():
     Based on the configuration set by a user, generate data and store it either to file, directly in AnyLog or print to screen
     :positional arguments:
         dbms       database name
-        sensor     type of sensor to get data from    {machine,percentagecpu,ping,sin,cos,rand}
+        sensor     type of sensor to get data from    {machine,percentagecpu,ping,sin,cos,rand,file}
     :optional arguments:
         -h,  --help                 show this help message and exit
 
@@ -134,7 +136,9 @@ def main():
         -r,  --repeat           REPEAT              for machine & ping data number of rows to generate per iteration        (default: 10)
         -x,  --frequency        FREQUENCY           value by which to multiply generated value(s)                           (default: 1) 
         -s,  --sleep            SLEEP               wait between insert                                                     (default: 0)
-
+        
+        # file sensor 
+        -fn, --file-name        FILE_NAME           file to send into AnyLog - must contain JSON data 
         # file store format params 
         -p,  --prep-dir         PREP_DIR            directory to prepare data in                                            (default: $HOME/AnyLog-Network/data/prep)
         -w,  --watch-dir        WATCH_DIR           directory for data ready to be stored                                   (default: $HOME/AnyLog-Network/data/watch)
@@ -153,13 +157,14 @@ def main():
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('dbms',                       type=str,   default='sample_data',                                                                     help='database name') 
-    parser.add_argument('sensor',                     type=str,   default='ping',        choices=['machine', 'percentagecpu', 'ping', 'sin', 'cos', 'rand'], help='type of sensor to get data from') 
+    parser.add_argument('sensor',                     type=str,   default='ping',        choices=['machine', 'percentagecpu', 'ping', 'sin', 'cos', 'rand', 'file'], help='type of sensor to get data from') 
     parser.add_argument('-f', '--store-format',       type=str,   default='print',       choices=['rest', 'file', 'print', 'rest_mqtt', 'mqtt'],             help='format to get data') 
     parser.add_argument('-m', '--mode',               type=str,   default='streaming',   choices=['file', 'streaming'],                                      help='insert type') 
     parser.add_argument('-i', '--iteration',          type=int,   default=1,                                                                                 help='number of iterations. if set to 0 run continuesly') 
     parser.add_argument('-x', '--frequency',          type=float, default=1,                                                                                 help='value by which to multiply generated value(s)') 
     parser.add_argument('-r', '--repeat',             type=int,   default=10,                                                                                help='for machine & ping data number of rows to generate per iteration') 
     parser.add_argument('-s', '--sleep',              type=float, default=0,                                                                                 help='wait between insert') 
+    parser.add_argument('-fn', '--file-name',         type=str,   default=None,                                                                              help='file to send into AnyLog - must contain JSON data')  
     parser.add_argument('-p', '--prep-dir',           type=str,   default='$HOME/AnyLog-Network/data/prep',                                                  help='directory to prepare data in') 
     parser.add_argument('-w', '--watch-dir',          type=str,   default='$HOME/AnyLog-Network/data/watch',                                                 help='directory for data ready to be stored') 
     parser.add_argument('-c', '--conn',               type=str,   default=None,                                                                              help='REST host and port, use commas for multiple IPs and ports')
@@ -186,9 +191,11 @@ def main():
         conns = args.conn 
 
     conn = None 
+    if args.sensor == 'file': 
+        args.iteration = 1 
     if args.iteration == 0: 
         while True: 
-            payloads = get_data(args.sensor, args.repeat, args.frequency, args.sleep) 
+            payloads = get_data(args.sensor, args.repeat, args.frequency, args.file_name, args.sleep) 
             if conns != None and args.store_format in ['rest', 'rest_mqtt']: 
                 conn = random.choice(conns) 
 
@@ -203,10 +210,11 @@ def main():
                            mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, quality_service=args.quality_service)
             elif args.store_format == 'mqtt': 
                 store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, quality_service=args.quality_service)
+            time.sleep(args.sleep) 
 
-
+       
     for row in range(args.iteration): 
-        payloads = get_data(args.sensor, args.repeat, args.frequency, args.sleep) 
+        payloads = get_data(args.sensor, args.repeat, args.frequency, args.file_name, args.sleep) 
         if conns != None and args.store_format in ['rest', 'rest_mqtt']: 
             conn = random.choice(conns) 
         if args.store_format == 'print': 
@@ -220,6 +228,7 @@ def main():
                        mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, quality_service=args.quality_service)
         elif args.store_format == 'mqtt': 
             store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, quality_service=args.quality_service)
+        time.sleep(args.sleep) 
 
 
 if __name__ == '__main__': 
