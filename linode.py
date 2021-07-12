@@ -1,4 +1,5 @@
 import argparse
+import datetime 
 import json 
 import requests 
 import time 
@@ -66,7 +67,7 @@ def __convert_json(data:list)->str:
         print('Failed to convert data to JSON format (Error: %s)' % e)
         return None  
 
-def post_data(conn:str, data:list):
+def post_data(conn:str, data:dict):
     """
     Send data to AnyLog 
     :args: 
@@ -92,8 +93,7 @@ def post_data(conn:str, data:list):
         else: 
             if r.status_code != 200: 
                 print('Failed to POST data to %s due to network error: %s' % (conn, r.status_code))
-       
-
+      
 def useage(data:list, dbms:str)->list: 
     """
     Extract useage config from GET result set 
@@ -104,15 +104,16 @@ def useage(data:list, dbms:str)->list:
         rows:list - list of JSON dict objects to AnyLog
     :return: 
         rows
-    :sample: 
-    {
-        'timestamp': '2020-01-14T03:24:19'
-        'node_name': 'lsl-query', 
-        'io': 10000, 
-        'cpu': 90, 
-    }
     :mqtt-call:
     # To execute within file, MQTT call should be within 1 line without "<" or ">" 
+    <run mqtt client where broker=rest and user-agent=anylog and log=false and topic=(
+        name=anylog and dbms="bring [dbms]" and table="bring [table]" and 
+        column.timestamp.timestamp="bring [timestamp]" and 
+        column.node_id.int="bring [node_id]" and
+        column.node_name.str="bring [node_name]" and 
+        column.value.float="bring [value]" 
+    )> 
+    # This example is based on the commented out row 
     <run mqtt client where broker=rest and user-agent=anylog and log=false and topic=(
         name=anylog and dbms="bring [dbms]" and table="bring [table]" and 
         column.timestamp.timestamp="bring [timestamp]" and 
@@ -126,9 +127,7 @@ def useage(data:list, dbms:str)->list:
     )> 
     """
     rows = [] 
-    for node in data: 
-        if 'demo' in node['tags']: 
-            rows.append({
+    rows.append({
                 'dbms': dbms, 
                 'table': 'mahine_useage', 
                 'timestamp': node['updated'],
@@ -139,8 +138,134 @@ def useage(data:list, dbms:str)->list:
                 'network_in': node['alerts']['network_in'],
                 'network_out': node['alerts']['network_out'],
                 'transfer_quota': node['alerts']['transfer_quota']
-            })
+    })
     return rows
+
+def disk_io(data:list, dbms:str): 
+    rows = []
+    for node in data: 
+        if 'demo' in node['tags'] and isinstance(node, dict): 
+            row = {
+                'dbms': dbms, 
+                'table': None, 
+                'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
+                'node_name': 'unknown',
+                'node_id': 0, 
+                'value': None
+            } 
+            if 'updated' in list(node.keys()):
+                row['timestamp'] = node['updated']
+            if 'id' in list(node.keys()):
+                row['node_id'] = node['id']
+            if 'label' in list(node.keys()):
+                row['node_name'] = node['label'] 
+            if 'io' in node['alerts']:
+                row['table'] = 'disk_io'
+                row['value'] = node['alerts']['io'] 
+                rows.append(row) 
+
+    return rows
+
+def cpu_usage(data:list, dbms:str): 
+    rows = []
+    for node in data: 
+        if 'demo' in node['tags'] and isinstance(node, dict): 
+            row = {
+                'dbms': dbms, 
+                'table': None, 
+                'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
+                'node_name': 'unknown',
+                'node_id': 0, 
+                'value': None
+            } 
+            if 'updated' in list(node.keys()):
+                row['timestamp'] = node['updated']
+            if 'id' in list(node.keys()):
+                row['node_id'] = node['id']
+            if 'label' in list(node.keys()):
+                row['node_name'] = node['label'] 
+            if 'cpu' in node['alerts']:
+                row['table'] = 'cpu_useage'
+                row['value'] = node['alerts']['cpu'] 
+                rows.append(row) 
+
+
+
+    return rows
+ 
+def network_in(data:list, dbms:str): 
+    rows = []
+    for node in data: 
+        if 'demo' in node['tags'] and isinstance(node, dict): 
+            row = {
+                'dbms': dbms, 
+                'table': None, 
+                'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
+                'node_name': 'unknown',
+                'node_id': 0, 
+                'value': None
+            } 
+            if 'updated' in list(node.keys()):
+                row['timestamp'] = node['updated']
+            if 'id' in list(node.keys()):
+                row['node_id'] = node['id']
+            if 'label' in list(node.keys()):
+                row['node_name'] = node['label'] 
+            if 'network_in' in node['alerts']:
+                row['table'] = 'network_in'
+                row['value'] = node['alerts']['network_in'] 
+                rows.append(row) 
+    return rows 
+  
+def network_out(data:list, dbms:str): 
+    rows = []
+    for node in data: 
+        if 'demo' in node['tags'] and isinstance(node, dict): 
+            row = {
+                'dbms': dbms, 
+                'table': None, 
+                'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
+                'node_name': 'unknown',
+                'node_id': 0, 
+                'value': None
+            } 
+            if 'updated' in list(node.keys()):
+                row['timestamp'] = node['updated']
+            if 'id' in list(node.keys()):
+                row['node_id'] = node['id']
+            if 'label' in list(node.keys()):
+                row['node_name'] = node['label'] 
+            if 'network_out' in node['alerts']:
+                row['table'] = 'network_out'
+                row['value'] = node['alerts']['network_out'] 
+                rows.append(row) 
+    return rows  
+  
+def transfer_quota(data:list, dbms:str): 
+    rows = []
+    for node in data: 
+        if 'demo' in node['tags'] and isinstance(node, dict): 
+            row = {
+                'dbms': dbms, 
+                'table': None, 
+                'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
+                'node_name': 'unknown',
+                'node_id': 0, 
+                'value': None
+            } 
+            if 'updated' in list(node.keys()):
+                row['timestamp'] = node['updated']
+            if 'id' in list(node.keys()):
+                row['node_id'] = node['id']
+            if 'label' in list(node.keys()):
+                row['node_name'] = node['label'] 
+ 
+            if 'transfer_quota' in node['alerts']:
+                row['table'] = 'transfer_quota'
+                row['value'] = node['alerts']['transfer_quota'] 
+                rows.append(row) 
+ 
+    return rows 
 
 def main(): 
     """
@@ -170,19 +295,38 @@ def main():
       
     if args.iteration == 0: 
         while True: 
-            data = get_data(args.token) 
-            if 'data' in list(data.keys()): 
+            output = get_data(args.token) 
+            if 'data' in list(output.keys()): 
                 data = output['data']
-                send_data = useage(data=data, dbms=args.dbms)
+                send_data = disk_io(data=data, dbms=args.dbms)
                 post_data(conn=args.conn, data=send_data) 
-                time.sleep(args.sleep) 
+                send_data = cpu_usage(data=data, dbms=args.dbms) 
+                post_data(conn=args.conn, data=send_data) 
+                send_data = network_in(data=data, dbms=args.dbms) 
+                post_data(conn=args.conn, data=send_data) 
+                send_data = network_out(data=data, dbms=args.dbms)
+                post_data(conn=args.conn, data=send_data) 
+                send_data =transfer_quota(data=data, dbms=args.dbms) 
+                post_data(conn=args.conn, data=send_data) 
+            time.sleep(args.sleep) 
+
 
     for i in range(args.iteration):
-        data = get_data(args.token) 
-        if 'data' in list(data.keys()): 
+        output = get_data(args.token) 
+        print(output) 
+        if 'data' in list(output.keys()) and isinstance(output, dict): 
             data = output['data']
-            send_data = useage(data=data, dbms=args.dbms)
+            send_data = disk_io(data=data, dbms=args.dbms)
             post_data(conn=args.conn, data=send_data) 
+            send_data = cpu_usage(data=data, dbms=args.dbms) 
+            post_data(conn=args.conn, data=send_data) 
+            send_data = network_in(data=data, dbms=args.dbms) 
+            post_data(conn=args.conn, data=send_data) 
+            send_data = network_out(data=data, dbms=args.dbms)
+            post_data(conn=args.conn, data=send_data) 
+            send_data =transfer_quota(data=data, dbms=args.dbms) 
+            post_data(conn=args.conn, data=send_data) 
+ 
             time.sleep(args.sleep) 
 
 if __name__ == '__main__':
