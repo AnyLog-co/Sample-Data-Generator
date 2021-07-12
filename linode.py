@@ -112,16 +112,18 @@ def useage(data:list, dbms:str)->list:
         'cpu': 90, 
     }
     :mqtt-call:
+    # To execute within file, MQTT call should be within 1 line without "<" or ">" 
     <run mqtt client where broker=rest and user-agent=anylog and log=false and topic=(
-        name=anylog  and dbms="bring [dbms]" and table="bring [table]" and 
-        column.timestmap.timestamp="bring [timestamp]" and 
+        name=anylog and dbms="bring [dbms]" and table="bring [table]" and 
+        column.timestamp.timestamp="bring [timestamp]" and 
+        column.node_id.int="bring [node_id]" and
         column.node_name.str="bring [node_name]" and 
-        column.io.float="bring [io]" and 
-        column.cpu.float="bring [cpu]" and  
+        column.disk_io.float="bring [io]" and 
+        column.cpu.float="bring [cpu]" and 
         column.network_in.float="bring [network_in]" and 
         column.network_out.float="bring [network_out]" and 
-        column.transfer_quota.float="bring [network_quota]" 
-    )>
+        column.transfer_quota.float="bring [transfer_quota]"
+    )> 
     """
     rows = [] 
     for node in data: 
