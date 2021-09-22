@@ -53,3 +53,41 @@ def send_data(payloads:list, conn:str, dbms:str, table_name:str, mode:str)->bool
             print(e) 
             status=False  
     return status
+
+
+def post_data(conn:str, payloads:dict)->bool:
+    """
+    POST data into AnyLog
+    :args:
+        conn:str - IP & Port to send data to
+        payloads:dict - data to be sent
+    :params:
+        status:bool
+        headers:dict - headers for curl request
+    :return:
+        status
+    :note:
+    In order for POSTed data to be accepted by AnyLog, user must deploy a REST based MQTT client to accept these messages
+    https://github.com/AnyLog-co/documentation/blob/master/mqtt.md
+    """
+    status = False
+    headers = {
+        'command': 'data',
+        'User-Agent': 'AnyLog/1.23',
+        'Content-Type': 'text/plain'
+    }
+
+    if validate_connection(conn):
+        try:
+            r = requests.post('http://%s' % conn, headers=headers, data=payloads)
+        except Exception as e:
+            print('Failed to POST data into %s (Error: %s)' % (conn, e))
+        else:
+            if int(r.status_code) != 200:
+                print('Failed to POST data into %s due to network error: %s' % (conn, r.status_code))
+            else:
+                status = True
+
+    return status
+
+
