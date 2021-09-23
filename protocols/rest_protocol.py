@@ -1,6 +1,7 @@
 import json 
 import requests 
 
+
 def validate_connection(conn:str)->bool: 
    """
    Validate node is accessible
