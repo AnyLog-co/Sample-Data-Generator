@@ -47,6 +47,7 @@ DATA = {
 }
 
 
+
 def __validate_cities(user_inputy_city:str)->list:
     """
     Validate city/cities provided are in Locations
@@ -121,7 +122,7 @@ def __extract_city_table(cities:list, tables=list)->(str, str):
     table = random.choice(list(DATA.keys()))
     if cities is not None:
         city = random.choice(cities)
-    if table is not None:
+    if tables is not None:
         table = random.choice(tables)
 
     return city, table
