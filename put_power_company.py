@@ -13,7 +13,7 @@ LOCATIONS = [
     'Seattle, WA',
     'Philadelphia, PN',
     'Arlington, VA',
-    'Washington DC',
+    'Washington, DC',
     'New York City, NY',
     'Orlando, FL',
     'Houston, TX',
@@ -46,6 +46,85 @@ DATA = {
     'pmu': [5, 50]
 }
 
+
+def __validate_cities(user_inputy_city:str)->list:
+    """
+    Validate city/cities provided are in Locations
+    :args:
+        user_inputy_city:str - user input of city
+    :params:
+        status:boool
+        return_value:list - value to return
+    :return:
+        if city/cities provided are in LOCATIONS return city as list, else return list of None
+    """
+    return_value = []
+    if user_inputy_city is not None:
+        if 'Washington DC' in user_inputy_city:
+            user_inputy_city = user_inputy_city.replace('Washington DC', 'Washington, DC')
+
+        for city in user_inputy_city.split(','):
+            if user_inputy_city.split(',').index(city) % 2 == 0:
+                index = user_inputy_city.split(',').index(city)
+                city = '%s,%s' % (user_inputy_city.split(',')[index], user_inputy_city.split(',')[index + 1])
+                city = city.lstrip()
+                if city == 'Washington, DC':
+                    city = city.replace(',', '')
+                return_value.append(city)
+
+        for city in return_value:
+            if city not in LOCATIONS:
+                return_value.pop(return_value.index(city))
+
+    if return_value is [] or user_inputy_city is None:
+        return_value = None
+
+    return return_value
+
+
+def __validate_tables(user_input_table:str)->list:
+    """
+    Validate table/tables provided are in DATA
+    :args:
+        user_input_table:str - user input of table
+    :params:
+        status:boool
+        return_value:list - value to return
+    :return:
+        if table/tables provided are in DATA return city as list, else return list of None
+    """
+    return_value = []
+    if user_input_table is not None:
+        return_value = user_input_table.split(",")
+        for table in return_value:
+            if table not in DATA:
+                return_value.remove(table)
+    if user_input_table is None or return_value is None:
+        return_value = None
+
+    return return_value
+
+
+def __extract_city_table(cities:list, tables=list)->(str, str):
+    """
+    Get city and table names
+    :args:
+        cities:list - list of cities
+        tables:list - list of tables
+    :params:
+        city:str - city to use
+        table:str - table to use
+    :return:
+        city, table
+    """
+    city = random.choice(LOCATIONS)
+    table = random.choice(list(DATA.keys()))
+    if cities is not None:
+        city = random.choice(cities)
+    if table is not None:
+        table = random.choice(tables)
+
+    return city, table
 
 def __analog_angle()->float:
     """
@@ -99,12 +178,13 @@ def __synchrophasor_data():
     return data_set
 
 
-def data_generator(db_name:str, table:str)->dict:
+def data_generator(db_name:str, table:str, city:str=None)->dict:
     """
     Generate JSON for tables in DATA
     :args:
         db_name:str - Database name
         table:str - table to extract data from
+        city:str - Secify a specific city. If set to None each iteration will be a different city
     :params:
         table:str - Table to generate data for
         payloads:dict - payloads
@@ -135,8 +215,9 @@ def data_generator(db_name:str, table:str)->dict:
     payloads = {}
     payload = {
         'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
-        'location': random.choice(LOCATIONS)
+        'location': city
     }
+
     if table == 'synchrophasor':
         payload['source'] = int(__calculate_value(DATA[table]['source']))
         sequence = 1
@@ -183,35 +264,49 @@ def main():
             * eswitch
             * pmu
             * random (default) - the program will selwct a different table each iteration
+        -c, --city          Specify a specific city. If set to None each iteration will be a different city (default: None)
+            'Los Angeles, CA',
+            'San Francisco, CA',
+            'Seattle, WA',
+            'Philadelphia, PN',
+            'Arlington, VA',
+            'Washington DC',
+            'New York City, NY',
+            'Orlando, FL',
+            'Houston, TX',
+            'Las Vegas, NV'
         -i, --iteration     number of iterations. if set to 0 run continuously  (default: 0)
         -s, -sleep          wait between insert                                 (default: 0)
     :params:
         payloads:dict - results from data_generator
     """
-    tables = list(DATA.keys())
-    tables.append('random')
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('conn', type=str, default='172.104.180.110:2049', help='AnyLog REST IP & Port to send data to')
     parser.add_argument('dbms', type=str, default='power_company',        help='Database to store data in')
-    parser.add_argument('-t', '--table',     type=str,   default="random", choices=tables, help="Tables to get data from. If set to 'random' a different table will be selected each iteration.")
+    parser.add_argument('-t', '--table', type=str, default=None, help="Specify a specific  table get data from. If set to 'None' a different table will be selected each iteration.")
+    parser.add_argument('-c', '--city',  type=str, default=None, help="Specify a specific city to get data from. If set to 'None', a different city will be selected each iteration.")
     parser.add_argument('-i', '--iteration', type=int,   default=1,        help='number of iterations. if set to 0 run continuously')
     parser.add_argument('-s', '--sleep',     type=float, default=0,        help='wait between insert')
     args = parser.parse_args()
     payloads = {}
 
+    args.conn = args.conn.split(',')
+    tables = __validate_tables(user_input_table=args.table)
+    cities = __validate_cities(user_inputy_city=args.city)
+
     if args.iteration == 0:
         while True:
-            if args.table.lower() == 'random':
-                table = random.choice(list(DATA.keys()))
-                payloads = data_generator(db_name=args.dbms, table=table)
-            send_put_data(conn=args.conn, dbms=args.dbms, table=table, payloads=payloads)
+            conn = random.choice(args.conn)
+            city, table = __extract_city_table(cities=cities, tables=tables)
+            payloads = data_generator(db_name=args.dbms, table=table, city=city)
+            send_put_data(conn=conn, dbms=args.dbms, table=table, payloads=payloads)
             time.sleep(args.sleep)
 
     for i in range(args.iteration):
-        if args.table.lower() == 'random':
-            table = random.choice(list(DATA.keys()))
-            payloads = data_generator(db_name=args.dbms, table=table)
-        send_put_data(conn=args.conn, dbms=args.dbms, table=table, payloads=payloads)
+        conn = random.choice(args.conn)
+        city, table = __extract_city_table(cities=cities, tables=tables)
+        payloads = data_generator(db_name=args.dbms, table=table, city=city)
+        send_put_data(conn=conn, dbms=args.dbms, table=table, payloads=payloads)
         time.sleep(args.sleep)
 
 
