@@ -5,7 +5,8 @@ import random
 import string
 import time
 
-from protocols.rest_protocol import post_data
+from protocols.rest_protocol import send_data
+
 LOCATIONS = [
     '33.8121, -117.91899', # LA
     '37.786163522 -122.404498382', # SF
@@ -133,13 +134,10 @@ def data_generator(db_name:str, table:str)->dict:
     payloads = {}
 
     payload = {
-        'dbms': db_name,
-        'table': table,
         'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
         'location': random.choice(LOCATIONS)
     }
     if table == 'synchrophasor':
-        payload['topic'] = 'afg_synchrophasor_topic'
         payload['source'] = int(__calculate_value(DATA[table]['source']))
         sequence = 1
         if random.choice(range(1, 10)) % 3 == 0:
@@ -147,16 +145,15 @@ def data_generator(db_name:str, table:str)->dict:
         for i in range(sequence):
             synchrophasor_values = __synchrophasor_data()
             payload = {**payload, **synchrophasor_values, 'sequence': i+1}
-            payloads[i] = json.dumps(payload)
+            payloads[i] = payload
     else:
-
         payload = {**payload, 'value': __calculate_value(DATA[table])}
-        payloads[0] = json.dumps(payload)
+        payloads[0] = payload
 
     return payloads
 
 
-def send_post_data(table:str, conn:str, payloads:dict):
+def send_put_data(conn:str, dbms:str, table:str, payloads:dict):
     """
     Send data (payloads) to AnyLog via POST
     :args:
@@ -165,8 +162,7 @@ def send_post_data(table:str, conn:str, payloads:dict):
         payloads:dict - results from data_generator
     """
     for indx in payloads:
-        print(payloads[indx])
-        post_data(conn=conn, payloads=payloads[indx])
+        send_data(payloads=payloads[indx], conn=conn, dbms=dbms, table_name=table, mode='streaming')
 
 
 def main():
@@ -208,14 +204,14 @@ def main():
             if args.table.lower() == 'random':
                 table = random.choice(list(DATA.keys()))
                 payloads = data_generator(db_name=args.dbms, table=table)
-            send_post_data(table=table, conn=args.conn, payloads=payloads)
+            send_put_data(conn=args.conn, dbms=args.dbms, table=table, payloads=payloads)
             time.sleep(args.sleep)
 
     for i in range(args.iteration):
         if args.table.lower() == 'random':
             table = random.choice(list(DATA.keys()))
             payloads = data_generator(db_name=args.dbms, table=table)
-        send_post_data(table=table, conn=args.conn, payloads=payloads)
+        send_put_data(conn=args.conn, dbms=args.dbms, table=table, payloads=payloads)
         time.sleep(args.sleep)
 
 

@@ -153,7 +153,7 @@ def main():
         dbms                  Database to store data in			[default: test] 
     :optional arguments:
         -h, --help            			show this help message and exit
-        -i, --iteration 	ITERATION	number of iterations. if set to 0 run continuesly	(default: 1)
+        -i, --iteration 	ITERATION	number of iterations. if set to 0 run continuously	(default: 1)
         -s, --sleep 		SLEEP		wait between insert 					(default: 0)
     :params: 
         i:int - iteration counter 
@@ -170,8 +170,8 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('conn',  type=str,  default='172.104.180.110:2049',                                             help='AnyLog REST IP & Port to send data to')
     parser.add_argument('token', type=str,  default='ab21f3f79e22693bb33815772fd6a48fa91a0298e9052be0250a56fec7b4cc70', help='Linode token node') 
-    parser.add_argument('dbms',  type=str,  default='test',                                                             help='Database to store data in') 
-    parser.add_argument('-i', '--iteration', type=int,   default=1,                              help='number of iterations. if set to 0 run continuesly')
+    parser.add_argument('dbms',  type=str,  default='test',                                                             help='Database to store data in')
+    parser.add_argument('-i', '--iteration', type=int,   default=1,                              help='number of iterations. if set to 0 run continuously')
     parser.add_argument('-s', '--sleep',     type=float, default=0,                              help='wait between insert')
     args = parser.parse_args()
 

@@ -45,15 +45,25 @@ def send_data(payloads:list, conn:str, dbms:str, table_name:str, mode:str)->bool
     }
     status=True 
     if not validate_connection(conn): 
-        return False  
-    for payload in payloads: 
-        json_payload = json.dumps(payload) 
-        try: 
+        return False
+    if isinstance(payloads, list):
+        for payload in payloads:
+            json_payload = json.dumps(payload)
+            try:
+                requests.put('http://%s' % conn, headers=header, data=json_payload)
+            except Exception as e:
+                print(e)
+                status=False
+
+    elif isinstance(payloads, dict):
+        json_payload = json.dumps(payloads)
+        try:
             requests.put('http://%s' % conn, headers=header, data=json_payload)
         except Exception as e:
-            print(e) 
-            status=False  
+            print(e)
+            status = False
     return status
+
 
 
 def post_data(conn:str, payloads:dict)->bool:
