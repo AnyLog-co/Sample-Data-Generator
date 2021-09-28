@@ -8,17 +8,18 @@ import time
 from protocols.rest_protocol import send_data
 
 LOCATIONS = [
-    '33.8121, -117.91899', # LA
-    '37.786163522 -122.404498382', # SF
-    '47.620182, -122.34933', # Seattle
-    '39.949566, -75.15026', # Phili
-    '38.870983,  -77.05598', # Arlington
-    '38.89773, -77.03653', # DC
-    '40.758595, -73.98447', # NYC
-    '28.37128, -81.51216' # Orlando 
-    '29.97980499267578, -95.56627655029297', # Houston
-    '36.1147, -115.1728' # Las Vegas
+    'Los Angeles, CA',
+    'San Francisco, CA',
+    'Seattle, WA',
+    'Philadelphia, PN',
+    'Arlington, VA',
+    'Washington DC',
+    'New York City, NY',
+    'Orlando, FL',
+    'Houston, TX',
+    'Las Vegas, NV'
 ]
+
 
 DATA = {
     'synchrophasor': {
@@ -67,7 +68,7 @@ def __calculate_value(val_range:list)->float:
     float_value = random.random() * base_value
 
     if val_range[0] < float_value + base_value < val_range[1]:
-        return float_value + base_value
+        return float_value + base_value 
     elif val_range[0] < float_value < val_range[1]:
         return float_value
     elif val_range[0] + float_value < val_range[1]:
@@ -132,7 +133,6 @@ def data_generator(db_name:str, table:str)->dict:
        JSON of payloads
     """
     payloads = {}
-
     payload = {
         'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
         'location': random.choice(LOCATIONS)

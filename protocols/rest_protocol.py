@@ -1,26 +1,26 @@
 import json 
 import requests 
 
-
 def validate_connection(conn:str)->bool: 
-   """
-   Validate node is accessible
-   :args: 
-      conn:str - connection string 
-   :param:
-      boolean:bool - boolean status 
-   :return: 
-      if node is accessible return True, else return False 
-   """
-   boolean = False 
-   try:
+    """
+    Validate node is accessible
+    :args:
+      conn:str - connection string
+    :param:
+      boolean:bool - boolean status
+    :return:
+      if node is accessible return True, else return False
+    """
+    boolean = False
+    try:
       r = requests.get('http://%s' % conn, headers={'command': 'get status', 'User-Agent': 'AnyLog/1.23'})
-   except Exception as e: 
-      print(e) 
+    except Exception as e:
+      print(e)
+    else:
+        if 'running' in r.text:
+            boolean=True
 
-   if 'running' in r.text:
-      boolean=True  
-   return boolean 
+    return boolean
 
 
 
