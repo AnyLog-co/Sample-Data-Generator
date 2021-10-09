@@ -244,6 +244,7 @@ def send_put_data(conn:str, dbms:str, table:str, payloads:dict):
         payloads:dict - results from data_generator
     """
     for indx in payloads:
+        #print(payloads[indx])
         send_data(payloads=payloads[indx], conn=conn, dbms=dbms, table_name=table, mode='streaming')
 
 
@@ -280,6 +281,21 @@ def main():
         -s, -sleep          wait between insert                                 (default: 0)
     :params:
         payloads:dict - results from data_generator
+    :mqtt:
+        run mqtt client where broker=rest and user-agent=anylog and topic=(
+            name=test and dbms="bring [dbms]" and \
+            table="bring [table]" and \
+            column.timestamp.timestamp="bring [timestamp]" and \
+            column.location.str="bring [location]" and \
+            column.value.float="bring [value]" and \
+            column.source.int="bring [source]" and \
+            column.phasor.str="bring [phasor]" and \
+            column.frequency.float="bring [frequency]" and \
+            column.dfreq.float="bring [dfreq]" and \
+            column.analog.float="bring [analog]" and \
+            column.sequence.float="bring [sequence]"
+        )
+
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('conn', type=str, default='172.104.180.110:2049', help='AnyLog REST IP & Port to send data to')
