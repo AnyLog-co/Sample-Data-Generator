@@ -184,12 +184,9 @@ def extract_insight(dbms:str, table:str, member_id:int, timestamp:str, data:list
         json_data
     """
     insight = []
-    if table == 'cpu_insight':
+    if table == 'cpu_insight' or table == 'io_insight':
         for row in data:
             insight.append(row[-1])
-    else:
-        for row in data:
-            insight.append(row[0])
 
     return {
         'dbms': dbms,
@@ -200,45 +197,40 @@ def extract_insight(dbms:str, table:str, member_id:int, timestamp:str, data:list
     }
 
 
-def extract_network_insight(dbms:str, table:str, member_id:int, timestamp:str, private_data_in:list,
-                            private_data_out:list, public_data_in:list, public_data_out:list)->dict:
+def extract_network_insight(dbms:str, table:str, member_id:int, timestamp:str, data_in:list,
+                            data_out:list)->dict:
     """
-    Generate JSON object from data for network information
+    Generate JSON object for network data information
+        value - The percentage of the sum of data_in over the total sum of data_in + data_out
     :args:
+        table:str - tablee name
         dbms:str - database to store data in
         member_id:int - node member ID
         timestamp:str - timestamp value
-        private_data_in:list - private network data in
-        private_data_out:list - private network data out
-        public_data_in:list - public network data in
-        public_data_out:list - public network data out
+        data_in:list - private network data in
+        data_out:list - private network data out
     :params:
         insight:list - sublist from data
         json_data:dict - Dictionary object of data
     :return:
         json_data
     """
-    private_data = {'in': [], 'out': []}
-    public_data = {'in': [], 'out': []}
-    for row in private_data_in:
-        private_data['in'].append(row[0])
-    for row in private_data_out:
-        private_data['out'].append(row[0])
+    data =  {'in': [], 'out': []}
 
-    for row in public_data_in:
-        public_data['in'].append(row[-1])
-    for row in public_data_out:
-        public_data['out'].append(row[-1])
-
+    for row in data_in:
+        data['in'].append(row[-1])
+    for row in data_out:
+        data['out'].append(row[-1])
+    try:
+        value = sum(data['in'])/(sum(data['in']) + sum(data['out']))
+    except Exception as e:
+        value = 0
     return {
         'dbms': dbms,
         'table': table,
         'member_id': member_id,
         'timestamp': timestamp,
-        'public_in': sum(public_data['in'])/len(public_data['in']),
-        'public_out': sum(public_data['out'])/len(public_data['out']),
-        'private_in': sum(private_data['in'])/len(private_data['in']),
-        'private_out': sum(private_data['out'])/len(private_data['out']),
+        'value': value
     }
 
 def data_generator(conn:str, token:str, machine_ids:list, dbms:str):
@@ -264,23 +256,19 @@ def data_generator(conn:str, token:str, machine_ids:list, dbms:str):
 
         cpu_info = extract_insight(dbms=dbms, table='cpu_insight', member_id=machine_id, timestamp=timestamp,
                                    data=output['data']['cpu'])
-        swap_info = extract_insight(dbms=dbms, table='swap_insight', member_id=machine_id, timestamp=timestamp,
-                                    data=output['data']['io']['swap'])
+        #swap_info = extract_insight(dbms=dbms, table='swap_insight', member_id=machine_id, timestamp=timestamp,
+        #                            data=output['data']['io']['swap'])
         io_info = extract_insight(dbms=dbms, table='io_insight', member_id=machine_id, timestamp=timestamp,
                                   data=output['data']['io']['io'])
-        netv4_info = extract_network_insight(dbms=dbms, table='netv4_insight', member_id=machine_id,
-                                             timestamp=timestamp, private_data_in=output['data']['netv4']['private_in'],
-                                             private_data_out=output['data']['netv4']['private_out'],
-                                             public_data_in=output['data']['netv4']['in'],
-                                             public_data_out=output['data']['netv4']['out'])
-        netv6_info = extract_network_insight(dbms=dbms, table='netv6_insight', member_id=machine_id,
-                                             timestamp=timestamp, private_data_in=output['data']['netv6']['private_in'],
-                                             private_data_out=output['data']['netv6']['private_out'],
-                                             public_data_in=output['data']['netv6']['in'],
-                                             public_data_out=output['data']['netv6']['out'])
+        netv4_info = extract_network_insight(dbms=dbms, table='netv4_public_insight', member_id=machine_id,
+                                             timestamp=timestamp, data_in=output['data']['netv4']['in'],
+                                             data_out=output['data']['netv4']['out'])
+        netv6_info = extract_network_insight(dbms=dbms, table='netv6_public_insight', member_id=machine_id,
+                                             timestamp=timestamp, data_in=output['data']['netv6']['in'],
+                                             data_out=output['data']['netv6']['out'])
         put_data(conn=conn, data=cpu_info)
         put_data(conn=conn, data=io_info)
-        put_data(conn=conn, data=swap_info)
+        #put_data(conn=conn, data=swap_info)
         put_data(conn=conn, data=netv4_info)
         put_data(conn=conn, data=netv6_info)
 
@@ -309,23 +297,25 @@ def main():
 
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('conn',  type=str,  default='172.104.180.110:2049',                                             help='AnyLog REST IP & Port to send data to')
+    parser.add_argument('conn',  type=str,  default='172.104.180.110:2049', help='AnyLog REST IP & Port to send data to')
     parser.add_argument('token', type=str,  default='ab21f3f79e22693bb33815772fd6a48fa91a0298e9052be0250a56fec7b4cc70', help='Linode token node') 
-    parser.add_argument('dbms',  type=str,  default='test',                                                             help='Database to store data in')
-    parser.add_argument('-i', '--iteration', type=int,   default=1,                              help='number of iterations. if set to 0 run continuously')
-    parser.add_argument('-s', '--sleep',     type=float, default=0,                              help='wait between insert')
+    parser.add_argument('dbms',  type=str,  default='test', help='Database to store data in')
+    parser.add_argument('-i', '--iteration', type=int,   default=1, help='number of iterations. if set to 0 run continuously')
+    parser.add_argument('-s', '--sleep',     type=float, default=0, help='wait between insert')
     args = parser.parse_args()
+
     machine_ids = []
     data = get_data(url='https://api.linode.com/v4/linode/instances', token=args.token)
+
     machine_info_list = node_machine_info(dbms=args.dbms, data=data['data'])
     for row in machine_info_list:
         machine_ids.append(row['machine_id'])
         put_data(conn=args.conn, data=row)
 
+
     config_info_list = node_config_info(dbms=args.dbms, machine_ids=machine_ids, data=data['data'])
     for row in config_info_list:
         put_data(conn=args.conn, data=row)
-
 
     if args.iteration == 0:
         while True:
@@ -335,7 +325,8 @@ def main():
     for i in range(args.iteration):
         data_generator(conn=args.conn, token=args.token, machine_ids=machine_ids, dbms=args.dbms)
         time.sleep(args.sleep)
-    
+
+
 
 if __name__ == '__main__':
     main() 
