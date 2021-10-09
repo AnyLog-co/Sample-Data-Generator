@@ -52,8 +52,8 @@ def post_data(conn:str, data:dict):
         'User-Agent': 'AnyLog/1.23',
         'Content-Type': 'text/plain'
     }
-    print(data)
-    """
+
+
     try:
         r = requests.post('http://%s' % conn, headers=headers, data=data)
     except Exception as e:
@@ -61,14 +61,16 @@ def post_data(conn:str, data:dict):
     else:
         if r.status_code != 200:
            print('Failed to POST data to %s due to network error: %s' % (conn, r.status_code))
-    """
+
 
 def put_data(conn:str, data:dict):
     dbms = data['dbms']
     del data['dbms']
     table = data['table']
     del data['table']
+
     send_data(payloads=data, conn=conn, dbms=dbms, table_name=table, mode='streaming')
+
 
 def node_machine_info(dbms:str, data:list)->list:
     """
@@ -140,7 +142,7 @@ def node_config_info(dbms:str, machine_ids:list, data:list)->list:
     for row in data:
         node_summary = {
             'dbms': dbms,
-            'table': 'node_config',
+            'table': 'node_summary',
             'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
             'machine_id': None,
             'status': None,
@@ -324,6 +326,7 @@ def main():
     for row in config_info_list:
         put_data(conn=args.conn, data=row)
 
+
     if args.iteration == 0:
         while True:
             data_generator(conn=args.conn, token=args.token, machine_ids=machine_ids, dbms=args.dbms)
@@ -332,7 +335,7 @@ def main():
     for i in range(args.iteration):
         data_generator(conn=args.conn, token=args.token, machine_ids=machine_ids, dbms=args.dbms)
         time.sleep(args.sleep)
-
+    
 
 if __name__ == '__main__':
     main() 
