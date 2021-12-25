@@ -101,7 +101,7 @@ def put_data(conn:str, data:list, dbms:str, table:str=None, auth:tuple=None, tim
             for row in data[table]:
                 payloads.append(convert_json.json_dumps(row))
             try:
-                r = requests.put(url='http://%s' % conn, headers=headers, data=payloads)
+                r = requests.put(url='http://%s' % conn, headers=headers, data=payloads, auth=auth, timeout=timeout)
             except Exception as e:
                 status = False
             else:
