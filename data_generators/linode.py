@@ -143,7 +143,7 @@ def extract_network_insight(data:list, member_id:str, timestamp:str=datetime.dat
     }
 
 def linode(token:str, tag:str='demo', initial_configs:bool=False):
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     payloads = {
         'node_config': [],
         'node_summary': [],

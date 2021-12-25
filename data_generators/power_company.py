@@ -67,7 +67,7 @@ def data_generator(sleep:float, repeat:int)->dict:
             payloads[table_name] = []
 
         payloads[table_name].append({
-            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
             'location': random.choice(LOCATIONS),
             'value': __calculate_value(DATA[table_name])
         })
