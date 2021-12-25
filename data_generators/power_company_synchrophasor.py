@@ -81,14 +81,14 @@ def __synchrophasor_data():
     return data_set
 
 
-def data_generator(sleep:float, repeat:int):
+def data_generator(sleep:float, repeat:int)->list:
     """
     Generate synchrophasor data
     :args:
         sleep:float - wait time between each iteration
         repeat:int - number of iterations
     :params:
-        payloads:lisit - list of values
+        payloads:list - list of values
     :return:
         payloads
     """

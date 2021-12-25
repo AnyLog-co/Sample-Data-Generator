@@ -32,6 +32,7 @@ def write_to_file(data:list, dbms:str, table:str=None)->str:
         with open(file_path, 'w') as f:
             for row in data:
                 f.write(convert_json.json_dumps(row) + '\n')
+
     elif isinstance(data, dict):
         for table in data:
             sub_data = data[table]
