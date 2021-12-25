@@ -40,9 +40,9 @@ def trig_value(sleep:float, repeat:int)->dict:
    payloads = {'sin': [], 'cos': []}
    for i in range(repeat):
       for value in VALUE_ARRAY:
-         timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+         timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
          payloads['sin'].append({
-               'timestamp':timestamp,
+               'timestamp': timestamp,
                'value': math.sin(value)
          })
          payloads['cos'].append({
