@@ -48,7 +48,7 @@ def node_machine_info(data:list, tag:str, timestamp:str=datetime.datetime.now().
     payloads = []
     machines = []
     for row in data:
-        if tag in row['tags']:
+        if tag in row['tags'] or tag is None:
             payload = {
                 'timestamp': timestamp,
                 'machine_id': row['id'],
@@ -80,7 +80,7 @@ def node_config_info(data:list, tag:str, timestamp:str=datetime.datetime.now().s
     """
     payloads = []
     for row in data:
-        if tag in row['tags']:
+        if tag in row['tags'] or tag is None:
             payloads.append({
                 'timestamp': timestamp,
                 'create_ts': row['created'],
@@ -114,7 +114,7 @@ def extract_insight(data:list, member_id:str, timestamp:str=datetime.datetime.no
 
     return {
         'timestamp': timestamp,
-        'membber_id': member_id,
+        'member_id': member_id,
         'value': sum(insight) / len(insight)
     }
 
@@ -142,8 +142,20 @@ def extract_network_insight(data:list, member_id:str, timestamp:str=datetime.dat
         'value': sum(values['in']) / (sum(values['in']) + sum(values['out']))
     }
 
-def linode(token:str, tag:str='demo', initial_configs:bool=False):
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+def get_linode_data(token:str, tag:str=None, initial_configs:bool=False):
+    """
+    Extract data from linode
+    :args:
+        token:str - token for accessing linode data
+        tag:str - group of nodes to extract data from. if not set extract all
+        initial_configs:bool - whether this is the first timee the configs are being deployed
+    :params:
+        timestamp:str - current (UTC) timestamp
+        payloads:dict - dictionary of all the tables / data generated
+    :return:
+        payloads
+    """
+    timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     payloads = {
         'node_config': [],
         'node_summary': [],
@@ -173,4 +185,4 @@ def linode(token:str, tag:str='demo', initial_configs:bool=False):
 
 if __name__ == '__main__':
     # main()
-    linode('ab21f3f79e22693bb33815772fd6a48fa91a0298e9052be0250a56fec7b4cc70')
+    linode('ab21f3f79e22693bb33815772fd6a48fa91a0298e9052be0250a56fec7b4cc70', tag='')

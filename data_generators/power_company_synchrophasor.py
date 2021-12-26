@@ -94,13 +94,15 @@ def data_generator(sleep:float, repeat:int)->list:
     """
     payloads = []
     for i in range(repeat):
+        location = random.choice(LOCATIONS)
+        if len(location.split(',')) == 3:
+            location = location.rsplit(',', 1)[0]
         payloads.append({
-            'timestamp': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-            'location': random.choice(LOCATIONS),
+            'timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+            'location': location,
             'source': __calculate_value(DATA['synchrophasor']['source']),
             'sequence': random.choice(range(1, 4)),
             **__synchrophasor_data()
-
         })
         time.sleep(sleep)
 

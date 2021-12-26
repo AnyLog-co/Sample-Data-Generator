@@ -73,7 +73,7 @@ def get_ping_data(sleep:float, repeat:int)->list:
             value = sub_value
         data_sets.append(
             {
-                'timestamp': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                'timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                 'device_name': device_name,
                 'parentelement': PING_DATA[device_name]['parentelement'] ,
                 'webid': PING_DATA[device_name]['webid'] ,

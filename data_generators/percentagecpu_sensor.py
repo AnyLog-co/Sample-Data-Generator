@@ -52,7 +52,7 @@ def get_percentagecpu_data(sleep:float, repeat:int)->list:
         device_name = random.choice(list(PERCENTAGECPU_DATA.keys()))
         data_sets.append(
             {
-                'timestamp': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                'timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                 'device_name': device_name,
                 'parentelement': PERCENTAGECPU_DATA[device_name]['parentelement'] ,
                 'webid': PERCENTAGECPU_DATA[device_name]['webid'] ,

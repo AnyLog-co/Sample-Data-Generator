@@ -1,235 +1,169 @@
 import argparse
-import random 
-import time
+import os
+import sys
 
-from data_generators import machine_info, percentagecpu_sensor, ping_sensor, trig, file_sensor
-from protocols import rest_protocol, local_store, rest_mqtt_protocol, mqtt_protocol
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit('protocols', 1)[0]
+DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
+PROTOCOLS = os.path.join(ROOT_PATH, 'protocols')
+sys.path.insert(0, DATA_GENERATORS)
+sys.path.insert(0, PROTOCOLS)
 
-def __validate_values(iteration:int, repeat:int, sleep:float)->bool: 
+
+def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0.5, token:str=None, tag:str=None,
+                    initial_configs:bool=False)->dict:
     """
-    Validate values are within range
-    :args: 
-        iteration:int -  >= 0
-        repeat:int -  >= 1
-        sleep:float - >= 0 
-    :param: 
-        status:bool
-    :return: 
-        status
-    """
-    status = True 
-    if not isinstance(iteration, int) or iteration < 0:
-        print('Value %s is invalid for iteration' % iteration) 
-        status = False 
-    if not isinstance(repeat, int) or repeat < 1: 
-        print('Value %s is invalid for repeat' % repeat) 
-        status = False 
-    if (not isinstance(sleep, float) and not isinstance(sleep, int)) or sleep < 0: 
-        print(type(sleep))
-        print('Value %s is invalid for sleep' % sleep) 
-        status = False 
-
-    return status 
-
-def __table_name(sensor:str)->str:
-    """
-    convert sensor to table_name
+    Based on the parameters generate a data set
     :args:
-        senesor:str - sensor to generate data for 
-    :param: 
-        table_name:str - table name 
-    :return: 
-        table_name
+        data_generator:str - which data set to generated
+        batch_repeat:int - number of rows per batch
+        batch_sleep:float - sleep time between rows or a specific batch
+        token:str - linode token
+        tag:str - group of linode nodes to get data from. If not gets from all nodes associated to token
+        initial_configs:bool - whether this is the first timee the configs are being deployed
+    :params:
+        payloads:dict - generated data
+    :reeturn:
+        payloads
     """
-    table_name = ''
-    if sensor == 'ping' or sensor == 'percentagecpu': 
-        table_name = '%s_sensor' % sensor 
-    else: 
-        table_name = '%s_data' % sensor 
+    if data_generator == 'linode':
+        import linode
+        payloads = linode.get_linode_data(token=token, tag=tag, initial_configs=initial_configs)
+    elif data_generator == 'percentagecpu':
+        import percentagecpu_sensor
+        payloads = percentagecpu_sensor.get_percentagecpu_data(sleep=batch_sleep, repeat=batch_repeat)
+    elif data_generator == 'ping':
+        import ping_sensor
+        payloads = ping_sensor.get_ping_data(sleep=batch_sleep, repeat=batch_repeat)
+    elif data_generator == 'power':
+        import power_company
+        payloads = power_company.data_generator(sleep=batch_sleep, repeat=batch_repeat)
+    elif data_generator == 'synchrophasor':
+        import power_company_synchrophasor
+        payloads = power_company_synchrophasor.data_generator(sleep=batch_sleep, repeat=batch_repeat)
+    elif data_generator == 'trig':
+        import trig
+        payloads = trig.trig_value(sleep=batch_sleep, repeat=batch_repeat)
 
-    return table_name
+    return payloads
 
-def get_data(sensor:str, row_count:int, frequency:float, file_name, sleep:float)->list: 
+def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:str, auth:str, timeout:float,
+                   topic:str=None):
     """
-    Based on sensor type get set values
-    :args: 
-        sensors:str - type of sensor [machine, ping, sin, cos, rand] 
-        rows:int - number of data sets to generate for machine / ping sensor. All others have 30 rows by default 
-        frequency:float - frequency by which to multiple th generated value 
-        sleep:float - wait time between each row 
-    :param: 
-        rows:list - rows genenrated
-    :return: 
-        rows
+    Store content based on the selected protocol(s)
+    :args:
+        protocol:str - format to save data
+        payloads:dict - content to store
+       data_generator:str - which data generated
+       dbms:str - logical database to store data in
+       conn:str - REST IP + Port or broker IP + Port
+       auth:str - username, password
+       timeout:float - REST timeout (in seconds)
+       topic:str - MQTT / REST POST topic
+    :params:
+        table:str - table name
+        broker:str - broker for MQTT
+        port:str - port for MQTT
+        username:str - username for MQTT
+        password:str - password for MQTT
     """
-    rows = [] 
-    if sensor == 'machine': 
-        for row in range(row_count): 
-            rows.append(machine_info.get_device_data())
-            time.sleep(sleep) 
-    elif sensor == 'ping': 
-        for row in range(row_count): 
-            rows.append(ping_sensor.get_ping_data(frequency)) 
-            time.sleep(sleep) 
-    elif sensor == 'percentagecpu': 
-        for row in range(row_count): 
-            rows.append(percentagecpu_sensor.get_percentagecpu_data(frequency)) 
-            time.sleep(sleep) 
-    elif sensor == 'sin':  
-        rows = trig.sin_value(frequency, sleep)
-    elif sensor == 'cos': 
-        rows = trig.cos_value(frequency, sleep)
-    elif sensor == 'rand': 
-         rows = trig.rand_value(frequency, sleep)
-    elif sensor == 'file': 
-        rows = file_sensor.read_file(file_name)
-    return rows 
-
-def store_data(payloads:list, dbms:str, table_name:str, store_type:str, mode:str, conn:str=None, prep_dir:str=None, watch_dir:str=None, mqtt_conn:str=None, mqtt_port:int=None, mqtt_topic:str=None, quality_service:int=None)->bool:
-    """
-    Store data
-    :args: 
-        payloads:list - Data to store 
-        conn:str - IP + Port (required for REST only) 
-        dbms:str - logical database name (required for REST + file) 
-        table_name:str - logical table tname (required for REST + file)
-        store_type:str - Format by which to store (print, file, REST) 
-        mode:str - Format by which to send REST (file or streaming) 
-        
-        prep_dir:str - Directory to prep data in (file only) 
-        watch_dir:dir - Directory data ready to be sent onto AnyLog (file only) 
-
-        mqtt_conn:str - MQTT connection info (MQTT Only)
-        mqtt_port:int - MQTT port (MQTT Only) 
-        mqtt_topic:str - MQTT topic (MQTT Only)
-        quality_service:int - MQTT quality of service 
-    :param: 
-        status:bool - status 
-    """
-    status = True 
-    if store_type == 'rest': 
-        status = rest_protocol.send_data(payloads, conn, dbms, table_name, mode)
-    elif store_type == 'file': 
-        status = local_store.file_store(payloads, dbms, table_name, prep_dir, watch_dir) 
-    elif store_type == 'print': 
-        status = local_store.print_store(payloads) 
-    elif store_type == 'rest_mqtt': # Send to MQTT broker via AnyLogs' REST interface 
-        status = rest_mqtt_protocol.mqtt_protocol(payloads, conn, dbms, table_name, mqtt_conn, mqtt_port, mqtt_topic)
-    elif store_type == 'mqtt': # Send directly to MQTT broker 
-        status = mqtt_protocol.publish_mqtt(mqtt_conn, mqtt_port, quality_service, mqtt_topic, dbms, table_name, payloads)
-
-    return status  
-
-def main(): 
-    """
-    Based on the configuration set by a user, generate data and store it either to file, directly in AnyLog or print to screen
-    :positional arguments:
-        dbms       database name
-        sensor     type of sensor to get data from    {machine,percentagecpu,ping,sin,cos,rand,file}
-    :optional arguments:
-        -h,  --help                 show this help message and exit
-
-        # Default params 
-        -f,  --store-format     STORE-FORMAT        format to get data                                                      (default: print | options: {rest,file,print})
-        -m,  --mode             MODE                insert type                                                             (default: streaming | options: {file,streaming})
-        -i,  --iteration        ITERATION           number of iterations. if set to 0 run continuesly                       (default: 1)
-        -r,  --repeat           REPEAT              for machine & ping data number of rows to generate per iteration        (default: 10)
-        -x,  --frequency        FREQUENCY           value by which to multiply generated value(s)                           (default: 1) 
-        -s,  --sleep            SLEEP               wait between insert                                                     (default: 0)
-        
-        # file sensor 
-        -fn, --file-name        FILE_NAME           file to send into AnyLog - must contain JSON data 
-        # file store format params 
-        -p,  --prep-dir         PREP_DIR            directory to prepare data in                                            (default: $HOME/AnyLog-Network/data/prep)
-        -w,  --watch-dir        WATCH_DIR           directory for data ready to be stored                                   (default: $HOME/AnyLog-Network/data/watch)
-
-        # rest store format params  
-        -c,  --conn             CONN                REST host and port                                                      (default: None)
-
-        # MQTT store format params  
-        -mc, --mqtt-conn        MQTT_CONN           MQTT connection info                                                    (default: mqwdtklv@driver.cloudmqtt.com:uRimssLO4dIo)
-        -mp, --mqtt-port        MQTT_PORT           MQTT port 			       			                    (default: 18975)
-        -mt, --mqtt-topic       MQTT_TOPIC          MQTT topic 							            (default: test)
-        -qs, --quality-service  QUALITY_SERVICE     MQTT Quality of Service                                                 (default: 0 | options: {0, 1, 2}) 
-    :param:
-        table_name:str - based on the sensor type generate table_name 
-        payloads:dict - data generated for a given sensor 
-    """
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('dbms',                       type=str,   default='sample_data',                                                                     help='database name') 
-    parser.add_argument('sensor',                     type=str,   default='ping',        choices=['machine', 'percentagecpu', 'ping', 'sin', 'cos', 'rand', 'file'], help='type of sensor to get data from') 
-    parser.add_argument('-f', '--store-format',       type=str,   default='print',       choices=['rest', 'file', 'print', 'rest_mqtt', 'mqtt'],             help='format to get data') 
-    parser.add_argument('-m', '--mode',               type=str,   default='streaming',   choices=['file', 'streaming'],                                      help='insert type') 
-    parser.add_argument('-i', '--iteration',          type=int,   default=1,                                                                                 help='number of iterations. if set to 0 run continuesly') 
-    parser.add_argument('-x', '--frequency',          type=float, default=1,                                                                                 help='value by which to multiply generated value(s)') 
-    parser.add_argument('-r', '--repeat',             type=int,   default=10,                                                                                help='for machine & ping data number of rows to generate per iteration') 
-    parser.add_argument('-s', '--sleep',              type=float, default=0,                                                                                 help='wait between insert') 
-    parser.add_argument('-fn', '--file-name',         type=str,   default=None,                                                                              help='file to send into AnyLog - must contain JSON data')  
-    parser.add_argument('-p', '--prep-dir',           type=str,   default='$HOME/AnyLog-Network/data/prep',                                                  help='directory to prepare data in') 
-    parser.add_argument('-w', '--watch-dir',          type=str,   default='$HOME/AnyLog-Network/data/watch',                                                 help='directory for data ready to be stored') 
-    parser.add_argument('-c', '--conn',               type=str,   default=None,                                                                              help='REST host and port, use commas for multiple IPs and ports')
-    parser.add_argument('-mc', '--mqtt-conn',         type=str,   default='mqwdtklv@driver.cloudmqtt.com:uRimssLO4dIo',                                      help='MQTT connection info') 
-    parser.add_argument('-mp', '--mqtt-port',         type=int,   default=18975,                                                                             help='MQTT port') 
-    parser.add_argument('-mt', '--mqtt-topic',        type=str,   default='test',                                                                            help='MQTT topic')  
-    parser.add_argument('-qs', '--quality-service',   type=int,   default=0,             choices=list(range(0,3)),                                           help='MQTT Quality of Service') 
-    args = parser.parse_args()
-    
-    # validate values 
-    if not __validate_values(args.iteration, args.repeat, args.sleep): 
-        print('Invalid Options') 
-        exit(1)
-
-    if args.conn == None and (args.store_format == 'rest' or args.store_format == 'rest_mqtt'):
-        print('Unable to send data via REST when conn is set to None') 
-        exit(1) 
-
-    table_name = __table_name(args.sensor) 
-
-    if args.conn != None: 
-        conns = args.conn.split(',') # convert conn(s) in to a list 
+    table = ''
+    if data_generator == 'ping':
+        table = 'ping_sensor'
+    elif data_generator == 'percentagecpu':
+        table = 'percentagecpu_sensor'
     else:
-        conns = args.conn 
+        table = data_generator
 
-    conn = None 
-    if args.sensor == 'file': 
-        args.iteration = 1 
-    if args.iteration == 0: 
-        while True: 
-            payloads = get_data(args.sensor, args.repeat, args.frequency, args.file_name, args.sleep) 
-            if conns != None and args.store_format in ['rest', 'rest_mqtt']: 
-                conn = random.choice(conns) 
+    if protocol == 'post' or protocol == 'put':
+        import rest
+        if auth is not None:
+            auth = tuple(auth.replace(' ', '').split(','))
+    elif protocol == 'mqtt':
+        import mqtt
+        username = None
+        password = None
+        broker, port = conn.replace(' ', '').split(':')
+        if auth is not None:
+            username, password = auth.replace(' ', '').split(',')
 
-            if args.store_format == 'print': 
-                store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode)
-            elif args.store_format == 'file': 
-                store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir)
-            elif args.store_format == 'rest': 
-                store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, conn=conn)
-            elif args.store_format == 'rest_mqtt': 
-                store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, conn=conn, 
-                           mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, quality_service=args.quality_service)
-            elif args.store_format == 'mqtt': 
-                store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, quality_service=args.quality_service)
-            time.sleep(args.sleep) 
+    if protocol == 'file':
+        import to_file
+        to_file.write_to_file(data=payloads, dbms=dbms, table=table)
+    elif protocol == 'post':
+        rest.post_data(conn=conn, data=payloads, dbms=dbms, table=table, rest_topic=topic, auth=auth, timeout=timeout)
+    elif protocol == 'put':
+        rest.put_data(conn=conn, data=payloads, dbms=dbms, table=table, auth=auth, timeout=timeout)
+    elif protocol == 'mqtt':
+        mqtt.mqtt_data(broker=broker, port=port, topic=topic, data=payloads, dbms=dbms, table=table, username=username,
+                       password=password)
 
-       
-    for row in range(args.iteration): 
-        payloads = get_data(args.sensor, args.repeat, args.frequency, args.file_name, args.sleep) 
-        if conns != None and args.store_format in ['rest', 'rest_mqtt']: 
-            conn = random.choice(conns) 
-        if args.store_format == 'print': 
-            store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode)
-        elif args.store_format == 'file': 
-            store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, prep_dir=args.prep_dir, watch_dir=args.watch_dir)
-        elif args.store_format == 'rest': 
-            store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, conn=conn)
-        elif args.store_format == 'rest_mqtt': 
-            store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, conn=conn, 
-                       mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, quality_service=args.quality_service)
-        elif args.store_format == 'mqtt': 
-            store_data(payloads=payloads, dbms=args.dbms, table_name=table_name, store_type=args.store_format, mode=args.mode, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port, mqtt_topic=args.mqtt_topic, quality_service=args.quality_service)
-        time.sleep(args.sleep) 
+def main():
+    """
+    :positional arguments:
+        conn                    REST IP + Port or broker IP + Port      (default: 127.0.0.1:2049)
+        data-generator:str      data set to generate content for        (default: trig)
+            * linode - content from linode
+            * percentagecpu sensor data
+            * ping sensor data
+            * power data
+            * synchrophasor data
+            * trig (default)
+        protocol                format to save data                     (default: file)
+            * post
+            * put
+            * mqtt
+            * file (default)
+        dbms                    logical database to store data in       (default: test)
+    :optional arguments
+        -h, --help                          show this help message and exit
+        --batch-repeat     BATCH_REPEAT    number of rows per batch
+        --batch-sleep      BATCH_SLEEP     sleep time between rows or a specific batch
+        --topic            TOPIC           topic for MQTT or REST POST
+        --linode-token     LINODE_TOKEN    linode token
+        --linode-tag       LINODE_TAG      group of linode nodes to get data from.
+                                            If not gets from all nodes associated to token
+        --authentication   AUTHENTICATION   username, password
+        --timeout TIMEOUT  REST             timeout (in seconds)
+    :params:
+        payloads:dict - content to store
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('conn', type=str, default='127.0.0.1:2049', help='REST IP + Port or broker IP + Port')
+    parser.add_argument('data_generator', type=str, default='trig', help='data set to generate content for',
+                        choices=['linode', 'percentagecpu', 'ping', 'power', 'synchrophasor', 'trig'])
+    parser.add_argument('protocol', type=str, choices=['post', 'put', 'mqtt', 'file'], default='file',
+                          help='format to save data')
+    parser.add_argument('dbms', type=str, default='test', help='Logical database to store data in')
+    parser.add_argument('--batch-repeat', type=int, default=10,     help='number of rows per batch')
+    parser.add_argument('--batch-sleep',  type=float, default=0.5, help='sleep time between rows or a specific batch')
+    parser.add_argument('--linode-token', type=str, default='ab21f3f79e22693bb33815772fd6a48fa91a0298e9052be0250a56fec7b4cc70',
+                        help='linode token')
+    parser.add_argument('--linode-tag', type=str, default=None,
+                        help='group of linode nodes to get data from. If not gets from all nodes associated to token')
+    parser.add_argument('--authentication', type=str, default=None, help='username, password')
+    parser.add_argument('--timeout', type=float, default=30, help='REST timeout (in seconds)')
+    args = parser.parse_args()
+
+    if args.protocol == 'post' or args.protocol == 'mqtt':
+        import mqtt_client
+        if protocol == 'post':
+            conn = 'rest:%s' % conn.replace(' ', '').split(':')[-1]
+        mqtt_client.declare_mqtt_client(conn=conn, data_generator=args.data_generator, auth=args.auth,
+                                        timeout=args.timeout)
 
 
-if __name__ == '__main__': 
-    main() 
+    payloads = data_generators(data_generator=args.data_generator, batch_repeat=args.batch_repeat, batch_sleep=args.batch_sleep,
+                               token=args.linode_token, tag=args.linode_tag, initial_configs=True)
+    if 'node_config' in payloads:
+        store_data(protocol='put', payloads=payloads['node_config'], data_generator='node_config', dbms=args.dbms,
+               conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.data_generator)
+        del payloads['node_config']
+    if 'node_summary' in payloads:
+        store_data(protocol='put', payloads=payloads['node_summary'], data_generator='node_summary', dbms=args.dbms,
+               conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.data_generator)
+        del payloads['node_summary']
+    store_data(protocol=args.protocol, payloads=payloads, data_generator=args.data_generator, dbms=args.dbms,
+               conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.data_generator)
+
+if __name__ == '__main__':
+    main()
