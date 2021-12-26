@@ -1,6 +1,12 @@
-import datetime
+import os
 import random
+import sys
 import time
+
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit('data_generators', 1)[0]
+PROTOCOLS = os.path.join(ROOT_PATH, 'protocols')
+sys.path.insert(0, PROTOCOLS)
+from support import generate_timestamp
 
 LOCATIONS = [
     '33.8121, -117.91899', # LA
@@ -81,10 +87,11 @@ def __synchrophasor_data():
     return data_set
 
 
-def data_generator(sleep:float, repeat:int)->list:
+def data_generator(timezone:str, sleep:float, repeat:int)->list:
     """
     Generate synchrophasor data
     :args:
+        timezone:str - timezone for generated timestamp(s)
         sleep:float - wait time between each iteration
         repeat:int - number of iterations
     :params:
@@ -98,7 +105,7 @@ def data_generator(sleep:float, repeat:int)->list:
         if len(location.split(',')) == 3:
             location = location.rsplit(',', 1)[0]
         payloads.append({
-            'timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+            'timestamp': generate_timestamp(timezone=timezone),
             'location': location,
             'source': __calculate_value(DATA['synchrophasor']['source']),
             'sequence': random.choice(range(1, 4)),

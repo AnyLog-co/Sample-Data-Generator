@@ -1,8 +1,13 @@
-import argparse
-import datetime 
-import json 
-import requests 
+import datetime
+import os
+import requests
+import sys
 import time 
+
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit('data_generators', 1)[0]
+PROTOCOLS = os.path.join(ROOT_PATH, 'protocols')
+sys.path.insert(0, PROTOCOLS)
+from support import generate_timestamp
 
 def get_data(url:str, token:str)->dict:
     """
@@ -142,20 +147,21 @@ def extract_network_insight(data:list, member_id:str, timestamp:str=datetime.dat
         'value': sum(values['in']) / (sum(values['in']) + sum(values['out']))
     }
 
-def get_linode_data(token:str, tag:str=None, initial_configs:bool=False):
+def get_linode_data(token:str, tag:str=None, initial_configs:bool=False, timezone:str='utc'):
     """
     Extract data from linode
     :args:
         token:str - token for accessing linode data
         tag:str - group of nodes to extract data from. if not set extract all
         initial_configs:bool - whether this is the first timee the configs are being deployed
+        timezone:str - timezone for generated timestamp(s)
     :params:
         timestamp:str - current (UTC) timestamp
         payloads:dict - dictionary of all the tables / data generated
     :return:
         payloads
     """
-    timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    timestamp = generate_timestamp(timezone=timezone)
     payloads = {
         'node_config': [],
         'node_summary': [],

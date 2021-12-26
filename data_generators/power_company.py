@@ -1,6 +1,12 @@
-import datetime
+import os
 import random
+import sys
 import time
+
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit('data_generators', 1)[0]
+PROTOCOLS = os.path.join(ROOT_PATH, 'protocols')
+sys.path.insert(0, PROTOCOLS)
+from support import generate_timestamp
 
 LOCATIONS = [
     '33.8121, -117.91899', # LA
@@ -49,10 +55,11 @@ def __calculate_value(val_range:list)->float:
         return float_value - random.random()
 
 
-def data_generator(sleep:float, repeat:int)->dict:
+def data_generator(timezone:str, sleep:float, repeat:int)->dict:
     """
     Generate data for non-synchorphiser table
     :args:
+        timezone:str - timezone for generated timestamp(s)
         sleep:float - wait time between each row
         repeat:int - number of times to repeat
     :params:
@@ -61,10 +68,12 @@ def data_generator(sleep:float, repeat:int)->dict:
         payloads
     """
     payloads = {}
-    timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    for table in list(DATA.keys()):
-        payloads[table] = []
-        for i in range(repeat):
+
+    for i in range(repeat):
+        timestamp = generate_timestamp(timezone=timezone)
+        for table in list(DATA.keys()):
+            if table not in payloads:
+                payloads[table] = []
             location = random.choice(LOCATIONS)
             if len(location.split(',')) == 3:
                 location = location.rsplit(',', 1)[0]
@@ -76,6 +85,7 @@ def data_generator(sleep:float, repeat:int)->dict:
             time.sleep(sleep)
 
     return payloads
+
 
 if __name__ == '__main__':
     print(data_generator(sleep=0.5, repeat=10))

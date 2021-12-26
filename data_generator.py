@@ -2,21 +2,22 @@ import argparse
 import os
 import sys
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit('protocols', 1)[0]
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
 PROTOCOLS = os.path.join(ROOT_PATH, 'protocols')
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PROTOCOLS)
 
 
-def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0.5, token:str=None, tag:str=None,
-                    initial_configs:bool=False)->dict:
+def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0.5, timezone:str='utc',
+                    token:str=None, tag:str=None, initial_configs:bool=False)->dict:
     """
     Based on the parameters generate a data set
     :args:
         data_generator:str - which data set to generated
         batch_repeat:int - number of rows per batch
         batch_sleep:float - sleep time between rows or a specific batch
+        timezone:str - whether to set the timezone in UTC or local
         token:str - linode token
         tag:str - group of linode nodes to get data from. If not gets from all nodes associated to token
         initial_configs:bool - whether this is the first timee the configs are being deployed
@@ -27,27 +28,28 @@ def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0
     """
     if data_generator == 'linode':
         import linode
-        payloads = linode.get_linode_data(token=token, tag=tag, initial_configs=initial_configs)
+        payloads = linode.get_linode_data(token=token, tag=tag, initial_configs=initial_configs, timezone=timezone)
     elif data_generator == 'percentagecpu':
         import percentagecpu_sensor
-        payloads = percentagecpu_sensor.get_percentagecpu_data(sleep=batch_sleep, repeat=batch_repeat)
+        payloads = percentagecpu_sensor.get_percentagecpu_data(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
     elif data_generator == 'ping':
         import ping_sensor
-        payloads = ping_sensor.get_ping_data(sleep=batch_sleep, repeat=batch_repeat)
+        payloads = ping_sensor.get_ping_data(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
     elif data_generator == 'power':
         import power_company
-        payloads = power_company.data_generator(sleep=batch_sleep, repeat=batch_repeat)
+        payloads = power_company.data_generator(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
     elif data_generator == 'synchrophasor':
         import power_company_synchrophasor
-        payloads = power_company_synchrophasor.data_generator(sleep=batch_sleep, repeat=batch_repeat)
+        payloads = power_company_synchrophasor.data_generator(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
     elif data_generator == 'trig':
         import trig
-        payloads = trig.trig_value(sleep=batch_sleep, repeat=batch_repeat)
+        payloads = trig.trig_value(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
 
     return payloads
 
-def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:str, auth:str, timeout:float,
-                   topic:str=None):
+
+def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:str, auth=str, timeout=float):
+               #, conn:str, auth:str, timeout:float, topic:str=None):
     """
     Store content based on the selected protocol(s)
     :args:
@@ -74,31 +76,17 @@ def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:s
     else:
         table = data_generator
 
-    if protocol == 'post' or protocol == 'put':
-        import rest
-        if auth is not None:
-            auth = tuple(auth.replace(' ', '').split(','))
-    elif protocol == 'mqtt':
-        import mqtt
-        username = None
-        password = None
-        broker, port = conn.replace(' ', '').split(':')
-        if auth is not None:
-            username, password = auth.replace(' ', '').split(',')
-
     if protocol == 'file':
         import to_file
         to_file.write_to_file(data=payloads, dbms=dbms, table=table)
-    elif protocol == 'post':
-        rest.post_data(conn=conn, data=payloads, dbms=dbms, table=table, rest_topic=topic, auth=auth, timeout=timeout)
     elif protocol == 'put':
-        rest.put_data(conn=conn, data=payloads, dbms=dbms, table=table, auth=auth, timeout=timeout)
-    elif protocol == 'mqtt':
-        mqtt.mqtt_data(broker=broker, port=port, topic=topic, data=payloads, dbms=dbms, table=table, username=username,
-                       password=password)
+        from rest import put_data
+        put_data(conn=conn, data=payloads, dbms=dbms, table=table, auth=auth, timeout=timeout)
+
 
 def main():
     """
+    The following provides
     :positional arguments:
         conn                    REST IP + Port or broker IP + Port      (default: 127.0.0.1:2049)
         data-generator:str      data set to generate content for        (default: trig)
@@ -114,34 +102,51 @@ def main():
             * mqtt
             * file (default)
         dbms                    logical database to store data in       (default: test)
+
     :optional arguments
         -h, --help                          show this help message and exit
-        --batch-repeat     BATCH_REPEAT    number of rows per batch
-        --batch-sleep      BATCH_SLEEP     sleep time between rows or a specific batch
-        --topic            TOPIC           topic for MQTT or REST POST
-        --linode-token     LINODE_TOKEN    linode token
-        --linode-tag       LINODE_TAG      group of linode nodes to get data from.
-                                            If not gets from all nodes associated to token
+        --repeat           REPEAT           number of time to repeat each batch, if 0 then run continuously
+        --sleep            SLEEP            sleep time between each batch
+        --batch-repeat     BATCH_REPEAT     number of rows per batch
+        --batch-sleep      BATCH_SLEEP      sleep time between rows or a specific batch
+        --topic            TOPIC            topic for MQTT or REST POST
+        --timezone         TIMEZONE         Decide whether you want the timezone in UTC or local
+            * utc   - actual UTC value
+            * local - machine timestamp as UTC value
+            * ET - +03:00 from UTC
+            * BR - -03:00 from UTC
+            * JP - +09:00 from UTC
+            * WS - -09:00 from UTC
+            * AU - +09:30 from UTC
+            * IT - +01:00 from UTC
         --authentication   AUTHENTICATION   username, password
         --timeout TIMEOUT  REST             timeout (in seconds)
+        --linode-token     LINODE_TOKEN     linode token
+        --linode-tag       LINODE_TAG       group of linode nodes to get data from. If not gets from all nodes associated to token
     :params:
         payloads:dict - content to store
     """
     parser = argparse.ArgumentParser()
+    # default params
     parser.add_argument('conn', type=str, default='127.0.0.1:2049', help='REST IP + Port or broker IP + Port')
-    parser.add_argument('data_generator', type=str, default='trig', help='data set to generate content for',
-                        choices=['linode', 'percentagecpu', 'ping', 'power', 'synchrophasor', 'trig'])
-    parser.add_argument('protocol', type=str, choices=['post', 'put', 'mqtt', 'file'], default='file',
-                          help='format to save data')
+    parser.add_argument('data_generator', type=str, choices=['linode', 'percentagecpu', 'ping', 'power', 'synchrophasor', 'trig'], default='trig', help='data set to generate content for')
+    parser.add_argument('protocol',       type=str, choices=['post', 'put', 'mqtt', 'file'], default='file', help='format to save data')
     parser.add_argument('dbms', type=str, default='test', help='Logical database to store data in')
-    parser.add_argument('--batch-repeat', type=int, default=10,     help='number of rows per batch')
+
+    # repeat / sleep params
+    parser.add_argument('--repeat',       type=int,   default=1,   help='number of time to repeat  each batch, if 0 then run continuously')
+    parser.add_argument('--sleep',        type=float, default=1,   help='sleep time between each batch')
+    parser.add_argument('--batch-repeat', type=int,   default=10,  help='number of rows per batch')
     parser.add_argument('--batch-sleep',  type=float, default=0.5, help='sleep time between rows or a specific batch')
-    parser.add_argument('--linode-token', type=str, default='ab21f3f79e22693bb33815772fd6a48fa91a0298e9052be0250a56fec7b4cc70',
-                        help='linode token')
-    parser.add_argument('--linode-tag', type=str, default=None,
-                        help='group of linode nodes to get data from. If not gets from all nodes associated to token')
+
+    parser.add_argument('--timezone', type=str, choices=['local', 'UTC', 'ET', 'BR', 'JP', 'WS', 'AU', 'IT'], default='local', help='timezone for generated timestamp(s)')
     parser.add_argument('--authentication', type=str, default=None, help='username, password')
     parser.add_argument('--timeout', type=float, default=30, help='REST timeout (in seconds)')
+
+    # linode params
+    parser.add_argument('--linode-token', type=str, default='ab21f3f79e22693bb33815772fd6a48fa91a0298e9052be0250a56fec7b4cc70', help='linode token')
+    parser.add_argument('--linode-tag',   type=str, default=None, help='group of linode nodes to get data from. If not gets from all nodes associated to token')
+
     args = parser.parse_args()
 
     if args.protocol == 'post' or args.protocol == 'mqtt':
@@ -152,18 +157,13 @@ def main():
                                         timeout=args.timeout)
 
 
-    payloads = data_generators(data_generator=args.data_generator, batch_repeat=args.batch_repeat, batch_sleep=args.batch_sleep,
-                               token=args.linode_token, tag=args.linode_tag, initial_configs=True)
-    if 'node_config' in payloads:
-        store_data(protocol='put', payloads=payloads['node_config'], data_generator='node_config', dbms=args.dbms,
-               conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.data_generator)
-        del payloads['node_config']
-    if 'node_summary' in payloads:
-        store_data(protocol='put', payloads=payloads['node_summary'], data_generator='node_summary', dbms=args.dbms,
-               conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.data_generator)
-        del payloads['node_summary']
+    payloads = data_generators(data_generator=args.data_generator, batch_repeat=args.batch_repeat,
+                               batch_sleep=args.batch_sleep, timezone=args.timezone, token=args.linode_token,
+                               tag=args.linode_tag, initial_configs=True)
+
     store_data(protocol=args.protocol, payloads=payloads, data_generator=args.data_generator, dbms=args.dbms,
-               conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.data_generator)
+               conn=args.conn, auth=args.authentication, timeout=args.timeout)
+
 
 if __name__ == '__main__':
     main()

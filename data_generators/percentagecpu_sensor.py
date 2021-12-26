@@ -1,6 +1,14 @@
-import datetime
+import os
 import random
+import sys
 import time
+
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit('data_generators', 1)[0]
+PROTOCOLS = os.path.join(ROOT_PATH, 'protocols')
+sys.path.insert(0, PROTOCOLS)
+from support import generate_timestamp
+
+
 
 
 PERCENTAGECPU_DATA = {
@@ -27,10 +35,11 @@ PERCENTAGECPU_DATA = {
 }
 
 
-def get_percentagecpu_data(sleep:float, repeat:int)->list:
+def get_percentagecpu_data(timezone:str, sleep:float, repeat:int)->list:
     """
     Generate the percentage of CPU used per device
     :args:
+        timezone:str - timezone for generated timestamp(s)
         sleep:float - wait time between each row
         repeat:int - number of times to repeat process
     :param:
@@ -52,7 +61,7 @@ def get_percentagecpu_data(sleep:float, repeat:int)->list:
         device_name = random.choice(list(PERCENTAGECPU_DATA.keys()))
         data_sets.append(
             {
-                'timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                'timestamp': generate_timestamp(timezone=timezone),
                 'device_name': device_name,
                 'parentelement': PERCENTAGECPU_DATA[device_name]['parentelement'] ,
                 'webid': PERCENTAGECPU_DATA[device_name]['webid'] ,
