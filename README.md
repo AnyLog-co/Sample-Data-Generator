@@ -47,13 +47,13 @@ topic=(name=!topic_name and dbms="bring [dbms]" and table="bring [table]" and co
 topic=(name=!topic_name and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.device_name.str="bring [device_name]" and column.parentelement.str="bring [parentelement]" and column.webid.str="bring [webid]" and column.value.float="bring [value]") 
 
 # topic for "power" data sets  
-topic=(name=power and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.location.str="bring [location] and column.value.float="bring [value]")
+topic=(name=!topic_name and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.location.str="bring [location] and column.value.float="bring [value]")
 
 # topic for "synchrophasor" data set 
-topic=(name=synchrophasor and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.location.str="bring [location] and column.sequence.int="bring [sequence]" and column.phasor.str="bring [phasor]" and column.frequency.float="bring [frequency]" and column.dfreq.float="bring [dfreq]")
+topic=(name=!topic_name and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.location.str="bring [location] and column.sequence.int="bring [sequence]" and column.phasor.str="bring [phasor]" and column.frequency.float="bring [frequency]" and column.dfreq.float="bring [dfreq]")
 
 # Trig data sets
-topic=(name=trig and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.value.float="bring [value]")
+topic=(name=!topic_name and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.value.float="bring [value]")
 ```
 
  
