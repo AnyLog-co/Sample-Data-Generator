@@ -65,3 +65,27 @@ def generate_timestamp(timezone:str='utc')->str:
     return timestamp
 
 
+def payload_conversions(payloads:dict, dbms:str, table:str)->list:
+    """
+    For POST & MQTT functions, convert the content to have complete dicts
+    :args:
+        payloads:dict - either a dictionary or list of content to be stored in database
+        dbms:str - logical database name
+        table:str - table name, if payloads is dict use keys as table name
+    :params:
+        update_payloads:list - list of updated payloads
+    """
+    updated_payloads = []
+    if isinstance(payloads, dict):
+        for table in payloads:
+            for row in payloads[table]:
+                row['dbms'] = dbms
+                row['table'] = table
+                updated_payloads.append(json_dumps(data=row))
+    elif isinstance(payloads, list):
+        for row in payloads:
+            row['dbms'] = dbms
+            row['table'] = table
+            updated_payloads.append(json_dumps(data=row))
+
+    return updated_payloads

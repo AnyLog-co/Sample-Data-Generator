@@ -2,12 +2,13 @@ import requests
 import support
 
 #
-def post_data(conn:str, data:list, dbms:str, table:str=None, rest_topic:str='new-topic', auth:tuple=None, timeout:int=30)->bool:
+def post_data(conn:str, data:list, dbms:str, table:str=None, rest_topic:str='new-topic', auth:tuple=None,
+              timeout:int=30, exception:bool=False)->bool:
     """
     Send data via REST using POST command
     :notes:
         URL: https://github.com/AnyLog-co/documentation/blob/master/adding%20data.md#using-a-post-command
-        Comment: requires MQTT client call on the accepting AnyLog sidee
+        Comment: requires MQTT client call on the accepting AnyLog side
     :args:
         conn:str - REST connection information
         data - either a list or dict of data sets
@@ -16,6 +17,7 @@ def post_data(conn:str, data:list, dbms:str, table:str=None, rest_topic:str='new
         table:str - table name, if data is dict use keys as table name(s)
         auth:tuple - Authentication username + password
         timeout:nt - wait time
+        exception:bool - whether or not to print error messages
     :params:
         status:bool
         headers:dict - REST header info
@@ -31,35 +33,25 @@ def post_data(conn:str, data:list, dbms:str, table:str=None, rest_topic:str='new
         'Content-Type': 'text/plain'
     }
 
-    payloads = []
-    if isinstance(data, list):
-        for row in data:
-            row['dbms'] = dbms
-            row['table'] = table
-            try:
-                r = requests.post(url='http://%s' % conn, headers=headers, data=support.json_dumps(row), auth=auth, timeout=timeout)
-            except Exception as e:
+    payloads = support.payload_conversions(payloads=data)
+    for row in payloads:
+        try:
+            r = requests.post(url='http://%s' % conn, headers=headers, data=payload, auth=auth, timeout=timeout)
+        except Exception as e:
+            if exception is True:
+                print('Failed to POST content into %s (Error: %s)' % (conn, e))
+            status = False
+        else:
+            if int(r.status_code) != 200 and exception is True:
+                print('Failed to POST content into %s (Network Error: %s)' % (conn, r.status_code))
+                status = Fasle
+            elif int(r.status_code) != 200:
                 status = False
-            else:
-                if int(r.status_code) != 200:
-                    status = Fasle
-    elif isinstance(data, dict):
-        for table in data:
-            for row in data[table]:
-                row['dbms'] = dbms
-                row['table'] = table
-                try:
-                    r = requests.post(url='http://%s' % conn, headers=headers, data=support.json_dumps(row), auth=auth, timeout=timeout)
-                except Exception as e:
-                    status = False
-                else:
-                    if int(r.status_code) != 200:
-                        status = Fasle
 
     return status
 
 
-def put_data(conn:str, data:list, dbms:str, table:str=None, auth:tuple=None, timeout:int=30)->bool:
+def put_data(conn:str, data:list, dbms:str, table:str=None, auth:tuple=None, timeout:int=30, exception:bool=False)->bool:
     """
     Send data via REST using PUT command
     :url:
@@ -71,6 +63,7 @@ def put_data(conn:str, data:list, dbms:str, table:str=None, auth:tuple=None, tim
         table:str - table name, if data is dict use keys as table name(s)
         auth:tuple - Authentication username + password
         timeout:nt - wait time
+        exception:bool - whether or not to print error messages
     :params:
         status:bool
         headers:dict - REST header info
@@ -91,10 +84,16 @@ def put_data(conn:str, data:list, dbms:str, table:str=None, auth:tuple=None, tim
             try:
                 r = requests.put(url='http://%s' % conn, headers=headers, data=support.json_dumps(row), auth=auth, timeout=timeout)
             except Exception as e:
+                if exception is True:
+                    print('Failed to PUT data into %s (Error: %s)' % (conn, e))
                 status = False
             else:
-                if int(r.status_code) != 200:
+                if int(r.status_code) != 200 and exception is True:
+                    print('Failed to PUST data into %s (Network Error: %s)' % r.status_code)
                     status = False
+                elif int(r.status_code) != 200:
+                    status = False
+
     elif isinstance(data, dict):
         for table in data:
             headers['table'] = table
@@ -102,9 +101,14 @@ def put_data(conn:str, data:list, dbms:str, table:str=None, auth:tuple=None, tim
                 try:
                     r = requests.put(url='http://%s' % conn, headers=headers, data=support.json_dumps(row), auth=auth, timeout=timeout)
                 except Exception as e:
+                    if exception is True:
+                        print('Failed to PUT data into %s (Error: %s)' % (conn, e))
                     status = False
                 else:
-                    if int(r.status_code) != 200:
+                    if int(r.status_code) != 200 and exception is True:
+                        print('Failed to PUST data into %s (Network Error: %s)' % r.status_code)
+                        status = False
+                    elif int(r.status_code) != 200:
                         status = False
     return status
 

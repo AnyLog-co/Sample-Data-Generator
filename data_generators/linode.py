@@ -9,32 +9,34 @@ PROTOCOLS = os.path.join(ROOT_PATH, 'protocols')
 sys.path.insert(0, PROTOCOLS)
 from support import generate_timestamp
 
-def get_data(url:str, token:str)->dict:
+def get_data(url:str, token:str, exception:bool=False)->dict:
     """
     Get data from linode
     :args:
         url:str - URL to get data from 
-        token:str - REST linode API Token 
+        token:str - REST linode API Token
+        exception:bool - whether or not to print exceptions
     :params: 
-        output:dict - data from GET request
+        data:dict - data from GET request
     :return: 
-        output 
+        data
     """
+    data = {}
     try:
         r = requests.get(url, headers={'Authorization': 'Bearer %s' % token}) 
-    except Exception as e: 
-        print('Failed to GET data from linode (Error: %s)' % e)
-        output = None
+    except Exception as e:
+        if exception is True:
+            print('Failed to GET data from linode (Error: %s)' % e)
     else: 
-        if r.status_code != 200: 
-            print('Failed to GET data form linode due to network error: %s' % str(r.status_code)) 
-            output = None 
-        else: 
+        if int(r.status_code) != 200 and exception is True:
+            print('Failed to GET data form linode due to network error: %s' % str(r.status_code))
+        elif int(r.status_code) == 200:
             try: 
-                output = r.json()
+                data = r.json()
             except: 
-                output = r.text
-    return output
+                data = r.text
+
+    return data
 
 
 def node_machine_info(data:list, tag:str, timestamp:str=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))->(list, list):
@@ -147,7 +149,7 @@ def extract_network_insight(data:list, member_id:str, timestamp:str=datetime.dat
         'value': sum(values['in']) / (sum(values['in']) + sum(values['out']))
     }
 
-def get_linode_data(token:str, tag:str=None, initial_configs:bool=False, timezone:str='utc'):
+def get_linode_data(token:str, tag:str=None, initial_configs:bool=False, timezone:str='utc', exception:bool=True)->dict:
     """
     Extract data from linode
     :args:
@@ -155,6 +157,8 @@ def get_linode_data(token:str, tag:str=None, initial_configs:bool=False, timezon
         tag:str - group of nodes to extract data from. if not set extract all
         initial_configs:bool - whether this is the first timee the configs are being deployed
         timezone:str - timezone for generated timestamp(s)
+        exception:bool - whether or not to print exceptions
+
     :params:
         timestamp:str - current (UTC) timestamp
         payloads:dict - dictionary of all the tables / data generated
@@ -170,7 +174,9 @@ def get_linode_data(token:str, tag:str=None, initial_configs:bool=False, timezon
         'netv4_public_insight': [],
         'netv6_public_insight': []
     }
-    data = get_data(url='https://api.linode.com/v4/linode/instances', token=token)
+    data = get_data(url='https://api.linode.com/v4/linode/instances', token=token, exception=exception)
+    if len(data) == 0:
+        return {}
 
     # machine(s) summary
     payloads['node_config'], machines = node_machine_info(data=data['data'], tag=tag, timestamp=timestamp)
@@ -188,7 +194,3 @@ def get_linode_data(token:str, tag:str=None, initial_configs:bool=False, timezon
 
     return payloads
 
-
-if __name__ == '__main__':
-    # main()
-    linode('ab21f3f79e22693bb33815772fd6a48fa91a0298e9052be0250a56fec7b4cc70', tag='')
