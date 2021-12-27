@@ -33,7 +33,7 @@ def post_data(conn:str, data:list, dbms:str, table:str=None, rest_topic:str='new
         'Content-Type': 'text/plain'
     }
 
-    payloads = support.payload_conversions(payloads=data)
+    payloads = support.payload_conversions(payloads=data, dbms=dbms, table=table)
     for row in payloads:
         try:
             r = requests.post(url='http://%s' % conn, headers=headers, data=payload, auth=auth, timeout=timeout)

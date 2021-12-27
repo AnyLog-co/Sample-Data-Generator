@@ -20,6 +20,7 @@ def __timestamp_to_fn(orig_timestamp:str)->str:
 
     return timestamp
 
+
 def print_content(data:list, dbms:str, table:str=None):
     """
     Print data to screen

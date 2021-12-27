@@ -52,7 +52,6 @@ def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0
 
 def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:str, auth:str, timeout:float, topic:str,
                exception:bool=False)->bool:
-               #, conn:str, auth:str, timeout:float, topic:str=None):
     """
     Store content based on the selected protocol(s)
     :args:
@@ -64,12 +63,14 @@ def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:s
        auth:str - username, password
        timeout:float - REST timeout (in seconds)
        topic:str - MQTT / REST POST topic
+       exception:bool - whether or not to print exceptions
     :params:
         table:str - table name
         broker:str - broker for MQTT
         port:str - port for MQTT
         username:str - username for MQTT
         password:str - password for MQTT
+        mqtt_conn:paho.mqtt.client.Client - MQTT client connection
     """
     status = True
     table = ''
@@ -112,7 +113,8 @@ def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:s
         broker, port = conn.rstrip().lstrip().replace(' ', '').split(':')
         user, password = auth.rstrip().lstrip().replace(' ', '').split(',')
         mqtt_conn = mqtt.connect_mqtt_broker(broker=broker, port=port, username=user, password=password)
-        print(mqtt_conn)
+        if mqtt_conn is not None:
+            status = mqtt.send_data(mqtt_client=mqtt_conn, topic=topic, data=payloads, dbms=dbms, table=table, exception=exception)
 
     return status
 
@@ -188,7 +190,7 @@ def main():
                                tag=args.linode_tag, initial_configs=True)
     if len(payloads) >= 1:
         store_data(protocol=args.protocol, payloads=payloads, data_generator=args.data_generator, dbms=args.dbms,
-                   conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.topic)
+                   conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.topic, exception=args.exception)
     else:
         print('Failed to generate data')
 
