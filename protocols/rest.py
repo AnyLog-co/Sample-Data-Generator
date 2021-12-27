@@ -1,7 +1,7 @@
 import requests
-import convert_json
+import support
 
-
+#
 def post_data(conn:str, data:list, dbms:str, table:str=None, rest_topic:str='new-topic', auth:tuple=None, timeout:int=30)->bool:
     """
     Send data via REST using POST command
@@ -36,21 +36,25 @@ def post_data(conn:str, data:list, dbms:str, table:str=None, rest_topic:str='new
         for row in data:
             row['dbms'] = dbms
             row['table'] = table
-            payloads.append(convert_json.json_dumps(row))
+            try:
+                r = requests.post(url='http://%s' % conn, headers=headers, data=support.json_dumps(row), auth=auth, timeout=timeout)
+            except Exception as e:
+                status = False
+            else:
+                if int(r.status_code) != 200:
+                    status = Fasle
     elif isinstance(data, dict):
         for table in data:
             for row in data[table]:
                 row['dbms'] = dbms
                 row['table'] = table
-                payloads.append(convert_json.json_dumps(row))
-
-    try:
-        r = requests.post(url='http://%s' % conn, headers=headers, data=payloads, auth=auth, timeout=timeout)
-    except Exception as e:
-        status = False
-    else:
-        if int(r.status_code) != 200:
-            status = Fasle
+                try:
+                    r = requests.post(url='http://%s' % conn, headers=headers, data=support.json_dumps(row), auth=auth, timeout=timeout)
+                except Exception as e:
+                    status = False
+                else:
+                    if int(r.status_code) != 200:
+                        status = Fasle
 
     return status
 
@@ -81,33 +85,27 @@ def put_data(conn:str, data:list, dbms:str, table:str=None, auth:tuple=None, tim
         'mode': 'streaming',
         'Content-Type': 'text/plain'
     }
-
     if isinstance(data, list):
-        payloads = []
         headers['table'] = table
         for row in data:
-            payloads.append(convert_json.json_dumps(row))
-        try:
-            r = requests.put(url='http://%s' % conn, headers=headers, data=payloads)
-        except Exception as e:
-            status = False
-        else:
-            if int(r.status_code) != 200:
-                status = False
-    elif isinstance(data, dict):
-        for table in data:
-            payloads = []
-            headers['table'] = table
-            for row in data[table]:
-                payloads.append(convert_json.json_dumps(row))
             try:
-                r = requests.put(url='http://%s' % conn, headers=headers, data=payloads, auth=auth, timeout=timeout)
+                r = requests.put(url='http://%s' % conn, headers=headers, data=support.json_dumps(row), auth=auth, timeout=timeout)
             except Exception as e:
                 status = False
             else:
                 if int(r.status_code) != 200:
                     status = False
-
+    elif isinstance(data, dict):
+        for table in data:
+            headers['table'] = table
+            for row in data[table]:
+                try:
+                    r = requests.put(url='http://%s' % conn, headers=headers, data=support.json_dumps(row), auth=auth, timeout=timeout)
+                except Exception as e:
+                    status = False
+                else:
+                    if int(r.status_code) != 200:
+                        status = False
     return status
 
 

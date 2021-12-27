@@ -48,7 +48,7 @@ def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0
     return payloads
 
 
-def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:str, auth=str, timeout=float):
+def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:str, auth:str, timeout:float, topic:str):
                #, conn:str, auth:str, timeout:float, topic:str=None):
     """
     Store content based on the selected protocol(s)
@@ -82,6 +82,20 @@ def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:s
     elif protocol == 'put':
         from rest import put_data
         put_data(conn=conn, data=payloads, dbms=dbms, table=table, auth=auth, timeout=timeout)
+    elif protocol == 'post':
+        from rest import post_data
+        if data_generator == 'linode':
+            # node_config & node_summary have a slightly different configuration
+            for param in ['node_config', 'node_summary']:
+                store_data(protocol='put', payloads=payloads[param], data_generator=param, dbms=dbms, conn=conn,
+                           auth=auth, timeout=timeout, topic=None)
+                del payloads[param]
+        post_data(conn=conn, data=payloads, dbms=dbms, table=table, rest_topic=topic)
+    elif protocol == 'mqtt':
+        from mqtt import mqtt_send_data
+        broker, port = conn.rstrip().lstrip().replace(' ', '').split(':')
+        user, password = auth.rstrip().lstrip().replace(' ', '').split(',')
+        mqtt_send_data(broker=broker, port=port, topic=topic, payloads=payloads, dbms=dbms, table=table, username=user, password=password)
 
 
 def main():
@@ -142,27 +156,19 @@ def main():
     parser.add_argument('--timezone', type=str, choices=['local', 'UTC', 'ET', 'BR', 'JP', 'WS', 'AU', 'IT'], default='local', help='timezone for generated timestamp(s)')
     parser.add_argument('--authentication', type=str, default=None, help='username, password')
     parser.add_argument('--timeout', type=float, default=30, help='REST timeout (in seconds)')
+    parser.add_argument('--topic', type=str, default=None, help='topic for either REST POST or MQTT')
 
     # linode params
     parser.add_argument('--linode-token', type=str, default='ab21f3f79e22693bb33815772fd6a48fa91a0298e9052be0250a56fec7b4cc70', help='linode token')
     parser.add_argument('--linode-tag',   type=str, default=None, help='group of linode nodes to get data from. If not gets from all nodes associated to token')
-
     args = parser.parse_args()
-
-    if args.protocol == 'post' or args.protocol == 'mqtt':
-        import mqtt_client
-        if protocol == 'post':
-            conn = 'rest:%s' % conn.replace(' ', '').split(':')[-1]
-        mqtt_client.declare_mqtt_client(conn=conn, data_generator=args.data_generator, auth=args.auth,
-                                        timeout=args.timeout)
-
 
     payloads = data_generators(data_generator=args.data_generator, batch_repeat=args.batch_repeat,
                                batch_sleep=args.batch_sleep, timezone=args.timezone, token=args.linode_token,
                                tag=args.linode_tag, initial_configs=True)
 
     store_data(protocol=args.protocol, payloads=payloads, data_generator=args.data_generator, dbms=args.dbms,
-               conn=args.conn, auth=args.authentication, timeout=args.timeout)
+               conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.topic)
 
 
 if __name__ == '__main__':

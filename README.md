@@ -29,22 +29,31 @@ The possible data sets are based on data set that were originally providd by dif
   * sin
   * cos
 
+  
 **Note**: When using either _POST_ or _MQTT_ to store the data, the accepting AnyLog node should contain a 
-    `run mqtt client` process. (The topic name correlate to the _data-generator_ value)
+  `run mqtt client` process. (The topic name correlate to the _data-generator_ value)
+
 ```anylog
-# Linode 
-run mqtt client where broker=!broker and port=!port and log=false topic=(name=linode and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.member_id.int="bring [member_id]" and column.value.float="bring [value]")
+# "run mqtt client" for POST command: 
+run mqtt client where broker=rest and port=!anylog_server_port and user-agent=anylog and log=false and topic=!topic
 
-# Network
-run mqtt client where broker=127.0.0.1 and port=2049 and log=false topic=(name=percentagecpu and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.device_name.str="bring [device_name]" and column.parentelement.str="bring [parentelement]" and column.webid.str="bring [webid]" and column.value.float="bring [value]")
-run mqtt client where broker=127.0.0.1 and port=2049 and log=false topic=(name=ping and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.device_name.str="bring [device_name]" and column.parentelement.str="bring [parentelement]" and column.webid.str="bring [webid]" and column.value.float="bring [value]")
+# "run mqtt client" for MQTT command
+run mqtt client where broker=!broker and port=!broker_port and user=!username and password=!password and log=false and topic=!topic
 
-# Power
-run mqtt client where broker=127.0.0.1 and port=2049 and log=false topic=(name=power and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.location.str="bring [location] and column.value.float="bring [value]")
+# topic for "linode" data sets 
+topic=(name=!topic_name and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.member_id.int="bring [member_id]" and column.value.float="bring [value]")
 
-# synchrophasor
-run mqtt client where broker=127.0.0.1 and port=2049 and log=false topic=(name=synchrophasor and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.location.str="bring [location] and column.sequence.int="bring [sequence]" and column.phasor.str="bring [phasor]" and column.frequency.float="bring [frequency]" and column.dfreq.float="bring [dfreq]")
+# topic for "network" data sets
+topic=(name=!topic_name and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.device_name.str="bring [device_name]" and column.parentelement.str="bring [parentelement]" and column.webid.str="bring [webid]" and column.value.float="bring [value]") 
 
-# Trig
-run mqtt client where broker=127.0.0.1 and port=2049 and log=false topic=(name=trig and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.value.float="bring [value]")
+# topic for "power" data sets  
+topic=(name=power and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.location.str="bring [location] and column.value.float="bring [value]")
+
+# topic for "synchrophasor" data set 
+topic=(name=synchrophasor and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.location.str="bring [location] and column.sequence.int="bring [sequence]" and column.phasor.str="bring [phasor]" and column.frequency.float="bring [frequency]" and column.dfreq.float="bring [dfreq]")
+
+# Trig data sets
+topic=(name=trig and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.value.float="bring [value]")
 ```
+
+ 
