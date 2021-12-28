@@ -1,4 +1,4 @@
-FROM ubuntu:latest	
+FROM ubuntu:18.04
 
 # declare params 
 ARG ANYLOG_ROOT_DIR=/app
