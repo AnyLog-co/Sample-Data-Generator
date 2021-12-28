@@ -1,7 +1,7 @@
 import requests
 import support
 
-#
+
 def post_data(conn:str, data:list, dbms:str, table:str=None, rest_topic:str='new-topic', auth:tuple=None,
               timeout:int=30, exception:bool=False)->bool:
     """

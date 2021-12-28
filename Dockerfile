@@ -14,9 +14,11 @@ RUN apt-get -y install python3-psycopg2
 RUN pip3 install --upgrade pip
 
 # install requirements via pip 
-RUN pip3 install requests
-RUN pip3 install psutil
-RUN pip3 install paho-mqtt
+RUN python3 -m pip install requests
+RUN python3 -m pip install pytz
+RUN python3 -m pip install paho-mqtt
+RUN python3 -m pip install tzlocal
+
 
 # Add user 
 RUN adduser appuser 
@@ -32,7 +34,8 @@ RUN chmod 755 /app
 # Swtich user 
 USER appuser 
 
+ENTRYPOINT /app/Sample-Data-Generator/docker_call.sh
  
 
-# Run AnyLog 
+# Run Data Generator
 ENTRYPOINT bash Sample-Data-Generator/data_generator.sh
