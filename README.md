@@ -63,7 +63,7 @@ anylog@localhost:~/ $ python3 $HOME/Sample-Data-Generator/data_generator.py 10.0
 {"timestamp": "2021-12-28 10:14:34.234272+09:30", "device_name": "Ubiquiti OLT", "parentelement": "d515dccb-58be-11ea-b46d-d4856454f4ba", "webid": "F1AbEfLbwwL8F6EiShvDV-QH70Ay9wV1b5Y6hG0bdSFZFT0ugxACfpGU7d1ojPpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxVQklRVUlUSSBPTFR8UElORw", "value": 26.95, "dbms": "test", "table": "ping_sensor"}
 ```
 
-**Docker**
+**Docker**:
 ```bash
 # pull code
 docker pull anylog/sample-data-generator:latest
@@ -108,7 +108,7 @@ docker run --name data-gen -e CONN=127.0.0.1:2048 -e GENERATOR=ping -e SAVE=prin
 
   
 **Note**: When using either _POST_ or _MQTT_ to store the data, the accepting AnyLog node should contain a 
-  `run mqtt client` process. (The topic name correlate to the _data-generator_ value)
+  `run mqtt client` process.
 
 ```anylog
 # "run mqtt client" for POST command: 
