@@ -4,9 +4,17 @@ The following generatees data between -pi and pi in terms of
 - cos 
 - random value between the two 
 """
-import datetime 
-import math 
-import random 
+
+import math
+import os
+import sys
+import time
+
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit('data_generators', 1)[0]
+PROTOCOLS = os.path.join(ROOT_PATH, 'protocols')
+sys.path.insert(0, PROTOCOLS)
+from support import generate_timestamp
+
 
 VALUE_ARRAY = [
    -1 * math.pi, -1 * math.pi/2, -1 * math.pi/3,
@@ -25,82 +33,36 @@ VALUE_ARRAY = [
    -1 * math.pi/3, -1 * math.pi/2, -1 * math.pi 
 ]
 
-def sin_value(frequency:float)->list: 
-   """
-   Get SIN values 
-   :args: 
-      frequency:float - multiplication of generated value 
-      sleep:float - wait time between each insert
-   :param:
-      timestamp:str
-      value:float - value from VALUE_ARRAY 
-      data:dict - data 
-   :sample:
-      {
-         "timestamp": "2020-01-01 00:00:00",
-         "value": 1
-      }
-   :return: 
-      list of values to insert
-   """
-   data_list = [] 
-   for value in VALUE_ARRAY: 
-      value = math.sin(value) * frequency  
-      data_list.append({
-         'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 
-         'value': math.sin(value) * frequency
-      }) 
-       
-   return data_list 
 
-def cos_value(frequency:float)->list: 
+def trig_value(timezone:str, sleep:float, repeat:int)->dict:
    """
-   Get COS values 
-   :args: 
-      frequency:float - multiplication of generated value 
-   :param:
-      timestamp:str
-      value:float - value from VALUE_ARRAY 
-      data:dict - data 
-   :sample:
-      {
-         "timestamp": "2020-01-01 00:00:00",
-         "value": 1
-      }
-   :return: 
-      list of values to insert
+   Calculate the sin/cos values between -π to π and π to -π
+   :args:
+      timezone:str - timezone for generated timestamp(s)
+      sleep:float - wait time between each iteration
+      repeat:int - number of iterations
+   :params:
+      payloads:dict - sin/cos data to store
+   :return:
+      payloads
    """
-   data_list = [] 
-   for value in VALUE_ARRAY: 
-      data_list.append({
-         'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 
-         'value': math.cos(value) * frequency
-      }) 
-       
-   return data_list  
+   payloads = {'sin': [], 'cos': []}
+   for i in range(repeat):
+      for value in VALUE_ARRAY:
+         timestamp = generate_timestamp(timezone=timezone)
+         payloads['sin'].append({
+               'timestamp': timestamp,
+               'value': math.sin(value)
+         })
+         payloads['cos'].append({
+            'timestamp': timestamp,
+            'value': math.sin(value)
+         })
+         time.sleep(sleep)
 
-def rand_value(frequency:float)->list: 
-   """
-   Get RAND values 
-   :args: 
-      frequency:float - multiplication of generated value 
-   :param:
-      timestamp:str
-      value:float - value from VALUE_ARRAY 
-      data:dict - data 
-   :sample:
-      {
-         "timestamp": "2020-01-01 00:00:00",
-         "value": 1
-      }
-   :return: 
-      list of values to insert
-   """
-   data_list = [] 
-   for value in VALUE_ARRAY: 
-      data_list.append({
-         'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), 
-         'value': value * random.random() * frequency
-      }) 
-       
-   return data_list
+   return payloads
+
+
+
+if __name__ == '__main__':
+   print(trig_value(0.5, 10))
