@@ -10,7 +10,6 @@ RUN apt-get -y update
 
 # install requirements via apt 
 RUN apt-get -y install python3 python3-pip
-RUN apt-get -y install python3-psycopg2
 RUN pip3 install --upgrade pip
 
 # install requirements via pip 
@@ -34,8 +33,5 @@ RUN chmod 755 /app
 # Swtich user 
 USER appuser 
 
-ENTRYPOINT /app/Sample-Data-Generator/docker_call.sh
+ENTRYPOINT bash /app/Sample-Data-Generator/docker_call.sh
  
-
-# Run Data Generator
-ENTRYPOINT bash Sample-Data-Generator/data_generator.sh

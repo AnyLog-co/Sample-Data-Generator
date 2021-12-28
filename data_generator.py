@@ -135,8 +135,8 @@ def main():
             * put
             * mqtt
             * file (default)
+            * print
         dbms                    logical database to store data in       (default: test)
-
     :optional arguments
         -h, --help                          show this help message and exit
         --repeat           REPEAT           number of time to repeat each batch, if 0 then run continuously
