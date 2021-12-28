@@ -76,7 +76,7 @@ docker run --name data-gen -e HELP=true --rm anylog/data-gen:latest
   1. For MQTT, PUT or POST "SAVE" format user should add "--network host" in the docker run command
   2. Instead of '--linode-token' use '-e TOKEN=?' and instead of '--linode-tag' use '-e TAG=?'
 COMMENT >>    
-docker run --name data-gen -e CONN=127.0.0.1:2048 -e GENERATOR=ping -e SAVE=print -e DBMS=test -e REPEAT=1 -e SLEEP=0 -e BATCH_REPEAT=5 -e BATCH_SLEEP=0.5 -e TIMEZONE=UTC --rm data-gen:latest
+docker run --name data-gen -e CONN=127.0.0.1:2048 -e GENERATOR=ping -e SAVE=print -e DBMS=test -e REPEAT=1 -e SLEEP=0 -e BATCH_REPEAT=5 -e BATCH_SLEEP=0.5 -e TIMEZONE=UTC --rm anylog/sample-data-generator:latest
 {"timestamp": "2021-12-28T00:58:30.503732Z", "device_name": "Catalyst 3500XL", "parentelement": "68ae8bef-92e1-11e9-b465-d4856454f4ba", "webid": "F1AbEfLbwwL8F6EiShvDV-QH70A74uuaOGS6RG0ZdSFZFT0ug4FckGTrxdFojNpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxDQVRBTFlTVCAzNTAwWEx8UElORw", "value": 14.68, "dbms": "test", "table": "ping_sensor"}
 {"timestamp": "2021-12-28T00:58:31.006234Z", "device_name": "GOOGLE_PING", "parentelement": "f0bd0832-a81e-11ea-b46d-d4856454f4ba", "webid": "F1AbEfLbwwL8F6EiShvDV-QH70AMgi98B6o6hG0bdSFZFT0ugPdQ3gcXLd1ojPpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xHT09HTEVfUElOR3xQSU5H", "value": 31.62, "dbms": "test", "table": "ping_sensor"}
 {"timestamp": "2021-12-28T00:58:31.509024Z", "device_name": "Catalyst 3500XL", "parentelement": "68ae8bef-92e1-11e9-b465-d4856454f4ba", "webid": "F1AbEfLbwwL8F6EiShvDV-QH70A74uuaOGS6RG0ZdSFZFT0ug4FckGTrxdFojNpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxDQVRBTFlTVCAzNTAwWEx8UElORw", "value": 42.58, "dbms": "test", "table": "ping_sensor"}
