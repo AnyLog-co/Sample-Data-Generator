@@ -87,7 +87,7 @@ def __synchrophasor_data():
     return data_set
 
 
-def data_generator(timezone:str, sleep:float, repeat:int)->list:
+def data_generator(timezone:str, enable_timezone_range:bool, sleep:float, repeat:int)->list:
     """
     Generate synchrophasor data
     :args:
@@ -105,7 +105,7 @@ def data_generator(timezone:str, sleep:float, repeat:int)->list:
         if len(location.split(',')) == 3:
             location = location.rsplit(',', 1)[0]
         payloads.append({
-            'timestamp': generate_timestamp(timezone=timezone),
+            'timestamp': generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range),
             'location': location,
             'source': __calculate_value(DATA['synchrophasor']['source']),
             'sequence': random.choice(range(1, 4)),

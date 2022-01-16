@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import time
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
@@ -10,7 +11,8 @@ sys.path.insert(0, PROTOCOLS)
 
 
 def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0.5, timezone:str='utc',
-                    token:str=None, tag:str=None, initial_configs:bool=False, exception:bool=False)->dict:
+                    enable_timezone_range:bool=True, token:str=None, tag:str=None, initial_configs:bool=False,
+                    exception:bool=False)->dict:
     """
     Based on the parameters generate a data set
     :args:
@@ -18,6 +20,7 @@ def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0
         batch_repeat:int - number of rows per batch
         batch_sleep:float - sleep time between rows or a specific batch
         timezone:str - whether to set the timezone in UTC or local
+        enable_timezone_range:bool - whether or not to set timestamp within a "range"
         token:str - linode token
         tag:str - group of linode nodes to get data from. If not gets from all nodes associated to token
         initial_configs:bool - whether this is the first timee the configs are being deployed
@@ -30,23 +33,32 @@ def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0
     if data_generator == 'linode':
         import linode
         payloads = linode.get_linode_data(token=token, tag=tag, initial_configs=initial_configs, timezone=timezone,
-                                          exception=exception)
+                                          enable_timezone_range=enable_timezone_range, exception=exception)
     elif data_generator == 'percentagecpu':
         import percentagecpu_sensor
-        payloads = percentagecpu_sensor.get_percentagecpu_data(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
+        payloads = percentagecpu_sensor.get_percentagecpu_data(timezone=timezone,
+                                                               enable_timezone_range=enable_timezone_range,
+                                                               sleep=batch_sleep, repeat=batch_repeat)
     elif data_generator == 'ping':
         import ping_sensor
-        payloads = ping_sensor.get_ping_data(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
+        payloads = ping_sensor.get_ping_data(timezone=timezone, enable_timezone_range=enable_timezone_range,
+                                             sleep=batch_sleep, repeat=batch_repeat)
     elif data_generator == 'power':
         import power_company
-        payloads = power_company.data_generator(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
+        payloads = power_company.data_generator(timezone=timezone, enable_timezone_range=enable_timezone_range,
+                                                sleep=batch_sleep, repeat=batch_repeat)
     elif data_generator == 'synchrophasor':
         import power_company_synchrophasor
-        payloads = power_company_synchrophasor.data_generator(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
+        payloads = power_company_synchrophasor.data_generator(timezone=timezone,
+                                                              enable_timezone_range=enable_timezone_range,
+                                                              sleep=batch_sleep, repeat=batch_repeat)
     elif data_generator == 'trig':
         import trig
-        payloads = trig.trig_value(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
-
+        payloads = trig.trig_value(timezone=timezone, enable_timezone_range=enable_timezone_range,
+                                   sleep=batch_sleep, repeat=batch_repeat)
+    elif data_generator == 'aiops':
+        import customer_aiops
+        payloads = customer_aiops.get_aiops_data(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
     return payloads
 
 
@@ -105,7 +117,8 @@ def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:s
                     del payloads[param]
                 else:
                     print('Failed to PUT data for %s against %s' % (param, conn))
-        if status is True and not post_data(conn=conn, data=payloads, dbms=dbms, table=table, rest_topic=topic):
+        if status is True and not post_data(conn=conn, data=payloads, dbms=dbms, table=table, rest_topic=topic,
+                                            exception=exception):
                 print('Failed to POST data into %s' % conn)
                 status = False
     elif protocol == 'mqtt':
@@ -114,7 +127,8 @@ def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:s
         user, password = auth.rstrip().lstrip().replace(' ', '').split(',')
         mqtt_conn = mqtt.connect_mqtt_broker(broker=broker, port=port, username=user, password=password)
         if mqtt_conn is not None:
-            status = mqtt.send_data(mqtt_client=mqtt_conn, topic=topic, data=payloads, dbms=dbms, table=table, exception=exception)
+            status = mqtt.send_data(mqtt_client=mqtt_conn, topic=topic, data=payloads, dbms=dbms, table=table,
+                                    exception=exception)
 
     return status
 
@@ -130,6 +144,7 @@ def main():
             * power data
             * synchrophasor data
             * trig (default)
+            * aiops
         protocol                format to save data                     (default: file)
             * post
             * put
@@ -153,6 +168,7 @@ def main():
             * WS - -09:00 from UTC
             * AU - +09:30 from UTC
             * IT - +01:00 from UTC
+        --enable-timezone-range     ENABLE_TIMEZONE_RANGE   whether or not to set timestamp within a "range"
         --authentication   AUTHENTICATION   username, password
         --timeout TIMEOUT  REST             timeout (in seconds)
         --linode-token     LINODE_TOKEN     linode token
@@ -164,7 +180,7 @@ def main():
     parser = argparse.ArgumentParser()
     # default params
     parser.add_argument('conn', type=str, default='127.0.0.1:2049', help='REST IP + Port or broker IP + Port')
-    parser.add_argument('data_generator', type=str, choices=['linode', 'percentagecpu', 'ping', 'power', 'synchrophasor', 'trig'], default='trig', help='data set to generate content for')
+    parser.add_argument('data_generator', type=str, choices=['linode', 'percentagecpu', 'ping', 'power', 'synchrophasor', 'trig', 'aiops'], default='trig', help='data set to generate content for')
     parser.add_argument('protocol',       type=str, choices=['post', 'put', 'mqtt', 'file', 'print'], default='file', help='format to save data')
     parser.add_argument('dbms', type=str, default='test', help='Logical database to store data in')
 
@@ -175,6 +191,7 @@ def main():
     parser.add_argument('--batch-sleep',  type=float, default=0.5, help='sleep time between rows or a specific batch')
 
     parser.add_argument('--timezone', type=str, choices=['local', 'UTC', 'ET', 'BR', 'JP', 'WS', 'AU', 'IT'], default='local', help='timezone for generated timestamp(s)')
+    parser.add_argument('--enable-timezone-range', type=bool, nargs='?', const=True, default=False, help='whether or not to set timestamp within a "range"')
     parser.add_argument('--authentication', type=str, default=None, help='username, password')
     parser.add_argument('--timeout', type=float, default=30, help='REST timeout (in seconds)')
     parser.add_argument('--topic', type=str, default=None, help='topic for either REST POST or MQTT')
@@ -185,15 +202,30 @@ def main():
     parser.add_argument('-e', '--exception', type=bool, nargs='?',     const=True, default=False, help='whether or not to print exceptions to screen')
     args = parser.parse_args()
 
-    payloads = data_generators(data_generator=args.data_generator, batch_repeat=args.batch_repeat,
-                               batch_sleep=args.batch_sleep, timezone=args.timezone, token=args.linode_token,
-                               tag=args.linode_tag, initial_configs=True)
-    if len(payloads) >= 1:
-        store_data(protocol=args.protocol, payloads=payloads, data_generator=args.data_generator, dbms=args.dbms,
-                   conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.topic, exception=args.exception)
-    else:
-        print('Failed to generate data')
-
+    if args.repeat == 0:
+        while True:
+            payloads = data_generators(data_generator=args.data_generator, batch_repeat=args.batch_repeat,
+                                       batch_sleep=args.batch_sleep, timezone=args.timezone,
+                                       enable_timezone_range=args.enable_timezone_range, token=args.linode_token,
+                                       tag=args.linode_tag, initial_configs=True)
+            if len(payloads) >= 1:
+                store_data(protocol=args.protocol, payloads=payloads, data_generator=args.data_generator, dbms=args.dbms,
+                           conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.topic, exception=args.exception)
+            else:
+                print('Failed to generate data')
+            time.sleep(args.sleep)
+    for i in range(args.repeat):
+        payloads = data_generators(data_generator=args.data_generator, batch_repeat=args.batch_repeat,
+                                   batch_sleep=args.batch_sleep, timezone=args.timezone,
+                                   enable_timezone_range=args.enable_timezone_range, token=args.linode_token,
+                                   tag=args.linode_tag, initial_configs=True)
+        if len(payloads) >= 1:
+            store_data(protocol=args.protocol, payloads=payloads, data_generator=args.data_generator, dbms=args.dbms,
+                       conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.topic,
+                       exception=args.exception)
+        else:
+            print('Failed to generate data')
+        time.sleep(args.sleep)
 
 if __name__ == '__main__':
     main()

@@ -33,11 +33,14 @@ def json_loads(data:str)->dict:
         return data
 
 
-def generate_timestamp(timezone:str='utc')->str:
+def generate_timestamp(timezone:str='utc', enable_timezone_range:bool=True)->str:
     """
     Generate timestamp based on timezone
     :args:
         timezone:str - timezone either UTC or other
+        enable_timezone_range:bool - if set alter timestamp by datetime.timedelta(days=random.choice(range(-30, 31)),
+                                                                                  hours=random.choice(range(-23, 24)),
+                                                                                  minutes=random.choice(range(-59, 60)))
     :params:
         timestamp:str - generated timestamp
     :return:
@@ -56,11 +59,23 @@ def generate_timestamp(timezone:str='utc')->str:
 
     if timezone in timezones: # selected timezone
         timezone = timezones[timezone]
+        timestamp = timestamp.astimezone(timezone)
+        if enable_timezone_range is True:
+            timestamp += datetime.timedelta(days=random.choice(range(-30, 31)), hours=random.choice(range(-23, 24)),
+                                            minutes=random.choice(range(-59, 60)))
         timestamp = timestamp.astimezone(timezone).isoformat().replace('T', ' ')
     elif timezone == 'local': # current timestamp as "UTC"
-        timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+        timestamp = datetime.datetime.now()
+        if enable_timezone_range is True:
+            timestamp += datetime.timedelta(days=random.choice(range(-30, 31)), hours=random.choice(range(-23, 24)),
+                                            minutes=random.choice(range(-59, 60)))
+        timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     else: # actual UTC value
-        timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+        timestamp = datetime.datetime.utcnow()
+        if enable_timezone_range is True:
+            timestamp += datetime.timedelta(days=random.choice(range(-30, 31)), hours=random.choice(range(-23, 24)),
+                                            minutes=random.choice(range(-59, 60)))
+        timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
     return timestamp
 

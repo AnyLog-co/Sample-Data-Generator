@@ -55,7 +55,7 @@ def __calculate_value(val_range:list)->float:
         return float_value - random.random()
 
 
-def data_generator(timezone:str, sleep:float, repeat:int)->dict:
+def data_generator(timezone:str, enable_timezone_range:bool, sleep:float, repeat:int)->dict:
     """
     Generate data for non-synchorphiser table
     :args:
@@ -70,7 +70,7 @@ def data_generator(timezone:str, sleep:float, repeat:int)->dict:
     payloads = {}
 
     for i in range(repeat):
-        timestamp = generate_timestamp(timezone=timezone)
+        timestamp = generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range)
         for table in list(DATA.keys()):
             if table not in payloads:
                 payloads[table] = []

@@ -44,7 +44,7 @@ PING_DATA = {
         },
 }
 
-def get_ping_data(timezone:str, sleep:float, repeat:int)->list:
+def get_ping_data(timezone:str, enable_timezone_range:bool, sleep:float, repeat:int)->list:
     """
     Generate the ping_value per device - based on data originally from Lit San Leandro
     :args:
@@ -80,7 +80,7 @@ def get_ping_data(timezone:str, sleep:float, repeat:int)->list:
             value = sub_value
         data_sets.append(
             {
-                'timestamp': generate_timestamp(timezone=timezone),
+                'timestamp': generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range),
                 'device_name': device_name,
                 'parentelement': PING_DATA[device_name]['parentelement'] ,
                 'webid': PING_DATA[device_name]['webid'] ,

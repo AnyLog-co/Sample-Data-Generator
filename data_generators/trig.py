@@ -34,7 +34,7 @@ VALUE_ARRAY = [
 ]
 
 
-def trig_value(timezone:str, sleep:float, repeat:int)->dict:
+def trig_value(timezone:str, enable_timezone_range:bool, sleep:float, repeat:int)->dict:
    """
    Calculate the sin/cos values between -π to π and π to -π
    :args:
@@ -49,7 +49,7 @@ def trig_value(timezone:str, sleep:float, repeat:int)->dict:
    payloads = {'sin': [], 'cos': []}
    for i in range(repeat):
       for value in VALUE_ARRAY:
-         timestamp = generate_timestamp(timezone=timezone)
+         timestamp = generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range)
          payloads['sin'].append({
                'timestamp': timestamp,
                'value': math.sin(value)

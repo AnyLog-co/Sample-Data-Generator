@@ -35,7 +35,7 @@ PERCENTAGECPU_DATA = {
 }
 
 
-def get_percentagecpu_data(timezone:str, sleep:float, repeat:int)->list:
+def get_percentagecpu_data(timezone:str, enable_timezone_range:bool, sleep:float, repeat:int)->list:
     """
     Generate the percentage of CPU used per device
     :args:
@@ -61,7 +61,7 @@ def get_percentagecpu_data(timezone:str, sleep:float, repeat:int)->list:
         device_name = random.choice(list(PERCENTAGECPU_DATA.keys()))
         data_sets.append(
             {
-                'timestamp': generate_timestamp(timezone=timezone),
+                'timestamp': generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range),
                 'device_name': device_name,
                 'parentelement': PERCENTAGECPU_DATA[device_name]['parentelement'] ,
                 'webid': PERCENTAGECPU_DATA[device_name]['webid'] ,

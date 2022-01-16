@@ -149,7 +149,8 @@ def extract_network_insight(data:list, member_id:str, timestamp:str=datetime.dat
         'value': sum(values['in']) / (sum(values['in']) + sum(values['out']))
     }
 
-def get_linode_data(token:str, tag:str=None, initial_configs:bool=False, timezone:str='utc', exception:bool=True)->dict:
+def get_linode_data(token:str, tag:str=None, initial_configs:bool=False, timezone:str='utc',
+                    enable_timezone_range:bool=True, exception:bool=True)->dict:
     """
     Extract data from linode
     :args:
@@ -165,7 +166,7 @@ def get_linode_data(token:str, tag:str=None, initial_configs:bool=False, timezon
     :return:
         payloads
     """
-    timestamp = generate_timestamp(timezone=timezone)
+    timestamp = generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range)
     payloads = {
         'node_config': [],
         'node_summary': [],
