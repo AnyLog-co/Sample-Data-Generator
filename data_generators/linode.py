@@ -142,11 +142,15 @@ def extract_network_insight(data:list, member_id:str, timestamp:str=datetime.dat
     for key in ['in', 'out']:
         for row in data[key]:
             values[key].append(row[-1])
+    try:
+        value = sum(values['in']) / (sum(values['in']) + sum(values['out']))
+    except Exception as e:
+        value = 0
 
     return {
         'member_id': member_id,
         'timestamp': timestamp,
-        'value': sum(values['in']) / (sum(values['in']) + sum(values['out']))
+        'value': value
     }
 
 def get_linode_data(token:str, tag:str=None, initial_configs:bool=False, timezone:str='utc',
