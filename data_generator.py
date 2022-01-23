@@ -124,7 +124,10 @@ def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:s
     elif protocol == 'mqtt':
         import mqtt
         broker, port = conn.rstrip().lstrip().replace(' ', '').split(':')
-        user, password = auth.rstrip().lstrip().replace(' ', '').split(',')
+        user = ''
+        password = ''
+        if auth is not None:
+            user, password = auth.rstrip().lstrip().replace(' ', '').split(',')
         mqtt_conn = mqtt.connect_mqtt_broker(broker=broker, port=port, username=user, password=password)
         if mqtt_conn is not None:
             status = mqtt.send_data(mqtt_client=mqtt_conn, topic=topic, data=payloads, dbms=dbms, table=table,

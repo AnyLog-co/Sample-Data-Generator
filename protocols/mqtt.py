@@ -74,7 +74,7 @@ def send_data(mqtt_client:client.Client, topic:str, data:dict, dbms:str, table:s
             r = mqtt_client.publish(topic, message, qos=1, retain=False)
         except Exception as e:
             if exception is True:
-                print('Failed to publish results in %s (Error: %s)' % (mqtt_client.conn, e))
+                print(f'Failed to publish results in {mqtt_client} (Error: {e})')
             status = False
         else:
             time.sleep(5)

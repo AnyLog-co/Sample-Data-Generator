@@ -44,7 +44,7 @@ def post_data(conn:str, data:list, dbms:str, table:str=None, rest_topic:str='new
         else:
             if int(r.status_code) != 200 and exception is True:
                 print('Failed to POST content into %s (Network Error: %s)' % (conn, r.status_code))
-                status = Fasle
+                status = False
             elif int(r.status_code) != 200:
                 status = False
 
