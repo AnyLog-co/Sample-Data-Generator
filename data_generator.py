@@ -132,6 +132,13 @@ def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:s
         if mqtt_conn is not None:
             status = mqtt.send_data(mqtt_client=mqtt_conn, topic=topic, data=payloads, dbms=dbms, table=table,
                                     exception=exception)
+    elif protocol == 'kafka':
+        import kafka_protocol as kafka
+        servers = conn.split(',')
+        kafka_conn = kafka.connect_kafka(servers=servers, exception=exception)
+        if kafka_conn is not None:
+            status = kafka.publish_data(producer=kafka_conn, topic=topic, data=payloads, dbms=dbms, table=table,
+                                  exception=exception)
 
     return status
 
@@ -139,7 +146,7 @@ def main():
     """
     The following provides
     :positional arguments:
-        conn                    REST IP + Port or broker IP + Port      (default: 127.0.0.1:2049)
+        conn                    IP:Port credentials for either REST, MQTT or Kafka      (default: 127.0.0.1:2049)
         data-generator:str      data set to generate content for        (default: trig)
             * linode - content from linode
             * percentagecpu sensor data
@@ -148,10 +155,11 @@ def main():
             * synchrophasor data
             * trig (default)
             * aiops
-        protocol                format to save data                     (default: file)
+        protocol                format to save data                     (default: print)
             * post
             * put
             * mqtt
+            * kafka
             * file (default)
             * print
         dbms                    logical database to store data in       (default: test)
@@ -182,9 +190,9 @@ def main():
     """
     parser = argparse.ArgumentParser()
     # default params
-    parser.add_argument('conn', type=str, default='127.0.0.1:2049', help='REST IP + Port or broker IP + Port')
+    parser.add_argument('conn', type=str, default='127.0.0.1:2049', help='IP:Port credentials for either REST, MQTT or Kafka')
     parser.add_argument('data_generator', type=str, choices=['linode', 'percentagecpu', 'ping', 'power', 'synchrophasor', 'trig', 'aiops'], default='trig', help='data set to generate content for')
-    parser.add_argument('protocol',       type=str, choices=['post', 'put', 'mqtt', 'file', 'print'], default='file', help='format to save data')
+    parser.add_argument('protocol',       type=str, choices=['post', 'put', 'mqtt', 'kafka', 'file', 'print'], default='print', help='format to save data')
     parser.add_argument('dbms', type=str, default='test', help='Logical database to store data in')
 
     # repeat / sleep params
