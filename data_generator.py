@@ -148,6 +148,7 @@ def main():
     :positional arguments:
         conn                    IP:Port credentials for either REST, MQTT or Kafka      (default: 127.0.0.1:2049)
         data-generator:str      data set to generate content for        (default: trig)
+            * file
             * linode - content from linode
             * percentagecpu sensor data
             * ping sensor data
@@ -160,8 +161,8 @@ def main():
             * put
             * mqtt
             * kafka
-            * file (default)
-            * print
+            * file
+            * print (default)
         dbms                    logical database to store data in       (default: test)
     :optional arguments
         -h, --help                          show this help message and exit
@@ -191,11 +192,10 @@ def main():
     parser = argparse.ArgumentParser()
     # default params
     parser.add_argument('conn', type=str, default='127.0.0.1:2049', help='IP:Port credentials for either REST, MQTT or Kafka')
-    parser.add_argument('data_generator', type=str, choices=['linode', 'percentagecpu', 'ping', 'power', 'synchrophasor', 'trig', 'aiops'], default='trig', help='data set to generate content for')
+    parser.add_argument('data_generator', type=str, choices=['file', 'linode', 'percentagecpu', 'ping', 'power', 'synchrophasor', 'trig', 'aiops'], default='trig', help='data set to generate content for')
     parser.add_argument('protocol',       type=str, choices=['post', 'put', 'mqtt', 'kafka', 'file', 'print'], default='print', help='format to save data')
     parser.add_argument('dbms', type=str, default='test', help='Logical database to store data in')
 
-    # repeat / sleep params
     parser.add_argument('--repeat',       type=int,   default=1,   help='number of time to repeat  each batch, if 0 then run continuously')
     parser.add_argument('--sleep',        type=float, default=1,   help='sleep time between each batch')
     parser.add_argument('--batch-repeat', type=int,   default=10,  help='number of rows per batch')
@@ -206,6 +206,11 @@ def main():
     parser.add_argument('--authentication', type=str, default=None, help='username, password')
     parser.add_argument('--timeout', type=float, default=30, help='REST timeout (in seconds)')
     parser.add_argument('--topic', type=str, default=None, help='topic for either REST POST or MQTT')
+
+    # files protocol options
+    parser.add_argument('--store-dir', type=str, default=os.path.join(ROOT_PATH, 'data'), help='directory to store results in for file protocol')
+    parser.add_argument('--read-dir', type=str, default=os.path.join(ROOT_PATH, 'data'), help='directory to read data to be sent')
+    parser.add_argument('--compress', type=bool, nargs='?', const=True, default=False, help='Whether to compress create files, or decompress files being sent')
 
     # linode params
     parser.add_argument('--linode-token', type=str, default='ab21f3f79e22693bb33815772fd6a48fa91a0298e9052be0250a56fec7b4cc70', help='linode token')
