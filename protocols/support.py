@@ -1,5 +1,8 @@
 import datetime
+import gzip
+import io
 import json
+import os
 import pytz
 import random
 import tzlocal
@@ -181,5 +184,5 @@ def decompress_file(compressed_file:str, exception:bool=False)->str:
         input_file = None
         if exception is True:
             print(f'Failed to open zipped file {compressed_file} (Error: {e})')
-
+    
     return input_file

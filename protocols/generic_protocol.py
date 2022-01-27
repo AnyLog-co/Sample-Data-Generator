@@ -5,7 +5,6 @@ import support
 
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit('protocols', 1)[0]
-DATA_DIR = os.path.join(ROOT_PATH, 'data')
 
 
 def __timestamp_to_fn(orig_timestamp:str)->str:
@@ -42,13 +41,16 @@ def print_content(data:list, dbms:str, table:str=None):
                 print(support.json_dumps(row))
 
 
-def write_to_file(data:list, dbms:str, table:str=None, exception:bool=False)->bool:
+def write_to_file(data:list, dbms:str, table:str=None, data_dir:str=os.path.join(ROOT_PATH, 'data'),
+                  compress:bool=False, exception:bool=False)->bool:
     """
     Write content to file
     :args:
         data - either a list or dict of data sets
         dbms:str - logical database name
         table:str - table name, if data is dict use keys as table name(s)
+        data_dir:str - directory to store content in
+        compress:bool - whether or not to compress generated file(s) 
         exception:bool - whether to print error messages or not
     :params:
         status:bool
@@ -59,13 +61,13 @@ def write_to_file(data:list, dbms:str, table:str=None, exception:bool=False)->bo
         status
     """
     status = True
-    if not os.path.isdir(DATA_DIR):
-        os.makedirs(DATA_DIR)
+    if not os.path.isdir(data_dir):
+        os.makedirs(data_dir)
 
     if isinstance(data, list):
         timestamp = __timestamp_to_fn(data[0]['timestamp'])
         file_name = '%s.%s.0.%s.json' % (dbms, table, timestamp)
-        file_path = os.path.join(DATA_DIR, file_name)
+        file_path = os.path.join(data_dir, file_name)
         try:
             with open(file_path, 'w') as f:
                 for row in data:
@@ -79,12 +81,16 @@ def write_to_file(data:list, dbms:str, table:str=None, exception:bool=False)->bo
             if exception is True:
                 print("Failed to open file '%s' (Error: %s)" % (file_path, e))
             status = False
+        else:
+            if compress is True:
+                status = support.compress(input_file=file_path, exception=exception)
+
     elif isinstance(data, dict):
         for table in data:
             sub_data = data[table]
             timestamp = __timestamp_to_fn(sub_data[0]['timestamp'])
             file_name = '%s.%s.0.%s.json' % (dbms, table, timestamp)
-            file_path = os.path.join(DATA_DIR, file_name)
+            file_path = os.path.join(data_dir, file_name)
             try:
                 with open(file_path, 'w') as f:
                     for row in sub_data:
@@ -98,5 +104,8 @@ def write_to_file(data:list, dbms:str, table:str=None, exception:bool=False)->bo
                 if exception is True:
                     print("Failed to open file '%s' (Error: %s)" % (file_path, e))
                 status = False
+            else:
+                if compress is True:
+                    status = support.compress(input_file=file_path, exception=exception)
 
     return status

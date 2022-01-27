@@ -12,7 +12,7 @@ sys.path.insert(0, PROTOCOLS)
 
 def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0.5, timezone:str='utc',
                     enable_timezone_range:bool=True, token:str=None, tag:str=None, initial_configs:bool=False,
-                    exception:bool=False)->dict:
+                    data_dir:str=os.path.join(ROOT_PATH, 'data'), compress:bool=False, exception:bool=False)->dict:
     """
     Based on the parameters generate a data set
     :args:
@@ -23,7 +23,9 @@ def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0
         enable_timezone_range:bool - whether or not to set timestamp within a "range"
         token:str - linode token
         tag:str - group of linode nodes to get data from. If not gets from all nodes associated to token
-        initial_configs:bool - whether this is the first timee the configs are being deployed
+        initial_configs:bool - whether this is the first time the configs are being deployed
+        data_dir:str - for data_generator type file directory containing data to read
+        compress:bool - whether the content in data_dir is compressed
         exception:bool - whether or not to print error message(s)
     :params:
         payloads:dict - generated data
@@ -59,23 +61,30 @@ def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0
     elif data_generator == 'aiops':
         import customer_aiops
         payloads = customer_aiops.get_aiops_data(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
+
+    elif data_generator == 'file':
+        import read_file
+        payloads = read_file.read_data(dir_path=data_dir, compress=compress, exception=exception)
+
     return payloads
 
 
 def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:str, auth:str, timeout:float, topic:str,
-               exception:bool=False)->bool:
+               data_dir:str=os.path.join(ROOT_PATH, 'data'), compress:bool=False, exception:bool=False)->bool:
     """
     Store content based on the selected protocol(s)
     :args:
         protocol:str - format to save data
         payloads:dict - content to store
-       data_generator:str - which data generated
-       dbms:str - logical database to store data in
-       conn:str - REST IP + Port or broker IP + Port
-       auth:str - username, password
-       timeout:float - REST timeout (in seconds)
-       topic:str - MQTT / REST POST topic
-       exception:bool - whether or not to print exceptions
+        data_generator:str - which data generated
+        dbms:str - logical database to store data in
+        conn:str - REST IP + Port or broker IP + Port
+        auth:str - username, password
+        timeout:float - REST timeout (in seconds)
+        topic:str - MQTT / REST POST topic
+        data_dir:str - for data_generator type file directory containing data to read
+        compress:bool - whether the content in data_dir is compressed
+        exception:bool - whether or not to print exceptions
     :params:
         table:str - table name
         broker:str - broker for MQTT
@@ -94,11 +103,12 @@ def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:s
         table = data_generator
 
     if protocol == 'print':
-        import to_file
-        to_file.print_content(data=payloads, dbms=dbms, table=table)
+        import generic_protocol
+        generic_protocol.print_content(data=payloads, dbms=dbms, table=table)
     if protocol == 'file':
-        import to_file
-        if not to_file.write_to_file(data=payloads, dbms=dbms, table=table, exception=exception):
+        import generic_protocol
+        if not generic_protocol.write_to_file(data=payloads, dbms=dbms, table=table, data_dir=data_dir, compress=compress,
+                                        exception=exception):
             print('Failed to write data into file(s)')
             status = False
     elif protocol == 'put':
@@ -141,6 +151,7 @@ def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:s
                                   exception=exception)
 
     return status
+
 
 def main():
     """
@@ -218,15 +229,25 @@ def main():
     parser.add_argument('-e', '--exception', type=bool, nargs='?',     const=True, default=False, help='whether or not to print exceptions to screen')
     args = parser.parse_args()
 
+    store_dir = os.path.expandvars(os.path.expanduser(args.store_dir))
+    read_dir = os.path.expandvars(os.path.expanduser(args.read_dir))
+    if not os.path.isdir(store_dir):
+        os.makedirs(store_dir)
+    if not os.path.isdir(read_dir) and args.data_generator == 'file':
+        print(f'Failed to locate directory containing data to generate ({read_dir})')
+        exit(1)
+
     if args.repeat == 0:
         while True:
             payloads = data_generators(data_generator=args.data_generator, batch_repeat=args.batch_repeat,
                                        batch_sleep=args.batch_sleep, timezone=args.timezone,
                                        enable_timezone_range=args.enable_timezone_range, token=args.linode_token,
-                                       tag=args.linode_tag, initial_configs=True)
+                                       tag=args.linode_tag, initial_configs=True, data_dir=read_dir,
+                                       compress=args.compress, exception=args.exception)
             if len(payloads) >= 1:
                 store_data(protocol=args.protocol, payloads=payloads, data_generator=args.data_generator, dbms=args.dbms,
-                           conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.topic, exception=args.exception)
+                           conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.topic,
+                           data_dir=write_dir, compress=args.compress, exception=args.exception)
             else:
                 print('Failed to generate data')
             time.sleep(args.sleep)
@@ -234,11 +255,12 @@ def main():
         payloads = data_generators(data_generator=args.data_generator, batch_repeat=args.batch_repeat,
                                    batch_sleep=args.batch_sleep, timezone=args.timezone,
                                    enable_timezone_range=args.enable_timezone_range, token=args.linode_token,
-                                   tag=args.linode_tag, initial_configs=True)
+                                   tag=args.linode_tag, initial_configs=True, data_dir=read_dir, compress=args.compress,
+                                   exception=args.exception)
         if len(payloads) >= 1:
             store_data(protocol=args.protocol, payloads=payloads, data_generator=args.data_generator, dbms=args.dbms,
                        conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.topic,
-                       exception=args.exception)
+                       data_dir=store_dir, compress=args.compress, exception=args.exception)
         else:
             print('Failed to generate data')
         time.sleep(args.sleep)
