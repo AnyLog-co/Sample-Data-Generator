@@ -11,11 +11,14 @@ from support import generate_timestamp
 DATA_SETS = {
     "lic1_pv": {"min": -125, "max": 1522},
     "lic1_mv": {"min": 0, "max": 101},
-    "fic11_mv": {"min": 64, "max": 77},
-    "fic13_pv": {"min": 63, "max": 104},
-    "fic11_pv": {"min": 48, "max": 103},
     "lic1_sv": {"min": 49, "max": 51},
-    "fic12_pv": {"min": 41, "max": 96}
+    "lic1_aimv": {"min": 23, "max": 90},
+    "lic1_aimv_output": {"min": 0, "max": 100},
+    "fic11_mv": {"min": 64, "max": 77},
+    "fic11_pv": {"min": 48, "max": 103},
+    "fic12_pv": {"min": 41, "max": 96},
+    "fic13": {"min": 66, "max": 68},
+    "fic13_pv": {"min": 63, "max": 104}
 }
 
 
