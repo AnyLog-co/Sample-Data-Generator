@@ -247,7 +247,7 @@ def main():
             if len(payloads) >= 1:
                 store_data(protocol=args.protocol, payloads=payloads, data_generator=args.data_generator, dbms=args.dbms,
                            conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.topic,
-                           data_dir=write_dir, compress=args.compress, exception=args.exception)
+                           data_dir=store_dir, compress=args.compress, exception=args.exception)
             else:
                 print('Failed to generate data')
             time.sleep(args.sleep)
