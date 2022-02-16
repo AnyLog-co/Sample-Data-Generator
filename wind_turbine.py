@@ -58,6 +58,7 @@ def generate_windturbine_data():
         -h, --help                              show this help message and exit
         --authentication    AUTHENTICATION      username, password
         --timeout           TIMEOUT             REST timeout (in seconds)
+        --timestamp-now     TIMESTAMP_NOW       use current timestamp instead of value in row
         --topic             TOPIC               topic for REST POST
         --row_count         ROW_COUNT           Number of rows to insert (if 0 insert all)
         --sleep             SLEEP               sleep time between each insert
@@ -75,6 +76,7 @@ def generate_windturbine_data():
     parser.add_argument('--authentication', type=str, default=None, help='username, password')
     parser.add_argument('--timeout', type=float, default=30, help='REST timeout (in seconds)')
     parser.add_argument('--topic', type=str, default=None, help='topic for REST POST')
+    parser.add_argument('--timestamp-now', type=bool, nargs='?', const=True, default=False, help='use current timestamp instead of value in row')
     parser.add_argument('--row-count',   type=int, default=1, help='Number of rows to insert (if 0 insert all)')
     parser.add_argument('--sleep',  type=float, default=1, help='sleep time between each insert')
     parser.add_argument('-e', '--exception', type=bool, nargs='?',     const=True, default=False, help='whether or not to print exceptions to screen')
@@ -84,6 +86,8 @@ def generate_windturbine_data():
     table_name = 'wind_turbine'
     count = 0
     for row in content.json():
+        if args.timestamp_now is True:
+            row['p_year'] = 'now'
         payloads = [{
             'timestamp': generate_timestamp(year=row['p_year']),  # Timestamp
             'usgs_pr_id': row['usgs_pr_id'], # Unique identifier for cross-reference to the 2014 USGS turbine dataset.
