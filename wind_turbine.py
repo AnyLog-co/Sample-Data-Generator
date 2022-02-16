@@ -39,6 +39,17 @@ def generate_timestamp(year:str='now')->str:
 def generate_windturbine_data():
     """
     The following utilizes data from USGS to generate Wind Turbine data
+    :sample-ouput:
+        {"timestamp": "1987-02-16T11:22:56.025370Z", "usgs_pr_id": 5149, "address": "Kern County, CA", "loc": "35.07791, -118.36376", "p_name": "251 Wind", "p_tnum": 194, "p_cap": 18.43, "t_manu": "Vestas", "t_model": null, "t_cap": 95, "t_hh": null, "t_rd": null, "t_rsa": null, "t_ttlh": null, "retrofit": 0, "t_conf_atr": 2, "t_conf_loc": 3, "eia_id": 52161, "dbms": "test", "table": "wind_turbine"}
+        {"timestamp": "1987-02-16T11:22:57.041407Z", "usgs_pr_id": 5143, "address": "Kern County, CA", "loc": "35.07744, -118.36441", "p_name": "251 Wind", "p_tnum": 194, "p_cap": 18.43, "t_manu": "Vestas", "t_model": null, "t_cap": 95, "t_hh": null, "t_rd": null, "t_rsa": null, "t_ttlh": null, "retrofit": 0, "t_conf_atr": 2, "t_conf_loc": 3, "eia_id": 52161, "dbms": "test", "table": "wind_turbine"}
+        {"timestamp": "1987-02-16T11:22:58.042236Z", "usgs_pr_id": 5146, "address": "Kern County, CA", "loc": "35.07764, -118.3642", "p_name": "251 Wind", "p_tnum": 194, "p_cap": 18.43, "t_manu": "Vestas", "t_model": null, "t_cap": 95, "t_hh": null, "t_rd": null, "t_rsa": null, "t_ttlh": null, "retrofit": 0, "t_conf_atr": 2, "t_conf_loc": 3, "eia_id": 52161, "dbms": "test", "table": "wind_turbine"}
+        {"timestamp": "2017-02-16T11:22:59.043143Z", "usgs_pr_id": null, "address": "Story County, IA", "loc": "42.02823, -93.43037", "p_name": "30 MW Iowa DG Portfolio", "p_tnum": 10, "p_cap": 30.0, "t_manu": "Nordex", "t_model": "AW125/3000", "t_cap": 3000, "t_hh": 87.5, "t_rd": 125.0, "t_rsa": 12271.85, "t_ttlh": 150.0, "retrofit": 0, "t_conf_atr": 3, "t_conf_loc": 3, "eia_id": null, "dbms": "test", "table": "wind_turbine"}
+        {"timestamp": "2017-02-16T11:23:00.043226Z", "usgs_pr_id": null, "address": "Boone County, IA", "loc": "41.97761, -93.70042", "p_name": "30 MW Iowa DG Portfolio", "p_tnum": 10, "p_cap": 30.0, "t_manu": "Nordex", "t_model": "AW125/3000", "t_cap": 3000, "t_hh": 87.5, "t_rd": 125.0, "t_rsa": 12271.85, "t_ttlh": 150.0, "retrofit": 0, "t_conf_atr": 3, "t_conf_loc": 3, "eia_id": null, "dbms": "test", "table": "wind_turbine"}
+        {"timestamp": "2017-02-16T11:23:01.044169Z", "usgs_pr_id": null, "address": "Story County, IA", "loc": "41.88248, -93.63284", "p_name": "30 MW Iowa DG Portfolio", "p_tnum": 10, "p_cap": 30.0, "t_manu": "Nordex", "t_model": "AW125/3000", "t_cap": 3000, "t_hh": 87.5, "t_rd": 125.0, "t_rsa": 12271.85, "t_ttlh": 150.0, "retrofit": 0, "t_conf_atr": 3, "t_conf_loc": 3, "eia_id": null, "dbms": "test", "table": "wind_turbine"}
+        {"timestamp": "2017-02-16T11:23:02.044782Z", "usgs_pr_id": null, "address": "Story County, IA", "loc": "42.01637, -93.51589", "p_name": "30 MW Iowa DG Portfolio", "p_tnum": 10, "p_cap": 30.0, "t_manu": "Nordex", "t_model": "AW125/3000", "t_cap": 3000, "t_hh": 87.5, "t_rd": 125.0, "t_rsa": 12271.85, "t_ttlh": 150.0, "retrofit": 0, "t_conf_atr": 3, "t_conf_loc": 3, "eia_id": null, "dbms": "test", "table": "wind_turbine"}
+        {"timestamp": "2017-02-16T11:23:03.045453Z", "usgs_pr_id": null, "address": "Story County, IA", "loc": "42.01363, -93.51808", "p_name": "30 MW Iowa DG Portfolio", "p_tnum": 10, "p_cap": 30.0, "t_manu": "Nordex", "t_model": "AW125/3000", "t_cap": 3000, "t_hh": 87.5, "t_rd": 125.0, "t_rsa": 12271.85, "t_ttlh": 150.0, "retrofit": 0, "t_conf_atr": 3, "t_conf_loc": 3, "eia_id": null, "dbms": "test", "table": "wind_turbine"}
+        {"timestamp": "2017-02-16T11:23:04.045743Z", "usgs_pr_id": null, "address": "Hardin County, IA", "loc": "42.49794, -93.3678", "p_name": "30 MW Iowa DG Portfolio", "p_tnum": 10, "p_cap": 30.0, "t_manu": "Nordex", "t_model": "AW125/3000", "t_cap": 3000, "t_hh": 87.5, "t_rd": 125.0, "t_rsa": 12271.85, "t_ttlh": 150.0, "retrofit": 0, "t_conf_atr": 3, "t_conf_loc": 3, "eia_id": null, "dbms": "test", "table": "wind_turbine"}
+        {"timestamp": "2017-02-16T11:23:05.046557Z", "usgs_pr_id": null, "address": "Story County, IA", "loc": "42.00681, -93.52365", "p_name": "30 MW Iowa DG Portfolio", "p_tnum": 10, "p_cap": 30.0, "t_manu": "Nordex", "t_model": "AW125/3000", "t_cap": 3000, "t_hh": 87.5, "t_rd": 125.0, "t_rsa": 12271.85, "t_ttlh": 150.0, "retrofit": 0, "t_conf_atr": 3, "t_conf_loc": 3, "eia_id": null, "dbms": "test", "table": "wind_turbine"}
     :positional arguments:
         conn                              IP:Port credentials for either REST
         protocol    {post,put,print}      format to save data
@@ -53,7 +64,9 @@ def generate_windturbine_data():
         -e, --exception     EXCEPTION           whether or not to print exceptions to screen
     :params:
         content:requests.GET - Results from USGS wind turbine data
+        table_name:str - logical table name data will be stored in
         row:dict - value(s) from content to generate rows from
+        payloads:list - list of a single dict with data based on row
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('conn',     type=str, default='127.0.0.1:2049', help='IP:Port credentials for either REST')
