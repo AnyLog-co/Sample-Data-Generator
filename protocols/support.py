@@ -3,9 +3,12 @@ import gzip
 import io
 import json
 import os
-import pytz
+try:
+    import pytz
+except:
+    pass
 import random
-import tzlocal
+#import tzlocal
 
 
 def json_dumps(data:dict)->str:
