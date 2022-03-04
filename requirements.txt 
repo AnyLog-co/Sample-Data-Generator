@@ -1,0 +1,5 @@
+requests
+pytz
+paho-mqtt
+tzlocal
+kafka-python

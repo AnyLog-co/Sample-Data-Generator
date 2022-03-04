@@ -10,7 +10,6 @@ RUN apt-get -y upgrade
 RUN apt-get -y update
 
 # install requirements via apt
-RUN apt-get -y install curl git
 RUN apt-get -y install python3.9 python3-pip
 RUN apt-get -y install libpq-dev python3.9-dev
 RUN apt-get -y install python3-kafka
