@@ -1,5 +1,6 @@
 import argparse
 import os
+import random
 import sys
 import time
 
@@ -229,6 +230,8 @@ def main():
     parser.add_argument('-e', '--exception', type=bool, nargs='?',     const=True, default=False, help='whether or not to print exceptions to screen')
     args = parser.parse_args()
 
+    connections_list = args.conn.split(',')
+
     store_dir = os.path.expandvars(os.path.expanduser(args.store_dir))
     read_dir = os.path.expandvars(os.path.expanduser(args.read_dir))
     if not os.path.isdir(store_dir):
@@ -245,8 +248,9 @@ def main():
                                        tag=args.linode_tag, initial_configs=True, data_dir=read_dir,
                                        compress=args.compress, exception=args.exception)
             if len(payloads) >= 1:
+                conn = random.choice(connections_list)
                 store_data(protocol=args.protocol, payloads=payloads, data_generator=args.data_generator, dbms=args.dbms,
-                           conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.topic,
+                           conn=conn, auth=args.authentication, timeout=args.timeout, topic=args.topic,
                            data_dir=store_dir, compress=args.compress, exception=args.exception)
             else:
                 print('Failed to generate data')
@@ -258,8 +262,9 @@ def main():
                                    tag=args.linode_tag, initial_configs=True, data_dir=read_dir, compress=args.compress,
                                    exception=args.exception)
         if len(payloads) >= 1:
+            conn = random.choice(connections_list)
             store_data(protocol=args.protocol, payloads=payloads, data_generator=args.data_generator, dbms=args.dbms,
-                       conn=args.conn, auth=args.authentication, timeout=args.timeout, topic=args.topic,
+                       conn=conn, auth=args.authentication, timeout=args.timeout, topic=args.topic,
                        data_dir=store_dir, compress=args.compress, exception=args.exception)
         else:
             print('Failed to generate data')
