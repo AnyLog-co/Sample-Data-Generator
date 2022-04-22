@@ -63,6 +63,9 @@ def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0
         import customer_aiops
         payloads = customer_aiops.get_aiops_data(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
 
+    elif data_generator == 'traffic':
+        import traffic_data
+        payloads = traffic_data.generate_traffic_data(api_key=token, exception=exception)
     elif data_generator == 'file':
         import read_file
         payloads = read_file.read_data(dir_path=data_dir, compress=compress, exception=exception)
@@ -100,6 +103,8 @@ def store_data(protocol:str, payloads:dict, data_generator:str, dbms:str, conn:s
         table = 'ping_sensor'
     elif data_generator == 'percentagecpu':
         table = 'percentagecpu_sensor'
+    elif data_generator == 'traffic':
+        table = 'traffic_speed'
     else:
         table = data_generator
 
@@ -168,6 +173,7 @@ def main():
             * synchrophasor data
             * trig (default)
             * aiops
+            * traffic
         protocol                format to save data                     (default: print)
             * post
             * put
@@ -195,7 +201,7 @@ def main():
         --enable-timezone-range     ENABLE_TIMEZONE_RANGE   whether or not to set timestamp within a "range"
         --authentication   AUTHENTICATION   username, password
         --timeout TIMEOUT  REST             timeout (in seconds)
-        --linode-token     LINODE_TOKEN     linode token
+        --api-key     LINODE_TOKEN     linode token
         --linode-tag       LINODE_TAG       group of linode nodes to get data from. If not gets from all nodes associated to token
         -e, -exception     EXCEPTION        whether or not to print exceptions to screen
     :params:
@@ -204,7 +210,7 @@ def main():
     parser = argparse.ArgumentParser()
     # default params
     parser.add_argument('conn', type=str, default='127.0.0.1:2049', help='IP:Port credentials for either REST, MQTT or Kafka')
-    parser.add_argument('data_generator', type=str, choices=['file', 'linode', 'percentagecpu', 'ping', 'power', 'synchrophasor', 'trig', 'aiops'], default='trig', help='data set to generate content for')
+    parser.add_argument('data_generator', type=str, choices=['file', 'linode', 'percentagecpu', 'ping', 'power', 'synchrophasor', 'trig', 'aiops', 'traffic'], default='trig', help='data set to generate content for')
     parser.add_argument('protocol',       type=str, choices=['post', 'put', 'mqtt', 'kafka', 'file', 'print'], default='print', help='format to save data')
     parser.add_argument('dbms', type=str, default='test', help='Logical database to store data in')
 
@@ -225,7 +231,7 @@ def main():
     parser.add_argument('--compress', type=bool, nargs='?', const=True, default=False, help='Whether to compress create files, or decompress files being sent')
 
     # linode params
-    parser.add_argument('--linode-token', type=str, default='ab21f3f79e22693bb33815772fd6a48fa91a0298e9052be0250a56fec7b4cc70', help='linode token')
+    parser.add_argument('--api-key', type=str, default='ab21f3f79e22693bb33815772fd6a48fa91a0298e9052be0250a56fec7b4cc70', help='API key used for Linode (default) & Traffic data')
     parser.add_argument('--linode-tag',   type=str, default=None, help='group of linode nodes to get data from. If not gets from all nodes associated to token')
     parser.add_argument('-e', '--exception', type=bool, nargs='?',     const=True, default=False, help='whether or not to print exceptions to screen')
     args = parser.parse_args()
@@ -244,7 +250,7 @@ def main():
         while True:
             payloads = data_generators(data_generator=args.data_generator, batch_repeat=args.batch_repeat,
                                        batch_sleep=args.batch_sleep, timezone=args.timezone,
-                                       enable_timezone_range=args.enable_timezone_range, token=args.linode_token,
+                                       enable_timezone_range=args.enable_timezone_range, token=args.api_key,
                                        tag=args.linode_tag, initial_configs=True, data_dir=read_dir,
                                        compress=args.compress, exception=args.exception)
             if len(payloads) >= 1:
@@ -258,7 +264,7 @@ def main():
     for i in range(args.repeat):
         payloads = data_generators(data_generator=args.data_generator, batch_repeat=args.batch_repeat,
                                    batch_sleep=args.batch_sleep, timezone=args.timezone,
-                                   enable_timezone_range=args.enable_timezone_range, token=args.linode_token,
+                                   enable_timezone_range=args.enable_timezone_range, token=args.api_key,
                                    tag=args.linode_tag, initial_configs=True, data_dir=read_dir, compress=args.compress,
                                    exception=args.exception)
         if len(payloads) >= 1:
