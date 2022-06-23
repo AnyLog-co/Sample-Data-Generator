@@ -2,6 +2,29 @@ import requests
 import support
 
 
+def get_command(conn:str, headers:dict={}, auth:tuple=None, timeout:int=30,
+                exception:bool=False)->requests.models.Response:
+    """
+    Execute cURL GET request
+    :args:
+        conn:str - REST connection information
+        headers:dict - REST header infromation
+        auth:tuple - Authentication username + password
+        timeout:nt - wait time
+        exception:bool - whether or not to print error messages
+    :params:
+        raw_request:requests.models.Response - response from REST request
+    :return:
+        raw_request
+    """
+    raw_request = None
+    try:
+        raw_request = requests.get(url=conn, headers=headers, auth=auth, timeout=timeout)
+    except Exception as e:
+        if exception is True:
+            print(f'Failed to execute GET against {conn} (Error: {e})')
+    return raw_request
+
 def post_data(conn:str, data:list, dbms:str, table:str=None, rest_topic:str='new-topic', auth:tuple=None,
               timeout:int=30, exception:bool=False)->bool:
     """
