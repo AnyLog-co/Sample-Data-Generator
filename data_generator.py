@@ -65,9 +65,9 @@ def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0
         import trig
         payloads = trig.trig_value(timezone=timezone, enable_timezone_range=enable_timezone_range,
                                    sleep=batch_sleep, repeat=batch_repeat)
-    elif data_generator == 'aiops':
-        import customer_aiops
-        payloads = customer_aiops.get_aiops_data(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
+    elif data_generator == 'opcua':
+        import opcua_data
+        payloads = customer_opcua.get_opcua_data(timezone=timezone, sleep=batch_sleep, repeat=batch_repeat)
 
     elif data_generator == 'traffic':
         import traffic_data
@@ -178,7 +178,7 @@ def main():
             * power data
             * synchrophasor data
             * trig (default)
-            * aiops
+            * opcua
             * traffic
             * (local) Edgex device
         protocol                format to save data                     (default: print)
@@ -217,7 +217,7 @@ def main():
     parser = argparse.ArgumentParser()
     # default params
     parser.add_argument('conn', type=str, default='127.0.0.1:2049', help='IP:Port credentials for either REST, MQTT or Kafka')
-    parser.add_argument('data_generator', type=str, choices=['file', 'linode', 'percentagecpu', 'ping', 'edgex', 'power', 'synchrophasor', 'trig', 'aiops', 'traffic'], default='trig', help='data set to generate content for')
+    parser.add_argument('data_generator', type=str, choices=['file', 'linode', 'percentagecpu', 'ping', 'edgex', 'power', 'synchrophasor', 'trig', 'opcua', 'traffic'], default='trig', help='data set to generate content for')
     parser.add_argument('protocol',       type=str, choices=['post', 'put', 'mqtt', 'kafka', 'file', 'print'], default='print', help='format to save data')
     parser.add_argument('dbms', type=str, default='test', help='Logical database to store data in')
 

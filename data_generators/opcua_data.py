@@ -22,7 +22,7 @@ DATA_SETS = {
 }
 
 
-def get_aiops_data(timezone:str, sleep:float, repeat:int)->dict:
+def get_opcua_data(timezone:str, sleep:float, repeat:int)->dict:
     """
     Generate values based on data from Ai-Ops
     :args:
