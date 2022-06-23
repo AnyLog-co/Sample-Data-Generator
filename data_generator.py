@@ -10,6 +10,7 @@ PROTOCOLS = os.path.join(ROOT_PATH, 'protocols')
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PROTOCOLS)
 
+EDGEX_ROWS = 0
 
 def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0.5, timezone:str='utc',
                     enable_timezone_range:bool=True, token:str=None, tag:str=None, initial_configs:bool=False,
@@ -33,6 +34,7 @@ def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0
     :reeturn:
         payloads
     """
+    global EDGEX_ROWS
     if data_generator == 'linode':
         import linode
         payloads = linode.get_linode_data(token=token, tag=tag, initial_configs=initial_configs, timezone=timezone,
@@ -46,6 +48,10 @@ def data_generators(data_generator:str, batch_repeat:int=10, batch_sleep:float=0
         import ping_sensor
         payloads = ping_sensor.get_ping_data(timezone=timezone, enable_timezone_range=enable_timezone_range,
                                              sleep=batch_sleep, repeat=batch_repeat)
+    elif data_generator == 'edgex':
+        import edgex_rest
+        row_count, payloads = edgex_rest.get_data(previous_count=EDGEX_ROWS, exception=exception)
+        EDGEX_ROWS += row_count
     elif data_generator == 'power':
         import power_company
         payloads = power_company.data_generator(timezone=timezone, enable_timezone_range=enable_timezone_range,
@@ -174,6 +180,7 @@ def main():
             * trig (default)
             * aiops
             * traffic
+            * (local) Edgex device
         protocol                format to save data                     (default: print)
             * post
             * put
@@ -210,7 +217,7 @@ def main():
     parser = argparse.ArgumentParser()
     # default params
     parser.add_argument('conn', type=str, default='127.0.0.1:2049', help='IP:Port credentials for either REST, MQTT or Kafka')
-    parser.add_argument('data_generator', type=str, choices=['file', 'linode', 'percentagecpu', 'ping', 'power', 'synchrophasor', 'trig', 'aiops', 'traffic'], default='trig', help='data set to generate content for')
+    parser.add_argument('data_generator', type=str, choices=['file', 'linode', 'percentagecpu', 'ping', 'edgex', 'power', 'synchrophasor', 'trig', 'aiops', 'traffic'], default='trig', help='data set to generate content for')
     parser.add_argument('protocol',       type=str, choices=['post', 'put', 'mqtt', 'kafka', 'file', 'print'], default='print', help='format to save data')
     parser.add_argument('dbms', type=str, default='test', help='Logical database to store data in')
 
