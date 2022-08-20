@@ -81,14 +81,14 @@ def insert_1m_24hrs(conns:list)->datetime.timedelta:
     now = datetime.datetime.utcnow()
     process_time = 0
     conns_counter = 0
-    while counter < 1000000:
+    while counter < 100000:
         data_set = trig.trig_value(timezone='utc', enable_timezone_range=False, sleep=0, repeat=1)
         for section in data_set:
             for row in data_set[section]:
                 conn = conns[conns_counter]
                 row['timestamp'] = now.strftime('%Y-%m-%d %H:%M:%S.%f')
                 start = time.time()
-                print(conns, row)
+                put_data(conn=conn, payload=row, dbms='test', table='rand_data')
                 process_time += (time.time() - start)
                 now += datetime.timedelta(seconds=0.0864)
                 counter += 1
