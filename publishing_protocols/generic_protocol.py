@@ -20,7 +20,7 @@ def __timestamp_to_fn(orig_timestamp:str)->str:
     return timestamp
 
 
-def print_content(data:list, dbms:str, table:str=None):
+def print_content(payloads:list):
     """
     Print data to screen
     :args:
@@ -28,17 +28,8 @@ def print_content(data:list, dbms:str, table:str=None):
         dbms:str - logical database name
         table:str - table name, if data is dict use keys as table name(s)
     """
-    if isinstance(data, list):
-        for row in data:
-            row['dbms'] = dbms
-            row['table'] = table
-            print(support.json_dumps(row))
-    elif isinstance(data, dict):
-        for table in data:
-            for row in data[table]:
-                row['dbms'] = dbms
-                row['table'] = table
-                print(support.json_dumps(row))
+    for payload in payloads:
+        print(support.json_dumps(payload))
 
 
 def write_to_file(data:list, dbms:str, table:str=None, data_dir:str=os.path.join(ROOT_PATH, 'data'),

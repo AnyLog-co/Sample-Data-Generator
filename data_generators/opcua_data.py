@@ -1,13 +1,4 @@
-import os
 import random
-import sys
-import time
-
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit('data_generators', 1)[0]
-PROTOCOLS = os.path.join(ROOT_PATH, 'protocols')
-sys.path.insert(0, PROTOCOLS)
-from support import generate_timestamp
-    
     
 DATA_SETS = {
     'fic1_pv': {'min': -160, 'max': -78}, 

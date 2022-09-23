@@ -1,3 +1,5 @@
+import random
+
 PING_DATA = {
         'ADVA FSP3000R7': {
             'parentelement': '62e71893-92e0-11e9-b465-d4856454f4ba',

@@ -23,8 +23,11 @@ import time
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
+PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'publishing_protocols')
 sys.path.insert(0, DATA_GENERATORS)
+sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
+import generic_protocol
 import lsl_data
 import opcua_data
 import performance_testing
@@ -32,8 +35,10 @@ import power_company
 import timestamp_generator
 import trig
 
+DATA_DIR = os.path.join(ROOT_PATH, 'data')
 
-def row_generator(data_type:str, db_name:str, array_counter:int=None)->dict:
+
+def row_generator(data_type:str, db_name:str, array_counter:int=None)->(dict, int):
     """
     Generate data to be inserted
     :args:
@@ -43,7 +48,7 @@ def row_generator(data_type:str, db_name:str, array_counter:int=None)->dict:
     :params:
         payload:dict - content to storwe
     :return:
-        payload
+        payload + array_counter
     """
     if data_type == 'trig': # {"timestamp", "sin", "cos", "trig"}
         payload = trig.trig_value(db_name=db_name, array_counter=array_counter)
@@ -87,16 +92,19 @@ def include_timestamp(payload:dict, timezone:str='utc', enable_timezone_range:bo
     """
     timestamp = timestamp_generator.generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range)
     if performance_testing is True:
-        timestamp = timestamp_generator.performance_timestamps(timestamp=base_timestamp, base_timestamp=base_row_time,
+        timestamp = timestamp_generator.performance_timestamps(timestamp=base_timestamp, base_row_time=base_row_time,
                                                                row_counter=row_counter)
     if isinstance(payload, dict):
         payload['timestamp'] = timestamp
     else:
-        for i in range(payload):
+        for i in range(len(payload)):
             payload[i]['timestamp'] = timestamp
 
     return payload
 
+def publish_data(payload:list, insert_process:str, conn:str=None, rest_timeout:int=30, dir_name:str=None):
+    if insert_process == "print":
+        generic_protocol.print_content(payloads=payload)
 
 def main():
     parse = argparse.ArgumentParser()
@@ -112,7 +120,7 @@ def main():
     parse.add_argument('--timezone', type=str, choices=['local', 'UTC', 'ET', 'BR', 'JP', 'WS', 'AU', 'IT'],
                        default='local', help='timezone for generated timestamp(s)')
     parse.add_argument('--enable-timezone-range', type=bool, nargs='?', const=True, default=False,
-                       help='whether or not to set timestamp within a "range"')
+                       help='set timestamp within a range of +/- 1 month')
     parse.add_argument('--conn', type=str, default=None,
                        help='{user}:{password}@{ip}:{port} for sending data either via REST or MQTT')
     parse.add_argument('--rest-timeout', type=float, default=30, help='')
@@ -121,7 +129,7 @@ def main():
                        help='insert all rows within a 24 hour period')
     args = parse.parse_args()
 
-    total_row = args.total_rows
+    total_rows = args.total_rows
     array_counter = 0
     row_counter = 0
     data = []
@@ -144,31 +152,57 @@ def main():
                                                     array_counter=array_counter)
             payload = include_timestamp(payload=payload, performance_testing=True, base_timestamp=start_timestamp,
                                         base_row_time=base_row_time, row_counter=row_counter)
-            if instance(payload, dict):
+            if isinstance(payload, dict):
                 data.append(payload)
             else:
                 data += payload
             row_counter += 1
             if row_counter == args.batch_size:
-                # send data
+                publish_data(payload=data, insert_process=args.insert_process, conn=conns,
+                             rest_timeout=args.rest_timeout, dir_name=args.dir_name)
                 data = []
                 row_counter = 0
             time.sleep(args.sleep)
-
-    elif total_row != 0:
+        if len(data) > 0:
+            publish_data(payload=data, insert_process=args.insert_process, conn=conns,
+                         rest_timeout=args.rest_timeout, dir_name=args.dir_name)
+    elif total_rows != 0:
         for row_counter in range(total_rows):
             payload, array_counter, = row_generator(data_type=args.data_type, db_name=args.db_name,
                                                     array_counter=array_counter)
             payload = include_timestamp(payload=payload, timezone=args.timezone,
-                                        enable_timezone_range=enable_timezone_range, performance_testing=False)
-            # once batch is full - insert data
+                                        enable_timezone_range=args.enable_timezone_range, performance_testing=False)
+            if isinstance(payload, dict):
+                data.append(payload)
+            else:
+                data += payload
+            row_counter += 1
+            if row_counter == args.batch_size:
+                publish_data(payload=data, insert_process=args.insert_process, conn=conns,
+                             rest_timeout=args.rest_timeout, dir_name=args.dir_name)
+                data = []
+                row_counter = 0
+            time.sleep(args.sleep)
+        if len(data) > 0:
+            publish_data(payload=data, insert_process=args.insert_process, conn=conns,
+                         rest_timeout=args.rest_timeout, dir_name=args.dir_name)
     else:
         while True:
             payload, array_counter, = row_generator(data_type=args.data_type, db_name=args.db_name,
                                                     array_counter=array_counter)
             payload = include_timestamp(payload=payload, timezone=args.timezone,
                                         enable_timezone_range=enable_timezone_range, performance_testing=False)
-            # once batch is full - insert data
+            if isinstance(payload, dict):
+                data.append(payload)
+            else:
+                data += payload
+            row_counter += 1
+            if row_counter == args.batch_size:
+                publish_data(payload=data, insert_process=args.insert_process, conn=conns,
+                             rest_timeout=args.rest_timeout, dir_name=args.dir_name)
+                data = []
+                row_counter = 0
+            time.sleep(args.sleep)
 
 
 if __name__ == '__main__':

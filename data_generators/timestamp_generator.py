@@ -42,8 +42,8 @@ def performance_timestamps(timestamp:datetime.datetime, base_row_time:float, row
          timestamp + seconds (in string format)
     """
     seconds = base_row_time * row_counter
-    timestamp =+ datetime.timedelta(seconds=seconds)
-    return timestamp.strftime('%Y-%M-%DT%h:%m:%s.%fZ')
+    updated_timestamp = timestamp + datetime.timedelta(seconds=seconds)
+    return updated_timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
 
 def generate_timestamp(timezone:str='utc', enable_timezone_range:bool=True)->str:
@@ -79,15 +79,15 @@ def generate_timestamp(timezone:str='utc', enable_timezone_range:bool=True)->str
         timestamp = timestamp.astimezone(timezone).isoformat().replace('t', ' ')
     elif timezone == 'local': # current timestamp as "utc"
         timestamp = datetime.datetime.now()
-        if enable_timezone_range is true:
+        if enable_timezone_range is True:
             timestamp += datetime.timedelta(days=random.choice(range(-30, 31)), hours=random.choice(range(-23, 24)),
                                             minutes=random.choice(range(-59, 60)))
-        timestamp = timestamp.strftime('%y-%m-%dT%h:%m:%s.%fZ')
+        timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     else: # actual utc value
         timestamp = datetime.datetime.utcnow()
-        if enable_timezone_range is true:
+        if enable_timezone_range is True:
             timestamp += datetime.timedelta(days=random.choice(range(-30, 31)), hours=random.choice(range(-23, 24)),
                                             minutes=random.choice(range(-59, 60)))
-        timestamp = timestamp.strftime('%y-%m-%dT%h:%m:%s.%fZ')
+        timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
     return timestamp
