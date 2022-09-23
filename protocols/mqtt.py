@@ -50,7 +50,7 @@ def connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=No
     return mqtt_client
 
 
-def send_data(mqtt_client:client.Client, topic:str, data:dict, dbms:str, table:str, exception:bool=False)->bool:
+def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=False)->bool:
     """
     Send data into an MQTT broker
     :args:
@@ -68,22 +68,19 @@ def send_data(mqtt_client:client.Client, topic:str, data:dict, dbms:str, table:s
         status
     """
     status = True
-    payloads = support.payload_conversions(payloads=data, dbms=dbms, table=table)
-    for message in payloads:
-        try:
-            r = mqtt_client.publish(topic, message, qos=1, retain=False)
-        except Exception as e:
+    try:
+        r = mqtt_client.publish(topic, message, qos=0, retain=True)
+    except Exception as e:
+        if exception is True:
+            print(f'Failed to publish results in {mqtt_client} (Error: {e})')
+        status = False
+    else:
+        time.sleep(5)
+        if r[0] != 0:
             if exception is True:
-                print(f'Failed to publish results in {mqtt_client} (Error: {e})')
-            status = False
-        else:
-            time.sleep(5)
-            if r[0] != 0 and exception is True:
                 print('There was a network error when publishing content')
-                status = False
-            elif r[0] != 0:
-                status = False
-
+            status = False
+            
     return status
 
 

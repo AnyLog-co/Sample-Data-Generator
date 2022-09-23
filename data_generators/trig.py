@@ -34,35 +34,17 @@ VALUE_ARRAY = [
 ]
 
 
-def trig_value(timezone:str, enable_timezone_range:bool, sleep:float, repeat:int)->dict:
+def trig_value(array_counter:int)->dict:
    """
-   Calculate the sin/cos values between -π to π and π to -π
+   Calculate sin, cosin and tangent value for VALUE_ARRAY[array_counter]
    :args:
-      timezone:str - timezone for generated timestamp(s)
-      sleep:float - wait time between each iteration
-      repeat:int - number of iterations
-   :params:
-      payloads:dict - sin/cos data to store
+      array_counter:int - placeholder in VALUE_ARRAY
    :return:
-      payloads
+      dict object sin, cosin and tangent for VALUE_ARRAY[array_counter]
    """
-   payloads = {'sin': [], 'cos': []}
-   for i in range(repeat):
-      for value in VALUE_ARRAY:
-         timestamp = generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range)
-         payloads['sin'].append({
-               'timestamp': timestamp,
-               'value': math.sin(value)
-         })
-         payloads['cos'].append({
-            'timestamp': timestamp,
-            'value': math.sin(value)
-         })
-         time.sleep(sleep)
+   return {
+      'sin': math.sin(VALUE_ARRAY[row_counter]),
+      'cos': math.cos(VALUE_ARRAY[row_counter]),
+      'tan': math.tan(VALUE_ARRAY[row_counter])
+   }
 
-   return payloads
-
-
-
-if __name__ == '__main__':
-   print(trig_value(0.5, 10))

@@ -26,8 +26,26 @@ DATA = {
     'battery': [5, 50],  # Battery controller
     'inverter': [5, 50], # Inverter controller
     'eswitch': [5, 50],  # Electric Switch controller
-    'pmu': [5, 50]
+    'pmu': [5, 50],
+    'synchrophasor': {
+            'source': [1, 6],
+            'phasor': [
+                'pOueAFmP',
+                'bXlvzdYc',
+                'OEPXqHfu',
+                'qAgrrCKb',
+                'IRFVtDob',
+                'aUMkcaLs',
+                'zmHtgsBC',
+                'TNeSttkM',
+                'xGbCsofo',
+                'pYWfJUkv'
+            ],
+            'frequency': [300, 2500],
+            'dfreq': [120, 1000]
+        }
 }
+
 
 def __calculate_value(val_range:list)->float:
     """
@@ -54,38 +72,49 @@ def __calculate_value(val_range:list)->float:
     else:
         return float_value - random.random()
 
+def __synchrophasor_data():
+    """
+    Generate values for synchrophasor data
+    :params:
+        data:dict - synchrophasor from DATA
+        data_set:dict - values for synchrophasor
+    :return:
+        data_set
+    """
+    data = DATA['synchrophasor']
+    data_set = {}
 
-def data_generator(timezone:str, enable_timezone_range:bool, sleep:float, repeat:int)->dict:
+    data_set['phasor'] = random.choice(data['phasor'])
+    data_set['frequency'] = __calculate_value(data['frequency'])
+    data_set['dfreq'] = __calculate_value(data['frequency'])
+    data_set['analog'] = random.random() * random.randrange(0, 15)
+
+    return data_set
+
+def data_generator(db_name:str)->dict:
     """
     Generate data for non-synchorphiser table
     :args:
-        timezone:str - timezone for generated timestamp(s)
-        sleep:float - wait time between each row
-        repeat:int - number of times to repeat
+        db_name:str - logical database name
     :params:
-        payloads:dict - dictionary of data
+        payloads:list - dictionary of data
     :return:
         payloads
     """
-    payloads = {}
-
-    for i in range(repeat):
-        timestamp = generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range)
-        for table in list(DATA.keys()):
-            if table not in payloads:
-                payloads[table] = []
-            location = random.choice(LOCATIONS)
-            if len(location.split(',')) == 3:
-                location = location.rsplit(',', 1)[0]
-            payloads[table].append({
-                'timestamp': timestamp,
-                'location': location,
-                'value': __calculate_value(DATA[table])
-            })
-            time.sleep(sleep)
+    payloads = []
+    location = random.choice(LOCATIONS)
+    for table in DATA:
+        payload = {
+            'dbms': db_name,
+            'table': table,
+            'location': location
+        }
+        if table != 'synchrophasor':
+            payload['value'] = __calculate_value(DATA[table])
+        else:
+            synchrophasor_data = __synchrophasor_data()
+            for key in synchrophasor_data:
+                payload[key] = synchrophasor_data[key]
 
     return payloads
 
-
-if __name__ == '__main__':
-    print(data_generator(sleep=0.5, repeat=10))

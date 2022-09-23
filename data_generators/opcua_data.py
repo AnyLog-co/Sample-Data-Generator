@@ -7,42 +7,57 @@ ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit('data_generators',
 PROTOCOLS = os.path.join(ROOT_PATH, 'protocols')
 sys.path.insert(0, PROTOCOLS)
 from support import generate_timestamp
-
+    
+    
 DATA_SETS = {
-    "lic1_pv": {"min": -125, "max": 1522},
-    "lic1_mv": {"min": 0, "max": 101},
-    "lic1_sv": {"min": 49, "max": 51},
-    "lic1_aimv": {"min": 23, "max": 90},
-    "lic1_aimv_output": {"min": 0, "max": 100},
-    "fic11_mv": {"min": 64, "max": 77},
-    "fic11_pv": {"min": 48, "max": 103},
-    "fic12_pv": {"min": 41, "max": 96},
-    "fic13": {"min": 66, "max": 68},
-    "fic13_pv": {"min": 63, "max": 104}
+    'fic1_pv': {'min': -160, 'max': -78}, 
+    'fic1_mv': {'min': -328, 'max': 414}, 
+    'fic1_sv': {'min': -357, 'max': -261}, 
+    'lic1_pv': {'min': 90, 'max': 238},
+    'lic1_mv': {'min': -216, 'max': 104},
+    'lic1_sv': {'min': 271, 'max': 300},
+    'fic2_pv': {'min': -253, 'max': -218}, 
+    'fic2_mv': {'min': -165, 'max': 481}, 
+    'fic2_sv': {'min': -326, 'max': 334}, 
+    'lic2_pv': {'min': -355, 'max': 458}, 
+    'lic2_mv': {'min': -368, 'max': 204}, 
+    'lic2_sv': {'min': -235, 'max': 155}, 
+    'fic3_pv': {'min': -463, 'max': -432}, 
+    'fic3_mv': {'min': -397, 'max': -47}, 
+    'fic3_sv': {'min': 422, 'max': 449}, 
+    'lic3_pv': {'min': 22, 'max': 239}, 
+    'lic3_mv': {'min': -189, 'max': -162}, 
+    'lic3_sv': {'min': 345, 'max': 486}, 
+    'fic4_pv': {'min': -391, 'max': 179}, 
+    'fic4_mv': {'min': 208, 'max': 367}, 
+    'fic4_sv': {'min': 260, 'max': 435}, 
+    'lic4_pv': {'min': -497, 'max': 235}, 
+    'lic4_mv': {'min': -22, 'max': 145}, 
+    'lic4_sv': {'min': -462, 'max': -20}, 
+    'fic5_pv': {'min': -483, 'max': -460}, 
+    'fic5_mv': {'min': -237, 'max': -226}, 
+    'fic5_sv': {'min': -128, 'max': 449}, 
+    'lic5_pv': {'min': -231, 'max': -229}, 
+    'lic5_mv': {'min': -31, 'max': 82}, 
+    'lic5_sv': {'min': -326, 'max': -272}
 }
 
 
-def get_opcua_data(timezone:str, sleep:float, repeat:int)->dict:
+def get_opcua_data(db_name:str)->dict:
     """
-    Generate values based on data from Ai-Ops
+    Generate OPC-UA values based on data from Ai-Ops
     :args:
-        timezone:str - timezone for generated timestamp(s)
-        sleep:float - wait time between each row
-        repeat:int - number of times to repeat process
+        db_name:str - logical database name
     :param:
-        data_sets:dict - dict of data generated
+        payload:dict - dict of key/values based on DATA_SETS
     :return:
-        data_sets
+        payload
     """
-    data_sets = {}
-    for i in range(repeat):
-        for table in DATA_SETS:
-            if table not in data_sets:
-                data_sets[table] = []
-            data_sets[table].append({
-                'timestamp': generate_timestamp(timezone=timezone),
-                'value': random.random() + random.choice(range(DATA_SETS[table]['min'], DATA_SETS[table]['max']))
-            })
-        time.sleep(sleep)
+    payload = {
+        'dbms': db_name,
+        'table': 'opcua_readings'
+    }
+    for column in DATA_SETS:
+        payload[column] = random.random() * random.choice(range(DATA_SETS[column]['min'], DATA_SETS[column]['max']))
 
-    return data_sets
+    return  payload
