@@ -20,6 +20,39 @@ def __timestamp_to_fn(orig_timestamp:str)->str:
     return timestamp
 
 
+def __write_to_file(file_path:str, payload:dict, append:bool, exception:bool)->bool:
+    """
+    Write content to file
+    :args:
+        file_path:str - full file path
+        payload:dict - content to write
+        append:bool - whether to append to file or new file
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        param:str - append option (a || w)
+    """
+    status = True
+    param = 'a'
+    if append is False:
+        param = 'w'
+
+    try:
+        with open(file_path, param) as f:
+            try:
+                f.write(support.json_dumps(payload) + "\n")
+            except Exception as error:
+                if exception is True:
+                    print(f'Failed to write line into {file_path} (Error: {error})')
+                status = False
+    except Exception as error:
+        if exception is True:
+            print(f'Failed to create file {file_path} (Error: {error})')
+        status = False
+
+    return status
+
+
 def print_content(payloads:list):
     """
     Print data to screen
@@ -32,14 +65,12 @@ def print_content(payloads:list):
         print(support.json_dumps(payload))
 
 
-def write_to_file(data:list, dbms:str, table:str=None, data_dir:str=os.path.join(ROOT_PATH, 'data'),
-                  compress:bool=False, exception:bool=False)->bool:
+def write_to_file(payloads:list, data_dir:str=os.path.join(ROOT_PATH, 'data'), compress:bool=False,
+                  exception:bool=False)->bool:
     """
     Write content to file
     :args:
-        data - either a list or dict of data sets
-        dbms:str - logical database name
-        table:str - table name, if data is dict use keys as table name(s)
+        payloads:list - either a list or dict of data sets
         data_dir:str - directory to store content in
         compress:bool - whether or not to compress generated file(s) 
         exception:bool - whether to print error messages or not
@@ -52,51 +83,23 @@ def write_to_file(data:list, dbms:str, table:str=None, data_dir:str=os.path.join
         status
     """
     status = True
+    file_list = {}
+
     if not os.path.isdir(data_dir):
         os.makedirs(data_dir)
 
-    if isinstance(data, list):
-        timestamp = __timestamp_to_fn(data[0]['timestamp'])
-        file_name = '%s.%s.0.%s.json' % (dbms, table, timestamp)
-        file_path = os.path.join(data_dir, file_name)
-        try:
-            with open(file_path, 'w') as f:
-                for row in data:
-                    try:
-                        f.write(support.json_dumps(row) + '\n')
-                    except Exception as e:
-                        if exception is True:
-                            print("Failed to write line to file '%s' (Error: %s)" % (file_path, e))
-                        status = False
-        except Exception as e:
-            if exception is True:
-                print("Failed to open file '%s' (Error: %s)" % (file_path, e))
-            status = False
-        else:
-            if compress is True:
-                status = support.compress(input_file=file_path, exception=exception)
-
-    elif isinstance(data, dict):
-        for table in data:
-            sub_data = data[table]
-            timestamp = __timestamp_to_fn(sub_data[0]['timestamp'])
-            file_name = '%s.%s.0.%s.json' % (dbms, table, timestamp)
+    for payload in payloads:
+        file_name = f"{payload['dbms']}.{payload['table']}"
+        del payload['dbms']
+        del payload['table']
+        if file_name not in file_list:
+            file_list[file_name] = __timestamp_to_fn(payload['timestamp'])
+            file_name += f".{file_list[file_name]}.json"
             file_path = os.path.join(data_dir, file_name)
-            try:
-                with open(file_path, 'w') as f:
-                    for row in sub_data:
-                        try:
-                            f.write(support.json_dumps(row) + '\n')
-                        except Exception as e:
-                            if exception is True:
-                                print("Failed to write line to file '%s' (Error: %s)" % (file_path, e))
-                            status = False
-            except Exception as e:
-                if exception is True:
-                    print("Failed to open file '%s' (Error: %s)" % (file_path, e))
-                status = False
-            else:
-                if compress is True:
-                    status = support.compress(input_file=file_path, exception=exception)
+            status = __write_to_file(file_path=file_path, payload=payload, append=False, exception=exception)
+        else:
+            file_name += f".{file_list[file_name]}.json"
+            file_path = os.path.join(data_dir, file_name)
+            status = __write_to_file(file_path=file_path, payload=payload, append=True, exception=exception)
 
     return status

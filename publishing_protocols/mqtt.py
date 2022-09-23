@@ -85,6 +85,32 @@ def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=
 
 
 
+def mqtt_process(payloads:dict, topic:str, broker:str, port:int, username:str=None, password:str=None,
+                 exception:bool=True)->bool:
+    """
+    Main for MQTT process
+    :args:
+        payloads:dict - content to send into MQTT
+        topic:str - MQTT topic name
+        broker:str - MQTT broker address
+        port:int - IP associated with broker
+        username:str - User associated with MQTT connection information
+        password:str - password associated with user
+        exception:bool - whether or not to print exception
+    :params:
+        status:bool
+        mqtt_client:client.Client - MQTT client connection
+        str_payloads:str - JSON string of payloads
+    :return:
+        status
+    """
 
+    status = False
+    mqtt_client = connect_mqtt_broker(broker=broker, port=port, username=username, password=password, exception=exception)
+    str_payloads = support.json_dumps(payload=payloads)
 
+    if mqtt_client is not None:
+        status = send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, exception=exception)
+
+    return status
 

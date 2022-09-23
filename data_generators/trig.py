@@ -36,6 +36,7 @@ def trig_value(db_name:str, array_counter:int)->dict:
    return {
       'dbms': db_name,
       'table': 'trig_data',
+      "value": VALUE_ARRAY[array_counter],
       'sin': math.sin(VALUE_ARRAY[array_counter]),
       'cos': math.cos(VALUE_ARRAY[array_counter]),
       'tan': math.tan(VALUE_ARRAY[array_counter])
