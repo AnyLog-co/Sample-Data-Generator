@@ -1,115 +1,116 @@
-import requests
+import random
+from paho.mqtt import client
 import support
+import time
 
-def __convert_data(payloads:list)->dict:
+
+def connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=None, exception:bool=True):
     """
-    Extract logical database name and table name from payload
+    Connect to an MQTT broker
     :args:
-        payloads:list - content to PUT
-    :params:
-        content:dict - formmatted payloads
+        broker:str - MQTT broker IP
+        port:int - MQTT broker port
+        username:str - MQTT broker user
+        password:str - MQTT broker password correlated to user
+    :params: 
+        mqtt_client_id:str - MQTT client ID
+        client:paho.mqtt.client.Client - MQTT client object
+    :return:
+        client
     """
-    content = {}
+    # connect to MQTT broker
+    status = True
+    mqtt_client_id = 'python-mqtt-%s' % random.randint(random.choice(range(0, 500)), random.choice(range(501, 1000)))
 
-    for payload in payloads:
-        name = f"{payload['dbms'].payload[table]}"
-        del payload['dbms']
-        del payload['name']
-        if name not in content:
-            content[name] = []
-        content[name].append(payload)
+    try:
+        mqtt_client = client.Client(mqtt_client_id)
+    except Exception as e:
+        if exception is True:
+            print('Failed to set MQTT client ID (Error: %s)' % e)
+        mqtt_client = None
 
-    return content
+    # set username and password
+    if mqtt_client is not None and username is not False and password is not None:
+        try:
+            mqtt_client.username_pw_set(username, password)
+        except Exception as e:
+            if exception is True:
+                print('Failed to set MQTT username & password (Error: %s)' % e)
+            mqtt_client = None
+
+    # connect to broker
+    if mqtt_client is not None:
+        try:
+            mqtt_client.connect(broker, int(port))
+        except Exception as e:
+            if exception is True:
+                print('failed to connect to MQTT broker %s against port %s (Error: %s)' % (broker, port, e))
+            mqtt_client = None
+
+    return mqtt_client
 
 
-def put_data(payloads:list, conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
+def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=False)->bool:
     """
-    Execute REST PUT
+    Send data into an MQTT broker
     :args:
-        payloads:list - content to store in AnyLog
-        conn:str - REST IP + Port information
-        auth:tuple - authentication information
-        timeout:int - REST timeout
-        exception:bool - whether to write  exceptions or not
+        mqtt_client:paho.mqtt.client.Client - MQTT broker client
+        topic:str - topic to send data into
+        data:dict - either list or dict of data to send into MQTT broker
+        dbms:str - logical database
+        table:str - logical table name
+        exception:bool - whether or not to print exceptions
     :params:
         status:bool
-        headers:dict - REST header information
-        r:requests.Request - result from PUT request
-        formatted_payloads:dict - formatting of payloads
-        payload:str - JSON dict of payloads
+        payloads:list - converted data
+        r:paho.mqtt.client.MQTTMessageInfo - result from publish process
     :return:
         status
     """
     status = True
-    headers = {
-        'type': 'json',
-        'dbms': None,
-        'table': None,
-        'mode': 'streaming',
-        'Content-Type': 'text/plain'
-    }
-
-    formatted_payloads = __convert_data(payloads=payloads)
-    for table in formatted_payloads:
-        headers['dbms'], headers['table'] = table.split('.')
-        payload = support.json_dumps(payloads=formatted_payloads[table])
-        try:
-            r = requests.put(url=f'http://{conn}', headers=headers, auth=auth, timeout=timeout)
-        except Exception as error:
-            status = False
+    try:
+        r = mqtt_client.publish(topic, message, qos=0, retain=True)
+    except Exception as e:
+        if exception is True:
+            print(f'Failed to publish results in {mqtt_client} (Error: {e})')
+        status = False
+    else:
+        time.sleep(5)
+        if r[0] != 0:
             if exception is True:
-                print(f'Failed to execute PUT for {table} against {conn} (Error: {error})')
-        else:
-            if int(r.status_code) != 200:
-                status = False
-                if exception is True:
-                    print(f'Failed to execute PUT for {table} against {conn} (Network Error: {r.status_code})')
-
+                print('There was a network error when publishing content')
+            status = False
+            
     return status
 
 
-def post_data(payloads:list, conn:str, topic:str="demo", auth:tuple=(), timeout:int=30, exception:bool=False):
+
+def mqtt_process(payloads:dict, topic:str, broker:str, port:int, username:str=None, password:str=None,
+                 exception:bool=True)->bool:
     """
-    Execute REST POST
+    Main for MQTT process
     :args:
-        payloads:list - content to store in AnyLog
-        conn:str - REST IP + Port information
-        topic:str- topic to correlate with the incoming data
-        auth:tuple - authentication information
-        timeout:int - REST timeout
-        exception:bool - whether to write  exceptions or not
+        payloads:dict - content to send into MQTT
+        topic:str - MQTT topic name
+        broker:str - MQTT broker address
+        port:int - IP associated with broker
+        username:str - User associated with MQTT connection information
+        password:str - password associated with user
+        exception:bool - whether or not to print exception
     :params:
         status:bool
-        headers:dict - REST header information
+        mqtt_client:client.Client - MQTT client connection
         str_payloads:str - JSON string of payloads
-        r:requests.Request - result from PUT request
+    :return:
+        status
     """
-    status = True
-    headers = {
-        'command': 'data',
-        'topic': topic,
-        'User-Agent': 'AnyLog/1.23',
-        'Content-Type': 'text/plain'
-    }
 
-    str_payloads = support.json_dumps(payloads=payloads)
+    status = False
+    mqtt_client = connect_mqtt_broker(broker=broker, port=port, username=username, password=password, exception=exception)
+    str_payloads = support.json_dumps(payload=payloads)
 
-    try:
-        r = requests.post(url=f'https://{conn}', headers=headers, auth=auth, timeout=timeout, data=str_payloads)
-    except Exception as error:
-        status = False
-        if exception is True:
-            print(f'Failed to execute POST against {conn} (Error: {error})')
-    else:
-        if int(r.status_code) != 200:
-            status = False
-            if exception is True:
-                print(f'Failed to execute POST against {conn} (Network Error: {r.status_code})')
+    if mqtt_client is not None:
+        status = send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, exception=exception)
 
     return status
-
-
-
-
-
 

@@ -1,42 +1,38 @@
-FROM ubuntu:20.04
+FROM python:3.9-alpine
 
-# declare params
-ENV ANYLOG_ROOT_DIR=/app
-ENV DEBIAN_FRONTEND=noninteractive
+ENV ANYLOG_PATH=/app
+ENV DATA_TYPE=trig
+ENV INSERT_PROCESS=print
+ENV DB_NAME=test
+ENV TOTAL_ROWS=1000000
+ENV BATCH_SIZE=1000
+ENV SLEEP=0.5
+ENV TIMEZONE=utc
+ENV ENABLE_TIMEZONE_RANGE=false
+ENV PERFORMANCE_TESTING=true
+ENV CONN=""
+ENV TOPIC=""
+ENV REST_TIMEOUT=30
+ENV DIR_NAME=/app/Sample-Data-Generator/data
+ENV COMPRESS=false
+ENV EXCEPTION=false
 
-# update / upgrade
-RUN apt-get -y update
-RUN apt-get -y upgrade
-RUN apt-get -y update
 
-# install requirements via apt
-RUN apt-get -y install python3.9 python3-pip
-RUN apt-get -y install libpq-dev python3.9-dev
-RUN apt-get -y install python3-kafka
-RUN python3.9 -m pip install --upgrade pip
-
-# install requirements via pip 
-RUN python3.9 -m pip install requests
-RUN python3.9 -m pip install pytz
-RUN python3.9 -m pip install paho-mqtt
-RUN python3.9 -m pip install tzlocal
-RUN python3.9 -m pip install kafka-python
-RUN apt-get -y update
-
-# Add user 
-RUN adduser appuser 
-
-# move to WORKDIR + COPY codebsae 
-WORKDIR $ANYLOG_ROOT_DIR
+WORKDIR $ANYLOG_PATH
 COPY . Sample-Data-Generator
 
-# configure usr 
-RUN chown -R appuser:appuser $ANYLOG_ROOT_DIR 
-RUN chmod 755 /app
+RUN chmod 775 $ANYLOG_PATH
 
-# Swtich user 
-USER appuser
-RUN apt-get -y update
+RUN apk update
+RUN apk upgrade
+RUN apk add bash-completion
+RUN apk update
 
-#ENTRYPOINT bash /app/Sample-Data-Generator/docker_call.sh
- 
+RUN python3.9 -m pip install --upgrade pip
+#RUN python3.9 -m pip install gzip
+#RUN python3.9 -m pip install math
+RUN python3.9 -m pip install paho-mqtt
+RUN python3.9 -m pip install pytz
+RUN python3.9 -m pip install requests
+
+ENTRYPOINT python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator.py --help
