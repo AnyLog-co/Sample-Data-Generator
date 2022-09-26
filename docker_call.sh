@@ -1,19 +1,24 @@
 #!/bin/bash
 
-if [[ ${INSERT_PROCESS} -eq print ]]
+if [[ ${HELP} -eq true ]]
 then
-  bash ${ANYLOG_PATH}/bash_scripts/print_data.sh
+  python3.9 ${ANYLOG_PATH}/Sample-Data-Generator/data_generator.py --help
+  printf "\nSample Data Types & Corresponding Values\n"
+  python3.9 ${ANYLOG_PATH}/Sample-Data-Generator/data_generator.py examples print test
+elif [[ ${INSERT_PROCESS} -eq print ]]
+then
+  bash ${ANYLOG_PATH}/Sample-Data-Generator/bash_scripts/print_data.sh
 elif [[ ${INSERT_PROCESS} -eq file ]]
 then
-  bash ${ANYLOG_PATH}/bash_scriprts/file_data.sh
+  bash ${ANYLOG_PATH}/Sample-Data-Generator/bash_scriprts/file_data.sh
 elif [[ ${INSERT_PROCESS} -eq put ]]
 then
-  bash ${ANYLOG_PATH}/bash_scripts/rest_put_data.sh
+  bash ${ANYLOG_PATH}/Sample-Data-Generator/bash_scripts/rest_put_data.sh
 elif [[ ${INSERT_PROCESS} -eq post ]]
 then
-  bash ${ANYLOG_PATH}/bash_scripts/rest_post_data.sh
+  bash ${ANYLOG_PATH}/Sample-Data-Generator/bash_scripts/rest_post_data.sh
 elif [[ ${INSERT_PROCESS} -eq mqtt ]]
 then
-  bash ${ANYLOG_PATH}/bash_scripts/rest_matt_data.sh
+  bash ${ANYLOG_PATH}/Sample-Data-Generator/bash_scripts/rest_matt_data.sh
 fi
 

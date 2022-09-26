@@ -1,6 +1,7 @@
 FROM python:3.9-alpine
 
 ENV ANYLOG_PATH=/app
+ENV HELP=false
 ENV DATA_TYPE=trig
 ENV INSERT_PROCESS=print
 ENV DB_NAME=test
@@ -13,7 +14,6 @@ ENV PERFORMANCE_TESTING=true
 ENV CONN=""
 ENV TOPIC=""
 ENV REST_TIMEOUT=30
-ENV DIR_NAME=/app/Sample-Data-Generator/data
 ENV COMPRESS=false
 ENV EXCEPTION=false
 
@@ -35,4 +35,4 @@ RUN python3.9 -m pip install paho-mqtt
 RUN python3.9 -m pip install pytz
 RUN python3.9 -m pip install requests
 
-ENTRYPOINT python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator.py --help
+ENTRYPOINT bash $ANYLOG_PATH/Sample-Data-Generator/docker_call.sh

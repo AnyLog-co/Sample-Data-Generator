@@ -27,6 +27,8 @@ PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'publishing_protocols')
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
+import support
+
 import generic_protocol
 import mqtt_protocol
 import rest_protocols
@@ -40,7 +42,63 @@ import trig
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data')
 
+def __rows_summary(db_name:str)->str:
+    """
+    The following provides an example for each of the data types, printing them to screen
+    :args:
+        db_name:str - logical database name
+    :params:
+        payloads:dict - sample data
+    """
+    payloads = {
+        'trig': {'dbms': db_name, 'table': 'trig_data', 'value': -3.141592653589793, 'sin': -1.2246467991473532e-16,
+                 'cos': -1.0, 'tan': 1.2246467991473532e-16, 'timestamp': '2022-08-27T15:50:12.001399Z'},
+        'performance': {'dbms': db_name, 'table': 'rand_data', 'value': -1.2246467991473532e-16,
+                        'timestamp': '2022-08-27T15:50:12.163818Z'},
+        'ping': {'dbms': db_name, 'table': 'ping_sensor', 'device_name': 'Ubiquiti OLT',
+                 'parentelement': 'd515dccb-58be-11ea-b46d-d4856454f4ba',
+                 'webid': 'F1AbEfLbwwL8F6EiShvDV-QH70Ay9wV1b5Y6hG0bdSFZFT0ugxACfpGU7d1ojPpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxVQklRVUlUSSBPTFR8UElORw',
+                 'value': 44.74, 'timestamp': '2022-08-27T15:50:12.059726Z'},
+        'percentagecpu': {'dbms': db_name, 'table': 'percentagecpu_sensor', 'device_name': 'VM Lit SL NMS',
+                          'parentelement': '1ab3b14e-93b1-11e9-b465-d4856454f4ba',
+                          'webid': 'F1AbEfLbwwL8F6EiShvDV-QH70ATrGzGrGT6RG0ZdSFZFT0ugQW05a2rwdFojNpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVRTQU5MRUFORFJPXDc3NyBEQVZJU1xQT1AgUk9PTVxGLk8gTU9OSVRPUklORyBTRVJWRVJcVk0gTElUIFNMIE5NU3xQSU5H',
+                          'value': 9.59, 'timestamp': '2022-08-27T15:50:12.116925Z'},
+        'opcua': {"dbms": "test2", "table": "opcua_readings", "fic1_pv": -103.29249139515318, "fic1_mv": -227.862187363,
+                  "fic1_sv": -48.493873977761645, "lic1_pv": 165.18648883311027, "lic1_mv": -84.59834643031611,
+                  "lic1_sv": 174.86936425992465, "fic2_pv": -37.52888216655371, "fic2_mv": 38.63696693385969,
+                  "fic2_sv": -182.07962937349504, "lic2_pv": 142.90402691921074, "lic2_mv": -35.64751556177472,
+                  "lic2_sv": -62.69296482664739, "fic3_pv": -147.060548270305, "fic3_mv": -57.93928389193016,
+                  "fic3_sv": 418.2631932904929, "lic3_pv": 176.7756420678825, "lic3_mv": -61.49695028678772,
+                  "lic3_sv": 220.60063882032966, "fic4_pv": -44.66240442407483, "fic4_mv": 11.529102739194443,
+                  "fic4_sv": 124.97175098185224, "lic4_pv": 9.507763915723592, "lic4_mv": 30.483647656168543,
+                  "lic4_sv": -213.4404433100362, "fic5_pv": -460.10226426203155, "fic5_mv": -72.96099747863087,
+                  "fic5_sv": -53.62672940378895, "lic5_pv": -89.93465024402398, "lic5_mv": -20.523831049180885,
+                  "lic5_sv": -125.29010564894106, "timestamp": "2022-09-24T14:30:10.575429Z"},
+        'power': [
+            {'dbms': db_name, 'table': 'solar', 'location': '38.89773, -77.03653', 'value': 8.43453536493608,
+             'timestamp': '2022-08-27T15:50:12.205323Z'},
+            {'dbms': db_name, 'table': 'battery', 'location': '38.89773, -77.03653', 'value': 9.532695799656166,
+             'timestamp': '2022-08-27T15:50:12.205323Z'},
+            {'dbms': db_name, 'table': 'inverter', 'location': '38.89773, -77.03653', 'value': 20.03601934228979,
+             'timestamp': '2022-08-27T15:50:12.205323Z'},
+            {'dbms': db_name, 'table': 'eswitch', 'location': '38.89773, -77.03653', 'value': 9.530111494215165,
+             'timestamp': '2022-08-27T15:50:12.205323Z'},
+            {'dbms': db_name, 'table': 'pmu', 'location': '38.89773, -77.03653', 'value': 30.51712172789563,
+             'timestamp': '2022-08-27T15:50:12.205323Z'},
+            {'dbms': db_name, 'table': 'synchrophasor', 'location': '38.89773, -77.03653', 'phasor': 'bXlvzdYc',
+             'frequency': 1216.6996978149687, 'dfreq': 2326.468559576384, 'analog': 4.591088473171304,
+             'timestamp': '2022-08-27T15:50:12.205323Z'}
+        ]
+    }
 
+    for table in payloads:
+        print(f'Data Type: {table}')
+        if isinstance(payloads[table], list):
+            for payload in payloads[table]:
+                print(f'\t{support.json_dumps(payload)}')
+        else:
+            print(f'\t{support.json_dumps(payloads[table])}')
+        print('\n')
 def row_generator(data_type:str, db_name:str, array_counter:int=None)->(dict, int):
     """
     Generate data to be inserted
@@ -174,6 +232,7 @@ def main():
             * percentagecpu
             * opcua
             * power
+            * examples - sample row(s) for each datta type
         insert_process      INSERT_PROCESS      format to store generated data              [default: print]
             * print
             * file
@@ -202,8 +261,9 @@ def main():
         data:list - list of data to be stored
     """
     parse = argparse.ArgumentParser()
-    parse.add_argument('data_type', type=str, choices=['trig', 'performance', 'ping', 'percentagecpu', 'opcua', 'power'],
-                       default='trig', help='type of data to insert into AnyLog')
+    parse.add_argument('data_type', type=str, choices=['trig', 'performance', 'ping', 'percentagecpu', 'opcua', 'power',
+                                                       'examples'], default='trig',
+                       help='type of data to insert into AnyLog')
     parse.add_argument('insert_process', type=str, choices=['print', 'file', 'put', 'post', 'mqtt'],
                        default='print', help='format to store generated data')
     parse.add_argument('db_name', type=str, default='test', help='logical database name')
@@ -231,6 +291,10 @@ def main():
     row_counter = 0
     data = []
     conns = {}
+
+    if args.data_type == 'examples':
+        __rows_summary(db_name=args.db_name)
+        exit(1)
 
     if args.conn is not None:
         for conn in args.conn.split(','):

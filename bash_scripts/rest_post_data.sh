@@ -9,6 +9,9 @@ then
       --batch-size ${BATCH_SIZE} \
       --sleep ${SLEEP} \
       --performance-testing \
+      --conn ${CONN} \
+      --topic ${TOPIC} \
+      --rest-timeout ${REST_TIMEOUT} \
       --exception
   elif [[ ${EXCEPTION} -eq false ]]
   then
@@ -16,7 +19,10 @@ then
       --total-rows ${TOTAL_ROWS} \
       --batch-size ${BATCH_SIZE} \
       --sleep ${SLEEP} \
-      --performance-testing
+      --performance-testing \
+      --conn ${CONN} \
+      --topic ${TOPIC} \
+      --rest-timeout ${REST_TIMEOUT} \
   fi
 else
   if [[ ${EXCEPTION} -eq true ]] && [[ ${ENABLE_TIMEZONE_RANGE} -eq true ]]
@@ -27,6 +33,9 @@ else
       --sleep ${SLEEP} \
       --timezone ${TIMEZONE} \
       --enable-timezone-range \
+      --conn ${CONN} \
+      --topic ${TOPIC} \
+      --rest-timeout ${REST_TIMEOUT} \
       --exception
   elif [[ ${EXCEPTION} -eq false ]] && [[ ${ENABLE_TIMEZONE_RANGE} -eq true ]]
   then
@@ -35,7 +44,10 @@ else
       --batch-size ${BATCH_SIZE} \
       --sleep ${SLEEP} \
       --timezone ${TIMEZONE} \
-      --enable-timezone-range
+      --enable-timezone-range \
+      --conn ${CONN} \
+      --topic ${TOPIC} \
+      --rest-timeout ${REST_TIMEOUT} \
   elif [[ ${EXCEPTION} -eq true ]] && [[ ${ENABLE_TIMEZONE_RANGE} -eq false ]]
   then
     python3.9 ${ANYLOG_PATH}/Sample-Data-Generator/data_generator.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
@@ -43,6 +55,9 @@ else
       --batch-size ${BATCH_SIZE} \
       --sleep ${SLEEP} \
       --timezone ${TIMEZONE} \
+      --conn ${CONN} \
+      --topic ${TOPIC} \
+      --rest-timeout ${REST_TIMEOUT} \
       --exception
   elif [[ ${EXCEPTION} -eq false ]] && [[ ${ENABLE_TIMEZONE_RANGE} -eq false ]]
   then
@@ -50,6 +65,9 @@ else
       --total-rows ${TOTAL_ROWS} \
       --batch-size ${BATCH_SIZE} \
       --sleep ${SLEEP} \
-      --timezone ${TIMEZONE}
+      --timezone ${TIMEZONE} \
+      --conn ${CONN} \
+      --topic ${TOPIC} \
+      --rest-timeout ${REST_TIMEOUT}
   fi
 fi
