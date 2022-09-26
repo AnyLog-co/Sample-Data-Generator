@@ -10,7 +10,7 @@ then
   bash ${ANYLOG_PATH}/Sample-Data-Generator/bash_scripts/print_data.sh
 elif [[ ${INSERT_PROCESS} -eq file ]]
 then
-  bash ${ANYLOG_PATH}/Sample-Data-Generator/bash_scriprts/file_data.sh
+  bash ${ANYLOG_PATH}/Sample-Data-Generator/bash_scriprts/store_data_file.sh
 elif [[ ${INSERT_PROCESS} -eq put ]]
 then
   bash ${ANYLOG_PATH}/Sample-Data-Generator/bash_scripts/rest_put_data.sh
@@ -19,6 +19,6 @@ then
   bash ${ANYLOG_PATH}/Sample-Data-Generator/bash_scripts/rest_post_data.sh
 elif [[ ${INSERT_PROCESS} -eq mqtt ]]
 then
-  bash ${ANYLOG_PATH}/Sample-Data-Generator/bash_scripts/rest_matt_data.sh
+  bash ${ANYLOG_PATH}/Sample-Data-Generator/bash_scripts/send_mqtt_data.sh
 fi
 
