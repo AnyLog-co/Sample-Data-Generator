@@ -29,8 +29,6 @@ RUN apk add bash-completion
 RUN apk update
 
 RUN python3.9 -m pip install --upgrade pip
-#RUN python3.9 -m pip install gzip
-#RUN python3.9 -m pip install math
 RUN python3.9 -m pip install paho-mqtt
 RUN python3.9 -m pip install pytz
 RUN python3.9 -m pip install requests
