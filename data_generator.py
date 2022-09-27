@@ -99,6 +99,8 @@ def __rows_summary(db_name:str)->str:
         else:
             print(f'\t{support.json_dumps(payloads[table])}')
         print('\n')
+
+
 def row_generator(data_type:str, db_name:str, array_counter:int=None)->(dict, int):
     """
     Generate data to be inserted
@@ -164,14 +166,14 @@ def include_timestamp(payload:dict, timezone:str='utc', enable_timezone_range:bo
     return payload
 
 
-def publish_data(payload:list, insert_process:str, conns:list=None, topic:str=None, rest_timeout:int=30,
+def publish_data(payload:list, insert_process:str, conn:str=None, topic:str=None, rest_timeout:int=30,
                  dir_name:str=None, compress:bool=False, exception:bool=False):
     """
     Publish data based on the insert_process
     :args:
         payload:list - content to store
         insert_process:str - format to store content in
-        conns:list - connection information
+        conn:str - connection information
         topic:str - REST POST + MQTT topic
         rest_timeout:int - REST timeout
         dir_name:str - directory to store files in
@@ -180,46 +182,39 @@ def publish_data(payload:list, insert_process:str, conns:list=None, topic:str=No
     :params:
         status:bool
     """
+    auth = ()
+    if insert_process in ['put', 'post', 'mqtt']:
+        if '@' in conn:
+            auth, conn = conn.split('@')
+            auth = tuple(auth.split(':'))
+
     if insert_process == "print":
         generic_protocol.print_content(payloads=payload)
     elif insert_process == "file":
         status = generic_protocol.write_to_file(payloads=payload, data_dir=dir_name, compress=compress, exception=exception)
         if status is False and exception is False:
             print(f'Failed to store content into file')
-    elif insert_process == 'put':
-        conn = random.choice(conns)
-        auth = ()
-        if '@' in conn:
-            auth, conn = conn.split('@')
-            auth = tuple(auth.split(':'))
-        status = rest_protocolss.put_data(payloads=payload, conn=conn, auth=auth, timeout=rest_timeout,
-                                         exception=exception)
-        if status is False and exception is False:
-            print(f'Failed to insert one or more batches of data into {conn} via PUT')
+        elif insert_process == 'put':
+            status = rest_protocolss.put_data(payloads=payload, conn=conn, auth=auth, timeout=rest_timeout,
+                                             exception=exception)
+            if status is False and exception is False:
+                print(f'Failed to insert one or more batches of data into {conn} via PUT')
     elif insert_process == 'post':
-        conn = random.choice(conns)
-        auth = ()
-        if '@' in conn:
-            auth, conn = conn.split('@')
-            auth = tuple(auth.split(':'))
         status = rest_protocolss.post_data(payloads=payload, topic=topic, conn=conn, auth=auth, timeout=rest_timeout,
                                           exception=exception)
         if status is False and exception is False:
             print(f'Failed to insert one or more batches of data into {conn} via POST')
     elif insert_process == 'mqtt':
-        conn = random.choice(conns)
+        broker, port = conn.split(':')
         username = ""
         password = ""
-        if '@' in conn:
-            auth, conn = conn.split('@')
-            username, password = auth.split(':')
-        broker, port = conn.split(':')
+        if auth != ():
+            username, password = auth
+
         status = mqtt_protocol.mqtt_process(payloads=payload, topic=topic, broker=broker, port=port, username=username,
                                             password=password, exception=exception)
         if status is False and exception is False:
             print(f'Failed to send MQTT message against connection {conn}')
-
-
 
 
 def main():
@@ -259,6 +254,8 @@ def main():
         array_counter:int - placeholder for values in certain data set(s)
         row_counter:int - number of rows inserted
         data:list - list of data to be stored
+        conns:list - list of connection information
+        conn_id:int - location along the
     """
     parse = argparse.ArgumentParser()
     parse.add_argument('data_type', type=str, choices=['trig', 'performance', 'ping', 'percentagecpu', 'opcua', 'power',
@@ -290,18 +287,16 @@ def main():
     array_counter = 0
     row_counter = 0
     data = []
-    conns = {}
 
     if args.data_type == 'examples':
         __rows_summary(db_name=args.db_name)
         exit(1)
 
+    conns = None
+    conn = None
+    conn_id = 0
     if args.conn is not None:
-        for conn in args.conn.split(','):
-            if '@' in conn:
-                conns[conn.split('@')[-1]] = conn.split('@')[0]
-            else:
-                conns[conn.split('@')[-1]] = None
+        conns = args.conn.split(',')
 
     if args.performance_testing is True:
         start_timestamp = timestamp_generator.performance_start_timestamp()
@@ -319,13 +314,21 @@ def main():
                 data += payload
             row_counter += 1
             if row_counter == args.batch_size:
-                publish_data(payload=data, insert_process=args.insert_process, conns=args.conn,
+                if conns is not None:
+                    conn = conns[conn_id]
+                publish_data(payload=data, insert_process=args.insert_process, conn=conn,
                              rest_timeout=args.rest_timeout, dir_name=args.dir_name)
                 data = []
                 row_counter = 0
+                if conns is not None:
+                    conn_id += 1
+                    if conn_id == len(conns):
+                        conn_id = 0
             time.sleep(args.sleep)
         if len(data) > 0:
-            publish_data(payload=data, insert_process=args.insert_process, conns=args.conn,
+            if conns is not None:
+                conn = conns[conn_id]
+            publish_data(payload=data, insert_process=args.insert_process, conn=conn,
                          rest_timeout=args.rest_timeout, dir_name=args.dir_name)
     elif total_rows != 0:
         for row in range(total_rows):
@@ -339,13 +342,21 @@ def main():
                 data += payload
             row_counter += 1
             if row_counter == args.batch_size:
-                publish_data(payload=data, insert_process=args.insert_process, conns=args.conn,
+                if conns is not None:
+                    conn = conns[conn_id]
+                publish_data(payload=data, insert_process=args.insert_process, conn=conn,
                              rest_timeout=args.rest_timeout, dir_name=args.dir_name)
                 data = []
                 row_counter = 0
+                if conns is not None:
+                    conn_id += 1
+                    if conn_id == len(conns):
+                        conn_id = 0
             time.sleep(args.sleep)
         if len(data) > 0:
-            publish_data(payload=data, insert_process=args.insert_process, conns=args.conn,
+            if conns is not None:
+                conn = conns[conn_id]
+            publish_data(payload=data, insert_process=args.insert_process, conn=conn,
                          rest_timeout=args.rest_timeout, dir_name=args.dir_name)
     else:
         while True:
@@ -359,10 +370,16 @@ def main():
                 data += payload
             row_counter += 1
             if row_counter == args.batch_size:
-                publish_data(payload=data, insert_process=args.insert_process, conns=args.conn,
+                if conns is not None:
+                    conn = conns[conn_id]
+                publish_data(payload=data, insert_process=args.insert_process, conn=conn,
                              rest_timeout=args.rest_timeout, dir_name=args.dir_name)
                 data = []
                 row_counter = 0
+                if conns is not None:
+                    conn_id += 1
+                    if conn_id == len(conns):
+                        conn_id = 0
             time.sleep(args.sleep)
 
 
