@@ -12,9 +12,9 @@ def __convert_data(payloads:list)->dict:
     content = {}
 
     for payload in payloads:
-        name = f"{payload['dbms'].payload[table]}"
+        name = payload['dbms'] + "." + payload['table']
         del payload['dbms']
-        del payload['name']
+        del payload['table']
         if name not in content:
             content[name] = []
         content[name].append(payload)
@@ -54,7 +54,7 @@ def put_data(payloads:list, conn:str, auth:tuple=(), timeout:int=30, exception:b
         headers['dbms'], headers['table'] = table.split('.')
         payload = support.json_dumps(payloads=formatted_payloads[table])
         try:
-            r = requests.put(url=f'http://{conn}', headers=headers, auth=auth, timeout=timeout)
+            r = requests.put(url=f'http://{conn}', headers=headers, auth=auth, timeout=timeout, data=payload)
         except Exception as error:
             status = False
             if exception is True:

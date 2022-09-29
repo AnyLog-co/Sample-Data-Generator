@@ -1,5 +1,5 @@
 """
-The base of the code is demonstrating publishing files and images
+The base of the code is demonstrating publishing files and images into AnyLog. In addition
 """
 import argparse
 import datetime
@@ -23,6 +23,7 @@ PROCESS_ID = str(uuid.uuid4())
 DIR_NAME='$HOME/Sample-Data-Generator/data/videos'
 DEVICE_NAME='anylog-data-generator'
 PROFILE_NAME='anylog-video-generator'
+
 
 def __generate_timestamp(now:datetime.datetime)->(datetime.datetime, datetime.datetime):
     """

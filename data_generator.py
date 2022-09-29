@@ -18,6 +18,7 @@ The following provides the ability to insert data into AnyLog
 import argparse
 import datetime
 import os
+import random
 import sys
 import time
 
@@ -41,6 +42,9 @@ import timestamp_generator
 import trig
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data')
+MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
+SECOND_INCREMENTS = 86400  # second increments (0.864) for 100000 rows
+
 
 def __rows_summary(db_name:str)->str:
     """
@@ -136,8 +140,7 @@ def row_generator(data_type:str, db_name:str, array_counter:int=None)->(dict, in
 
 
 def include_timestamp(payload:dict, timezone:str='utc', enable_timezone_range:bool=False,
-                      performance_testing:bool=False, base_timestamp:datetime.datetime=datetime.datetime.now(),
-                      base_row_time:float=0, row_counter:int=0):
+                      performance_testing:bool=False, microseconds:int=MICROSECONDS, second_increments:float=0):
     """
     Generate timestamp for row - if performance testing is enabled, timestamps within will be within a 24 hour period.
     :args:
@@ -155,8 +158,8 @@ def include_timestamp(payload:dict, timezone:str='utc', enable_timezone_range:bo
     """
     timestamp = timestamp_generator.generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range)
     if performance_testing is True:
-        timestamp = timestamp_generator.performance_timestamps(timestamp=base_timestamp, base_row_time=base_row_time,
-                                                               row_counter=row_counter)
+        timestamp = timestamp_generator.performance_timestamp(microseconds=microseconds, second_increments=second_increments)
+
     if isinstance(payload, dict):
         payload['timestamp'] = timestamp
     else:
@@ -194,13 +197,13 @@ def publish_data(payload:list, insert_process:str, conn:str=None, topic:str=None
         status = generic_protocol.write_to_file(payloads=payload, data_dir=dir_name, compress=compress, exception=exception)
         if status is False and exception is False:
             print(f'Failed to store content into file')
-        elif insert_process == 'put':
-            status = rest_protocolss.put_data(payloads=payload, conn=conn, auth=auth, timeout=rest_timeout,
-                                             exception=exception)
-            if status is False and exception is False:
-                print(f'Failed to insert one or more batches of data into {conn} via PUT')
+    elif insert_process == 'put':
+        status = rest_protocols.put_data(payloads=payload, conn=conn, auth=auth, timeout=rest_timeout,
+                                         exception=exception)
+        if status is False and exception is False:
+            print(f'Failed to insert one or more batches of data into {conn} via PUT')
     elif insert_process == 'post':
-        status = rest_protocolss.post_data(payloads=payload, topic=topic, conn=conn, auth=auth, timeout=rest_timeout,
+        status = rest_protocols.post_data(payloads=payload, topic=topic, conn=conn, auth=auth, timeout=rest_timeout,
                                           exception=exception)
         if status is False and exception is False:
             print(f'Failed to insert one or more batches of data into {conn} via POST')
@@ -299,15 +302,14 @@ def main():
         conns = args.conn.split(',')
 
     if args.performance_testing is True:
-        start_timestamp = timestamp_generator.performance_start_timestamp()
-        base_row_time = timestamp_generator.base_row_time(total_rows=total_rows)
         if total_rows == 0:
             total_rows = 1000000
         for row in range(total_rows):
+            second_increments = row * (SECOND_INCREMENTS/args.total_rows)
             payload, array_counter, = row_generator(data_type=args.data_type, db_name=args.db_name,
                                                     array_counter=array_counter)
-            payload = include_timestamp(payload=payload, performance_testing=True, base_timestamp=start_timestamp,
-                                        base_row_time=base_row_time, row_counter=row_counter)
+            payload = include_timestamp(payload=payload, performance_testing=True, microseconds=MICROSECONDS,
+                                        second_increments=second_increments)
             if isinstance(payload, dict):
                 data.append(payload)
             else:
@@ -317,7 +319,7 @@ def main():
                 if conns is not None:
                     conn = conns[conn_id]
                 publish_data(payload=data, insert_process=args.insert_process, conn=conn,
-                             rest_timeout=args.rest_timeout, dir_name=args.dir_name)
+                             rest_timeout=args.rest_timeout, dir_name=args.dir_name, exception=args.exception)
                 data = []
                 row_counter = 0
                 if conns is not None:
@@ -329,7 +331,7 @@ def main():
             if conns is not None:
                 conn = conns[conn_id]
             publish_data(payload=data, insert_process=args.insert_process, conn=conn,
-                         rest_timeout=args.rest_timeout, dir_name=args.dir_name)
+                         rest_timeout=args.rest_timeout, dir_name=args.dir_name, exception=args.exception)
     elif total_rows != 0:
         for row in range(total_rows):
             payload, array_counter, = row_generator(data_type=args.data_type, db_name=args.db_name,
@@ -345,7 +347,7 @@ def main():
                 if conns is not None:
                     conn = conns[conn_id]
                 publish_data(payload=data, insert_process=args.insert_process, conn=conn,
-                             rest_timeout=args.rest_timeout, dir_name=args.dir_name)
+                             rest_timeout=args.rest_timeout, dir_name=args.dir_name, exception=args.exception)
                 data = []
                 row_counter = 0
                 if conns is not None:
@@ -357,7 +359,7 @@ def main():
             if conns is not None:
                 conn = conns[conn_id]
             publish_data(payload=data, insert_process=args.insert_process, conn=conn,
-                         rest_timeout=args.rest_timeout, dir_name=args.dir_name)
+                         rest_timeout=args.rest_timeout, dir_name=args.dir_name, exception=args.exception)
     else:
         while True:
             payload, array_counter, = row_generator(data_type=args.data_type, db_name=args.db_name,

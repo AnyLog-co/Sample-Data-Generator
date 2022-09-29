@@ -3,47 +3,24 @@ import pytz
 import random
 
 
-def performance_start_timestamp()->datetime.datetime:
+def performance_timestamp(microseconds:int, second_increments:float)->str:
     """
-    Create the initial timestamp
-    :return:
-        2022-08-27 15:50:12.XXXXXX
-    """
-    return datetime.datetime(year=2022, month=8, day=27, hour=15, minute=50, second=12) + datetime.timedelta(microseconds=random.choice(range(100, 300000)))
-
-
-def base_row_time(total_rows:int)->float:
-    """
-    calculate number of (sub) second between each timestamp value
+    Calculate timestamp for performance testing
     :args:
-        total_rows:int - total number of rows to insert
+        microseconds:str - base microseconds (calculated as global value)
+        second_increments:str - how much to increment by
     :params:
-        rows_24h_increments:int - base number of rows over 24 hours for calculation
-        second_increments:float - number of (sub) seconds between each row
+       timestamp:datetime.datetime - calculated timestamp
     :return:
-        increment of number of seconds between row
+         timestamp as string
     """
-    rows_24h_increments = 100000
-    second_increments = 0.864
-
-    return second_increments * (rows_24h_increments / total_rows)
-
-
-def performance_timestamps(timestamp:datetime.datetime, base_row_time:float, row_counter:int)->str:
-    """
-    Calculate the current timestamp for row
-    :args:
-        timestamp:datetime.datetime - initial timestamp (performance_start_timestamp)
-        base_row_time:float -  incremental seconds value (base_row_time)
-        row_counter:int -- current row
-    :params:
-        seconds:float - calculate incremental seconds
-    :return:
-         timestamp + seconds (in string format)
-    """
-    seconds = base_row_time * row_counter
-    updated_timestamp = timestamp + datetime.timedelta(seconds=seconds)
-    return updated_timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    # calculate the base timestamp
+    timestamp = datetime.datetime(year=2022, month=8, day=27, hour=15, minute=50, second=12) + datetime.timedelta(microseconds=microseconds)
+    
+    # update based on second_increments
+    timestamp += datetime.timedelta(seconds=second_increments)
+    
+    return timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
 
 def generate_timestamp(timezone:str='utc', enable_timezone_range:bool=True)->str:

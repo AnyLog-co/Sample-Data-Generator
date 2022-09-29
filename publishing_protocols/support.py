@@ -11,16 +11,16 @@ import random
 #import tzlocal
 
 
-def json_dumps(data:dict)->str:
+def json_dumps(payloads:dict)->str:
     """
     Convert dictionary to string
     :args:
-        data:dict - data to convert
+        payloads:dict - data to convert
     :return:
         converted data, if fails return original data
     """
     try:
-        return json.dumps(data)
+        return json.dumps(payloads)
     except Exception as e:
         return data
 
@@ -37,8 +37,6 @@ def json_loads(data:str)->dict:
         return json.loads(data)
     except Exception as e:
         return data
-
-
 
 
 def payload_conversions(payloads:dict, dbms:str, table:str)->list:
