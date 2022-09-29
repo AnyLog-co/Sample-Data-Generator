@@ -17,7 +17,6 @@ ENV REST_TIMEOUT=30
 ENV COMPRESS=false
 ENV EXCEPTION=false
 
-
 WORKDIR $ANYLOG_PATH
 COPY . Sample-Data-Generator
 
@@ -33,4 +32,8 @@ RUN python3.9 -m pip install paho-mqtt
 RUN python3.9 -m pip install pytz
 RUN python3.9 -m pip install requests
 
+RUN rm -rf other_data_generators
+RUN rm -rf other_data_generators
+
+VOLIME data-generator:$ANYLOG_PATH/data
 ENTRYPOINT bash $ANYLOG_PATH/Sample-Data-Generator/docker_call.sh
