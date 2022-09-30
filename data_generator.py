@@ -252,7 +252,7 @@ def main():
         --dir-name      DIR_NAME        directory when storing to file
         --compress      [COMPRESS]      whether to zip data dir
         --exception     [EXCEPTION]     whether to print exceptions
-    :params:
+    :params:w
         total_rows:int - total number of rows (based on args.total_rows)
         array_counter:int - placeholder for values in certain data set(s)
         row_counter:int - number of rows inserted
@@ -271,7 +271,7 @@ def main():
                        help='number of rows to insert. If set to 0, will run continuously')
     parse.add_argument('--batch-size', type=int, default=1000, help='number of rows to insert per iteration')
     parse.add_argument('--sleep', type=float, default=0.5, help='wait time between each row')
-    parse.add_argument('--timezone', type=str, choices=['local', 'UTC', 'ET', 'BR', 'JP', 'WS', 'AU', 'IT'],
+    parse.add_argument('--timezone', type=str, choices=['local', 'utc', 'et', 'br', 'jp', 'ws', 'au', 'it'],
                        default='local', help='timezone for generated timestamp(s)')
     parse.add_argument('--enable-timezone-range', type=bool, nargs='?', const=True, default=False,
                        help='set timestamp within a range of +/- 1 month')
@@ -318,7 +318,7 @@ def main():
             if row_counter == args.batch_size:
                 if conns is not None:
                     conn = conns[conn_id]
-                publish_data(payload=data, insert_process=args.insert_process, conn=conn,
+                publish_data(payload=data, insert_process=args.insert_process, conn=conn, compress=args.compress,
                              rest_timeout=args.rest_timeout, dir_name=args.dir_name, exception=args.exception)
                 data = []
                 row_counter = 0
@@ -330,9 +330,11 @@ def main():
         if len(data) > 0:
             if conns is not None:
                 conn = conns[conn_id]
-            publish_data(payload=data, insert_process=args.insert_process, conn=conn,
+            publish_data(payload=data, insert_process=args.insert_process, conn=conn, compress=args.compress,
                          rest_timeout=args.rest_timeout, dir_name=args.dir_name, exception=args.exception)
     elif total_rows != 0:
+        if args.timezone != 'local':
+            args.timezone = args.timezone.upper()
         for row in range(total_rows):
             payload, array_counter, = row_generator(data_type=args.data_type, db_name=args.db_name,
                                                     array_counter=array_counter)
@@ -346,7 +348,7 @@ def main():
             if row_counter == args.batch_size:
                 if conns is not None:
                     conn = conns[conn_id]
-                publish_data(payload=data, insert_process=args.insert_process, conn=conn,
+                publish_data(payload=data, insert_process=args.insert_process, conn=conn, compress=args.compress,
                              rest_timeout=args.rest_timeout, dir_name=args.dir_name, exception=args.exception)
                 data = []
                 row_counter = 0
@@ -358,7 +360,7 @@ def main():
         if len(data) > 0:
             if conns is not None:
                 conn = conns[conn_id]
-            publish_data(payload=data, insert_process=args.insert_process, conn=conn,
+            publish_data(payload=data, insert_process=args.insert_process, conn=conn, compress=args.compress,
                          rest_timeout=args.rest_timeout, dir_name=args.dir_name, exception=args.exception)
     else:
         while True:
@@ -374,7 +376,7 @@ def main():
             if row_counter == args.batch_size:
                 if conns is not None:
                     conn = conns[conn_id]
-                publish_data(payload=data, insert_process=args.insert_process, conn=conn,
+                publish_data(payload=data, insert_process=args.insert_process, conn=conn, compress=args.compress,
                              rest_timeout=args.rest_timeout, dir_name=args.dir_name)
                 data = []
                 row_counter = 0

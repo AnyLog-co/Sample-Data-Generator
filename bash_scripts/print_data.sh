@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [[ ${PERFORMANCE_TESTING} -eq true ]]
+if [[ ${PERFORMANCE_TESTING} == true ]]
 then
-  if [[ ${EXCEPTION} -eq true ]]
+  if [[ ${EXCEPTION} == true ]]
   then
     python3.9 ${ANYLOG_PATH}/Sample-Data-Generator/data_generator.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
       --total-rows ${TOTAL_ROWS} \
@@ -10,7 +10,7 @@ then
       --sleep ${SLEEP} \
       --performance-testing \
       --exception
-  elif [[ ${EXCEPTION} -eq false ]]
+  elif [[ ${EXCEPTION} == false ]]
   then
     python3.9 ${ANYLOG_PATH}/Sample-Data-Generator/data_generator.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
       --total-rows ${TOTAL_ROWS} \
@@ -19,7 +19,7 @@ then
       --performance-testing
   fi
 else
-  if [[ ${EXCEPTION} -eq true ]] && [[ ${ENABLE_TIMEZONE_RANGE} -eq true ]]
+  if [[ ${EXCEPTION} == true ]] && [[ ${ENABLE_TIMEZONE_RANGE} == true ]]
   then
     python3.9 ${ANYLOG_PATH}/Sample-Data-Generator/data_generator.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
       --total-rows ${TOTAL_ROWS} \
@@ -28,7 +28,7 @@ else
       --timezone ${TIMEZONE} \
       --enable-timezone-range \
       --exception
-  elif [[ ${EXCEPTION} -eq false ]] && [[ ${ENABLE_TIMEZONE_RANGE} -eq true ]]
+  elif [[ ${EXCEPTION} == false ]] && [[ ${ENABLE_TIMEZONE_RANGE} == true ]]
   then
     python3.9 ${ANYLOG_PATH}/Sample-Data-Generator/data_generator.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
       --total-rows ${TOTAL_ROWS} \
@@ -36,7 +36,7 @@ else
       --sleep ${SLEEP} \
       --timezone ${TIMEZONE} \
       --enable-timezone-range
-  elif [[ ${EXCEPTION} -eq true ]] && [[ ${ENABLE_TIMEZONE_RANGE} -eq false ]]
+  elif [[ ${EXCEPTION} == true ]] && [[ ${ENABLE_TIMEZONE_RANGE} == false ]]
   then
     python3.9 ${ANYLOG_PATH}/Sample-Data-Generator/data_generator.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
       --total-rows ${TOTAL_ROWS} \
@@ -44,7 +44,7 @@ else
       --sleep ${SLEEP} \
       --timezone ${TIMEZONE} \
       --exception
-  elif [[ ${EXCEPTION} -eq false ]] && [[ ${ENABLE_TIMEZONE_RANGE} -eq false ]]
+  elif [[ ${EXCEPTION} == false ]] && [[ ${ENABLE_TIMEZONE_RANGE} == false ]]
   then
     python3.9 ${ANYLOG_PATH}/Sample-Data-Generator/data_generator.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
       --total-rows ${TOTAL_ROWS} \

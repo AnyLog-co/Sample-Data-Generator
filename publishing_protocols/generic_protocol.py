@@ -1,4 +1,5 @@
 import datetime
+import gzip
 import os
 import sys
 import support
@@ -20,7 +21,7 @@ def __timestamp_to_fn(orig_timestamp:str)->str:
     return timestamp
 
 
-def __write_to_file(file_path:str, payload:dict, append:bool, exception:bool)->bool:
+def __write_to_file(file_path:str, payload:dict, append:bool, compress:bool, exception:bool)->bool:
     """
     Write content to file
     :args:
@@ -49,7 +50,46 @@ def __write_to_file(file_path:str, payload:dict, append:bool, exception:bool)->b
         if exception is True:
             print(f'Failed to create file {file_path} (Error: {error})')
         status = False
+    else:
+        if compress is True:
+            status = __zip_file(file_name=file_path, exception=exception)
+            if status is True:
+                try:
+                    os.remove(file_path)
+                except Exception as error:
+                    if exception is True:
+                        print(f'Failed to remove non-compressed file')
 
+    return status
+
+def __zip_file(file_name:str, exception:bool)->bool:
+    status = True
+    gzip_file_name = file_name + ".gz"
+    try:
+        with open(file_name, 'rb') as fn:
+            try:
+                data = bytearray(fn.read())
+            except Exception as error:
+                status = False
+                if exception is True:
+                    print(f'Failed to read content in {file_name} (Error: {error})')
+    except Exception as error:
+        status = False
+        if exception is True:
+            print(f'Failed to binary-read open {file_name} (Error: {error})')
+    else:
+        try:
+            with gzip.open(gzip_file_name, 'wb') as f:
+                try:
+                    f.write(data)
+                except Exception as error:
+                    status = False
+                    if exception is True:
+                        print(f'Failed to write content from {file_name} into {gzip_file_name} (Error: {error})')
+        except Exception as error:
+            status = False
+            if exception is True:
+                print(f'Failed to open {gzip_file_name} for binary-write (Error: {error})')
     return status
 
 
@@ -96,10 +136,10 @@ def write_to_file(payloads:list, data_dir:str=os.path.join(ROOT_PATH, 'data'), c
             file_list[file_name] = __timestamp_to_fn(payload['timestamp'])
             file_name += f".{file_list[file_name]}.json"
             file_path = os.path.join(data_dir, file_name)
-            status = __write_to_file(file_path=file_path, payload=payload, append=False, exception=exception)
+            status = __write_to_file(file_path=file_path, payload=payload, append=False, compress=compress, exception=exception)
         else:
             file_name += f".{file_list[file_name]}.json"
             file_path = os.path.join(data_dir, file_name)
-            status = __write_to_file(file_path=file_path, payload=payload, append=True, exception=exception)
+            status = __write_to_file(file_path=file_path, payload=payload, append=True, compress=compress, exception=exception)
 
     return status
