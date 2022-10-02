@@ -148,7 +148,7 @@ def store_data(protocol:str, payload_data:dict, dbms:str='edgex', table:str='ima
 
 def main():
     """
-    Main for processing files of vide or image type
+    Main for processing files of video or image type
     :positional arguments:
         file_name             file(s) to store in AnyLog. Use comma to send multiple files
     :optional arguments:

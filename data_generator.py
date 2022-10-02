@@ -267,6 +267,8 @@ def main():
     parse.add_argument('insert_process', type=str, choices=['print', 'file', 'put', 'post', 'mqtt'],
                        default='print', help='format to store generated data')
     parse.add_argument('db_name', type=str, default='test', help='logical database name')
+    parse.add_argument('--table-name', type=str, default=None,
+                       help='Change default table name (valid for data_types except power)')
     parse.add_argument('--total-rows', type=int, default=1000000,
                        help='number of rows to insert. If set to 0, will run continuously')
     parse.add_argument('--batch-size', type=int, default=1000, help='number of rows to insert per iteration')
@@ -310,6 +312,8 @@ def main():
                                                     array_counter=array_counter)
             payload = include_timestamp(payload=payload, performance_testing=True, microseconds=MICROSECONDS,
                                         second_increments=second_increments)
+            if args.data_type != 'power' and args.table_name is not None:
+                payload['table'] = args.table_name
             if isinstance(payload, dict):
                 data.append(payload)
             else:
