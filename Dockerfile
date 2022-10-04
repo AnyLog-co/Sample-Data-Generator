@@ -31,8 +31,7 @@ RUN python3.9 -m pip install paho-mqtt
 RUN python3.9 -m pip install pytz
 RUN python3.9 -m pip install requests
 
-RUN rm -rf other_data_generatorss
-RUN rm -rf other_data_generators
+RUN rm -rf video_processing_demo
 
 RUN mkdir -p $ANYLOG_PATH/Sample-Data-Generator/data
 

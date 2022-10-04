@@ -7,11 +7,6 @@ import requests
 import sys
 import time
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
-PROTOCOLS = os.path.join(ROOT_PATH, 'protocols')
-sys.path.insert(0, DATA_GENERATORS)
-sys.path.insert(0, PROTOCOLS)
 
 # base timestamp 2022-08-27 15:50:12
 START_TIMESTAMP = datetime.datetime(year=2022, month=8, day=27, hour=15, minute=50, second=12) + datetime.timedelta(microseconds=random.choice(range(100, 300000)))
