@@ -92,19 +92,19 @@ def post_data(payloads:list, conn:str, topic:str="demo", auth:tuple=(), timeout:
         'Content-Type': 'text/plain'
     }
 
-    str_payloads = support.json_dumps(payloads=payloads)
-
-    try:
-        r = requests.post(url=f'https://{conn}', headers=headers, auth=auth, timeout=timeout, data=str_payloads)
-    except Exception as error:
-        status = False
-        if exception is True:
-            print(f'Failed to execute POST against {conn} (Error: {error})')
-    else:
-        if int(r.status_code) != 200:
+    for payload in payloads:
+        str_payloads = support.json_dumps(payloads=payload)
+        try:
+            r = requests.post(url=f'https://{conn}', headers=headers, auth=auth, timeout=timeout, data=str_payloads)
+        except Exception as error:
             status = False
             if exception is True:
-                print(f'Failed to execute POST against {conn} (Network Error: {r.status_code})')
+                print(f'Failed to execute POST against {conn} (Error: {error})')
+        else:
+            if int(r.status_code) != 200:
+                status = False
+                if exception is True:
+                    print(f'Failed to execute POST against {conn} (Network Error: {r.status_code})')
 
     return status
 
