@@ -68,3 +68,50 @@ def generate_timestamp(timezone:str='utc', enable_timezone_range:bool=True)->str
         timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
     return timestamp
+
+
+def generate_timestamp2(timezone:str='utc', enable_timezone_range:bool=True)->(str, str):
+    """
+    generate timestamp based on timezone
+    :args:
+        timezone:str - timezone either utc or other
+        enable_timezone_range:bool - if set alter timestamp by datetime.timedelta(days=random.choice(range(-30, 31)),
+                                                                                  hours=random.choice(range(-23, 24)),
+                                                                                  minutes=random.choice(range(-59, 60)))
+    :params:
+        timestamp:str - generated timestamp
+    :return:
+        timestamp
+    """
+    timestamp = datetime.datetime.now(datetime.timezone.utc)
+
+    timezones = {
+        'et': pytz.timezone('africa/addis_ababa'), # +03:00 (africa)
+        'br': pytz.timezone('america/fortaleza'),  # -03:00 (s. america)
+        'jp': pytz.timezone('asia/tokyo'),         # +09:00 (asia)
+        'ws': pytz.timezone('us/pacific'),         # -09:00 (n. america)
+        'au': pytz.timezone('australia/north'),    # +09:30 (australia)
+        'it': pytz.timezone('europe/rome'),        # +01:00 (europe)
+    }
+
+    if timezone in timezones: # selected timezone
+        timezone = timezones[timezone]
+        timestamp = timestamp.astimezone(timezone)
+        if enable_timezone_range is true:
+            timestamp += datetime.timedelta(days=random.choice(range(-30, 31)), hours=random.choice(range(-23, 24)),
+                                            minutes=random.choice(range(-59, 60)))
+        timestamp = timestamp.astimezone(timezone).isoformat().replace('t', ' ')
+    elif timezone == 'local': # current timestamp as "utc"
+        timestamp = datetime.datetime.now()
+        if enable_timezone_range is True:
+            timestamp += datetime.timedelta(days=random.choice(range(-30, 31)), hours=random.choice(range(-23, 24)),
+                                            minutes=random.choice(range(-59, 60)))
+        timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    else: # actual utc value
+        timestamp = datetime.datetime.utcnow()
+        if enable_timezone_range is True:
+            timestamp += datetime.timedelta(days=random.choice(range(-30, 31)), hours=random.choice(range(-23, 24)),
+                                            minutes=random.choice(range(-59, 60)))
+        timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+
+    return timestamp

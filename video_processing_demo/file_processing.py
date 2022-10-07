@@ -1,3 +1,5 @@
+import base64
+
 def __read_image(file_name:str, exception:bool=False)->(bool, bytes):
     """
     Get content in file as binary

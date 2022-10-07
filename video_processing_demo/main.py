@@ -1,18 +1,39 @@
 import argparse
 import datetime
 import os
+import random
 import sys
 import uuid
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('video_processing_demo')[0]
 PROTOCOLS = os.path.join(ROOT_PATH, 'publishing_protocols')
+VIDEOS = os.path.join(ROOT_PATH, 'video_processing_demo')
 sys.path.insert(0, PROTOCOLS)
+sys.path.insert(0, VIDEOS)
 
 import file_processing
 import support
 import publish_data
+import video_support
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data')
+
+
+def generate_timestamp(now:datetime.datetime)->(datetime.datetime, datetime.datetime):
+    """
+    Given current timestamp, generate start/end time(s)
+    :args:
+        now:datetime.datetime - base timestamp
+    :params:
+        start:datetime.datetime - "starting" timestamp
+        end:datetime.datetime - "ending" timestamp
+    :return:
+        start, end
+    """
+    start = now + datetime.timedelta(hours=int(random.random() * 5))
+    end = start + datetime.timedelta(seconds=30, microseconds=random.choice(range(0, 999999)))
+    return start, end
+
 
 def main():
     """
@@ -87,26 +108,27 @@ def main():
             list_dir.reverse()
 
     for file_name in list_dir:
-        start_ts, end_ts = support.generate_timestamp(now=now)
-        speed, cars = support.car_counter(timestamp=start_ts)
+        start_ts, end_ts = video_support.generate_timestamp(now=datetime.datetime.utcnow())
+        speed, cars = video_support.car_counter(timestamp=start_ts)
 
         # read content in file & store in 64 bytes
         full_name = os.path.join(dir_name, file_name)
-        status, binary_file = file_proceessing.image_processing(file_name=full_name, exception=args.exception)
+        status, binary_file = file_processing.image_processing(file_name=full_name, exception=args.exception)
 
-
-        if status is True and not isinstance(binary_file, None):
-            payload = support.create_data(process_id=args.process_id, file_name=file_name, binary_file=binary_file,
+        if status is True and not binary_file is not None:
+            payload = video_support.create_data(process_id=args.process_id, file_name=file_name, binary_file=binary_file,
                                           device_name=ars.device_name, start_ts=start_ts, end_ts=start_ts,
                                           profile_name=args.profile_name, num_car=cars, speed=speed, 
                                           db_name=args.db_name)
+            print(payload)
             payloads.append(payload)
 
-        if len(payloads) == args.batch_size: # publish data
-            publish_data.publish_data(payload=payloads, insert_process=args.insert_process, conn=conn,
+        # if len(payloads) == args.batch_size: # publish data
+        publish_data.publish_data(payload=payloads, insert_process=args.insert_process, conn=args.conn,
                                       compress=args.compress, rest_timeout=args.rest_timeout, dir_name=args.archive_dir)
+        exit(1)
     if len(payloads) > 0: # publish data
-        publish_data.publish_data(payload=payloads, insert_process=args.insert_process, conn=conn,
+        publish_data.publish_data(payload=payloads, insert_process=args.insert_process, conn=args.conn,
                                   compress=args.compress, rest_timeout=args.rest_timeout, dir_name=args.archive_dir)
 
 
