@@ -69,7 +69,7 @@ def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=
     """
     status = True
     try:
-        r = mqtt_client.publish(topic, message, qos=0, retain=True)
+        r = mqtt_client.publish(topic, message, qos=0, retain=False)
     except Exception as e:
         if exception is True:
             print(f'Failed to publish results in {mqtt_client} (Error: {e})')
@@ -106,11 +106,13 @@ def mqtt_process(payloads:dict, topic:str, broker:str, port:int, username:str=No
     """
 
     status = False
-    mqtt_client = connect_mqtt_broker(broker=broker, port=port, username=username, password=password, exception=exception)
-    str_payloads = support.json_dumps(payloads=payloads)
+    mqtt_client = connect_mqtt_broker(broker=broker, port=port, username=username, password=password, 
+                                      exception=exception)
 
     if mqtt_client is not None:
-        status = send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, exception=exception)
+        for payload in payloads:
+            str_payloads = support.json_dumps(payloads=payload)    
+            status = send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, exception=exception)
 
     return status
 

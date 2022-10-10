@@ -79,9 +79,9 @@ def main():
     parse.add_argument('--batch-size', type=int, default=5, help='number of rows to insert per iteration')
     parse.add_argument('--process-id', type=str, default=str(uuid.uuid4()),
                         help='UUID Process ID - default changes each iteration')
-    parse.add_argument('--device_name', type=str, default='anylog-data-generator',
+    parse.add_argument('--device-name', type=str, default='anylog-data-generator',
                         help='name of device data is coming from')
-    parse.add_argument('--profile_name', type=str, default='anylog-video-generator',
+    parse.add_argument('--profile-name', type=str, default='anylog-video-generator',
                         help='name of device profile data is coming from')
     parse.add_argument('--reverse', type=bool, nargs='?', const=True, default=False,
                         help='reverse file order in video/image directory')
@@ -115,21 +115,21 @@ def main():
         full_name = os.path.join(dir_name, file_name)
         status, binary_file = file_processing.image_processing(file_name=full_name, exception=args.exception)
 
-        if status is True and not binary_file is not None:
-            payload = video_support.create_data(process_id=args.process_id, file_name=file_name, binary_file=binary_file,
-                                          device_name=ars.device_name, start_ts=start_ts, end_ts=start_ts,
-                                          profile_name=args.profile_name, num_car=cars, speed=speed, 
-                                          db_name=args.db_name)
-            print(payload)
+        if status is True and binary_file is not None:
+            payload = video_support.create_data(process_id=args.process_id, file_name=file_name,
+                                                binary_file=binary_file, device_name=args.device_name,
+                                                start_ts=start_ts, end_ts=start_ts, profile_name=args.profile_name,
+                                                num_cars=cars, speed=speed, db_name=args.db_name)
             payloads.append(payload)
 
         # if len(payloads) == args.batch_size: # publish data
         publish_data.publish_data(payload=payloads, insert_process=args.insert_process, conn=args.conn,
-                                      compress=args.compress, rest_timeout=args.rest_timeout, dir_name=args.archive_dir)
-        exit(1)
+                                  topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
+                                  dir_name=args.archive_dir, exception=args.exception)
     if len(payloads) > 0: # publish data
         publish_data.publish_data(payload=payloads, insert_process=args.insert_process, conn=args.conn,
-                                  compress=args.compress, rest_timeout=args.rest_timeout, dir_name=args.archive_dir)
+                                  compress=args.compress, rest_timeout=args.rest_timeout,
+                                  dir_name=args.archive_dir,  exception=args.exception)
 
 
 if __name__ == '__main__':
