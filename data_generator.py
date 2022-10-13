@@ -268,8 +268,9 @@ def main():
             if row_counter == args.batch_size:
                 if conns is not None:
                     conn = conns[conn_id]
-                publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, compress=args.compress,
-                             rest_timeout=args.rest_timeout, dir_name=args.dir_name, exception=args.exception)
+                publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, topic=args.topic,
+                                          compress=args.compress, rest_timeout=args.rest_timeout,
+                                          dir_name=args.dir_name, exception=args.exception)
                 data = []
                 row_counter = 0
                 if conns is not None:
@@ -280,8 +281,9 @@ def main():
         if len(data) > 0:
             if conns is not None:
                 conn = conns[conn_id]
-            publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, compress=args.compress,
-                         rest_timeout=args.rest_timeout, dir_name=args.dir_name, exception=args.exception)
+            publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, topic=args.topic,
+                                      compress=args.compress, rest_timeout=args.rest_timeout, dir_name=args.dir_name,
+                                      exception=args.exception)
     elif total_rows != 0:
         if args.timezone != 'local':
             args.timezone = args.timezone.upper()
@@ -298,8 +300,9 @@ def main():
             if row_counter == args.batch_size:
                 if conns is not None:
                     conn = conns[conn_id]
-                publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, compress=args.compress,
-                             rest_timeout=args.rest_timeout, dir_name=args.dir_name, exception=args.exception)
+                publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, topic=args.topic,
+                                          compress=args.compress, rest_timeout=args.rest_timeout,
+                                          dir_name=args.dir_name, exception=args.exception)
                 data = []
                 row_counter = 0
                 if conns is not None:
@@ -310,14 +313,15 @@ def main():
         if len(data) > 0:
             if conns is not None:
                 conn = conns[conn_id]
-            publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, compress=args.compress,
-                         rest_timeout=args.rest_timeout, dir_name=args.dir_name, exception=args.exception)
+            publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, topic=args.topic,
+                                      compress=args.compress, rest_timeout=args.rest_timeout, dir_name=args.dir_name,
+                                      exception=args.exception)
     else:
         while True:
             payload, array_counter, = row_generator(data_type=args.data_type, db_name=args.db_name,
                                                     array_counter=array_counter)
             payload = include_timestamp(payload=payload, timezone=args.timezone,
-                                        enable_timezone_range=enable_timezone_range, performance_testing=False)
+                                        enable_timezone_range=args.enable_timezone_range, performance_testing=False)
             if isinstance(payload, dict):
                 data.append(payload)
             else:
@@ -326,8 +330,9 @@ def main():
             if row_counter == args.batch_size:
                 if conns is not None:
                     conn = conns[conn_id]
-                publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, compress=args.compress,
-                             rest_timeout=args.rest_timeout, dir_name=args.dir_name)
+                publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, topic=args.topic,
+                                          compress=args.compress, rest_timeout=args.rest_timeout,
+                                          dir_name=args.dir_name, exception=args.exception)
                 data = []
                 row_counter = 0
                 if conns is not None:
