@@ -169,9 +169,9 @@ def create_data(process_id:str, file_name:str, binary_file:str, device_name:str=
 
     # file_name = file_name.
     data['readings'].append({
-        "timestamp": start_ts.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-        "start_ts": start_ts.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-        "end_ts": end_ts.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+        "timestamp": start_ts,
+        "start_ts": start_ts,
+        "end_ts": end_ts,
         "binaryValue": binary_file,
         "deviceName": file_name.split('.')[0],
         "id": __generate_string_hash(file_name=file_name, data=binary_file),
