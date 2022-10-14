@@ -1,14 +1,15 @@
 import datetime
 import gzip
+import hashlib
 import io
 import json
 import os
+import uuid
 try:
     import pytz
 except:
     pass
 import random
-#import tzlocal
 
 
 def json_dumps(payloads:dict)->str:
@@ -142,3 +143,44 @@ def decompress_file(compressed_file:str, exception:bool=False)->str:
             print(f'Failed to open zipped file {compressed_file} (Error: {e})')
     
     return input_file
+
+
+def generate_string_hash(file_name:str, data:str)->str:
+    """
+    based on file_name + data generate hash value
+    :args:
+        file_name:str - file used to generate has value
+        data:str - content in file
+    :params:
+        str_hash:hashlib.Hash - generated hash value
+    :return:
+        hash value as UUID
+    """
+    str_hash = hashlib.md5()
+    if file_name:
+        # Prefixed data can be dbms name and table name that are considered in the hash
+        str_hash.update(file_name.encode())  # Update the hash with the prefix data+
+
+    str_hash.update(data.encode())  # Update the hash
+    return str(uuid.UUID(str_hash.hexdigest()))
+
+
+def media_type(file_suffix:str)->str:
+    """
+    Generate media type based on file suffix
+    :args:
+        file_suffix:str - file suffix
+    :params:
+        suffix_value:str - based on file suffix generated suffix
+    :return:
+        suffix_value
+    """
+    suffix_value = 'unknown'
+    if file_suffix == 'png':
+        suffix_value = 'image/png'
+    elif file_suffix in ['jpg', 'jpeg']:
+        suffix_value = 'image/jpeg'
+    elif file_suffix == 'mp4':
+        suffix_value = 'video/mp4'
+
+    return suffix_value
