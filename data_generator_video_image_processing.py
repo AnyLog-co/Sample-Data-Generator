@@ -166,10 +166,8 @@ def main():
             publish_data.publish_data(payload=payload, insert_process=args.protocol, conn=conn,
                                       topic=args.topic, rest_timeout=args.timeout, dir_name=None,
                                       compress=False, exception=args.exception)
-            exit(1)
 
-
-
+        print('test')
 
 if __name__ == '__main__':
     main()
