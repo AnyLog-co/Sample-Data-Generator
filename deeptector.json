@@ -1,0 +1,199 @@
+{
+     "20200306202533614.jpeg": {
+         "result": {
+             "detection": [
+                 {"class": "kizu", "bbox":   [666, 275, 682, 291], "score":  0.83249},
+                 {"class": "kizu", "bbox": [669, 262, 684, 277], "score": 0.83249},
+                 {"class": "kizu", "bbox": [688, 261, 706, 276], "score": 0.72732},
+                 {"class": "kizu", "bbox": [698, 277, 713, 292], "score": 0.72659},
+                 {"class": "kizu", "bbox": [666, 291, 682, 306], "score": 0.70679}
+             ]
+         },
+         "status": "ok"
+     },
+     "20200306202534099.jpeg": {
+         "result": {
+             "detection": [
+                 {"class": "kizu", "bbox": [667, 456, 683, 471], "score": 0.89901},
+                 {"class": "kizu", "bbox": [667, 446, 682, 461], "score": 0.89901},
+                 {"class": "kizu", "bbox": [675, 451, 691, 466], "score": 0.88868},
+                 {"class": "kizu", "bbox": [658, 460, 674, 474], "score": 0.8741},
+                 {"class": "kizu", "bbox": [659, 441, 675, 457], "score": 0.84588}
+             ]
+         },
+         "status": "ok"
+     },
+     "20200306202534601.jpeg":{
+         "result": {
+             "detection": [
+                 {"class": "kizu", "bbox": [658, 657, 674, 671], "score": 0.59605}
+             ]
+         },
+         "status": "ok"
+     },
+    "20200306202535111.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202536107.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202536595.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202537178.jpeg": {
+        "result": {
+            "detection": [
+                {"class": "kizu", "bbox": [699, 33, 724, 53], "score": 0.61374},
+                {"class": "kizu", "bbox": [703, 42, 719, 65], "score": 0.61374}
+            ]
+        },
+        "status": "ok"
+    },
+    "20200306202537600.jpeg": {
+        "result": {
+            "detection": [
+                {"class": "kizu", "bbox": [708, 173, 724, 191], "score": 0.91073},
+                {"class": "kizu", "bbox": [707, 154, 725, 175], "score": 0.91073},
+                {"class": "kizu", "bbox": [697, 167, 715, 193], "score": 0.89634},
+                {"class": "kizu", "bbox": [699, 161, 716, 176], "score": 0.89326},
+                {"class": "kizu", "bbox": [723, 169, 740, 191], "score": 0.86099},
+                {"class": "kizu", "bbox": [704, 181, 720, 209], "score": 0.83051},
+                {"class": "kizu", "bbox": [694, 179, 710, 207], "score": 0.83051}
+            ]
+        },
+        "status": "ok"
+    },
+    "20200306202538150.jpeg": {
+        "result": {
+            "detection": [
+                {"class": "kizu", "bbox": [691, 345, 709, 369], "score": 0.90372},
+                {"class": "kizu", "bbox": [701, 349, 718, 373], "score": 0.90372},
+                {"class": "kizu", "bbox": [682, 349, 697, 371], "score": 0.86507},
+                {"class": "kizu", "bbox": [686, 365, 702, 384], "score": 0.82059},
+                {"class": "kizu", "bbox": [702, 370, 718, 391], "score": 0.74674},
+                {"class": "kizu", "bbox": [696, 360, 712, 383], "score": 0.74674},
+                {"class": "kizu", "bbox": [675, 358, 689, 379], "score": 0.66439}
+            ]
+        },
+        "status": "ok"
+    },
+    "20200306202538649.jpeg": {
+        "result": {
+            "detection": [
+                {"class": "kizu", "bbox": [688, 558, 705, 580], "score": 0.92992},
+                {"class": "kizu", "bbox": [687, 546, 703, 568], "score": 0.92992},
+                {"class": "kizu", "bbox": [699, 561, 715, 581], "score": 0.90074},
+                {"class": "kizu", "bbox": [664, 553, 678, 573], "score": 0.56779}
+            ]
+        },
+        "status": "ok"
+    },
+    "20200306202539142.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202539660.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202540198.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202540594.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202541232.jpeg": {
+        "result": {
+            "detection": [
+                {"class": "kizu", "bbox": [635, 232, 666, 250], "score": 0.90681},
+                {"class": "kizu", "bbox": [624, 219, 657, 237], "score": 0.90681},
+                {"class": "kizu", "bbox": [654, 232, 677, 247], "score": 0.88848},
+                {"class": "kizu", "bbox": [657, 218, 681, 232], "score": 0.76175}
+            ]
+        },
+        "status": "ok"
+    },
+    "20200306202541714.jpeg": {
+        "result": {
+            "detection": [
+                {"class": "kizu", "bbox": [636, 401, 663, 416], "score": 0.90608},
+                {"class": "kizu", "bbox": [634, 383, 664, 400], "score": 0.89549},
+                {"class": "kizu", "bbox": [658, 399, 681, 414], "score": 0.88566},
+                {"class": "kizu", "bbox": [621, 392, 653, 407], "score": 0.84997},
+                {"class": "kizu", "bbox": [643, 417, 668, 432], "score": 0.52102}
+            ]
+        },
+        "status": "ok"
+    },
+    "20200306202542230.jpeg": {
+        "result": {
+            "detection": [
+                {"class": "kizu", "bbox": [626, 598, 657, 612], "score": 0.91267},
+                {"class": "kizu", "bbox": [606, 603, 636, 617], "score": 0.88631},
+                {"class": "kizu", "bbox": [622, 607, 656, 621], "score": 0.86265}
+            ]
+        },
+        "status": "ok"
+    },
+    "20200306202542589.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202543730.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202544268.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202544600.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202545256.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202545740.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202546177.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202546732.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202547119.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202547620.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202548137.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202549096.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202549604.jpeg": {
+        "result": {},
+        "status": "ok"
+    },
+    "20200306202550118.jpeg": {
+        "result": {},
+        "status": "ok"
+    }
+}
