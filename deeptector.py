@@ -72,6 +72,24 @@ def create_data(dbms:str, table:str, file_name:str, file_content:str, detections
 
 
 def main():
+    """
+    Main for deeptector code (using either an existing file or cURL)
+    :positional arguments:
+        dir_name              image directory path
+        conn                  {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
+        protocol              format to save data       [options; post,mqtt]
+    :optional arguments:
+        -h, --help                      show this help message and exit
+        --topic         TOPIC           topic to send data agaisnt
+        --dbms          DBMS            Logical database to store data in
+        --table         TABLE           Logical database to store data in
+        --sleep         SLEEP           wait time between each round of inserts
+        --exception     [EXCEPTION]     whether or not to print exceptions to screen
+    :params:
+        dir_name:str - full path
+        image_data:list - list of images in directory
+        list_dir:list - list of files in dir
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('dir_name', type=str, default=DIRECTORY_PATH, help='image directory path')
     parser.add_argument('conn', type=str, default='127.0.0.1:32149',
@@ -80,6 +98,7 @@ def main():
     parser.add_argument('--topic', type=str, default='anylog-data-gen', help='topic to send data agaisnt')
     parser.add_argument('--dbms', type=str, default='ntt', help='Logical database to store data in')
     parser.add_argument('--table', type=str, default='deeptechtor', help='Logical database to store data in')
+    parser.add_argument('--sleep', type=int, default=30, help='wait time between each round of inserts')
     parser.add_argument('--exception', type=bool, nargs='?', const=True, default=False,
                         help='whether or not to print exceptions to screen')
     args = parser.parse_args()
@@ -113,8 +132,9 @@ def main():
                 # publish payload
                 publish_data.publish_data(payload=payload, insert_process='post', conn=args.conn,
                                           topic=args.topic, rest_timeout=30, dir_name=None,
-                                          compress=False, exception=args.exception)
-                time.sleep(30)
+                                              compress=False, exception=args.exception)
+            time.sleep(0.5)
+        time.sleep(args.sleep)
 
 
 if __name__ == '__main__':
