@@ -95,26 +95,26 @@ def main():
         exit(1)
 
     list_dir = os.listdir(dir_name)
-    # while True:
-    for image in image_data:
-        if image in list_dir:
-            full_path = os.path.join(dir_name, image)
+    while True:
+        for image in image_data:
+            if image in list_dir:
+                full_path = os.path.join(dir_name, image)
 
-            file_content = file_processing.main(file_name=full_path, exception=args.exception) # read file
+                file_content = file_processing.main(file_name=full_path, exception=args.exception) # read file
 
-            detection = [] # extract results from IMAGES
-            if 'detection' in image_data[image]['result']:
-                detection = image_data[image]['result']['detection']
+                detection = [] # extract results from IMAGES
+                if 'detection' in image_data[image]['result']:
+                    detection = image_data[image]['result']['detection']
 
-            # create payload
-            payload = create_data(dbms=args.dbms, table=args.table, file_name=image, file_content=file_content,
-                                  detections=detection, status=image_data[image]['status'])
+                # create payload
+                payload = create_data(dbms=args.dbms, table=args.table, file_name=image, file_content=file_content,
+                                      detections=detection, status=image_data[image]['status'])
 
-            # publish payload
-            publish_data.publish_data(payload=payload, insert_process='post', conn=args.conn,
-                                      topic=args.topic, rest_timeout=30, dir_name=None,
-                                      compress=False, exception=args.exception)
-            # time.sleep(30)
+                # publish payload
+                publish_data.publish_data(payload=payload, insert_process='post', conn=args.conn,
+                                          topic=args.topic, rest_timeout=30, dir_name=None,
+                                          compress=False, exception=args.exception)
+                time.sleep(30)
 
 
 if __name__ == '__main__':
