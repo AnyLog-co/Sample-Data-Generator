@@ -1,95 +1,48 @@
+"""
+# sample cURL request
+curl --location --request POST 'http://10.31.1.197/v3/predict/e99aefb2-abfc-4ab0-88fb-59e3e8f2b47f' \
+    --header 'Content-Type: multipart/form-data' \
+    --header 'predictApiKey: 8KK7aDH5fttoV.Dd' \
+    --header 'Authorization: Basic b3JpOnRlc3Q=' \
+    --form 'imageFile=@"./deeptector/images/20200306202533614.jpg"' \
+    --form 'type="image/jpeg"' \
+    --form 'filename="./deeptector/images/20200306202533614.jpg"'
+"""
 import argparse
-import json
 import os
-import sys
-import time
+import requests
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
-PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'publishing_protocols')
-sys.path.insert(0, DATA_GENERATORS)
-sys.path.insert(0, PUBLISHING_PROTOCOLS)
+URL = "http://10.31.1.197/v3/predict/e99aefb2-abfc-4ab0-88fb-59e3e8f2b47f"
+HEADERS = {
+    # 'Content-Type': 'multipart/form-data',
+    'predictApiKey': '8KK7aDH5fttoV.Dd',
+    'Authorization': 'Basic b3JpOnRlc3Q=',
+}
 
-import file_processing
-import support
-import publish_data
+FILES = {
+    'imageFile': None, # open('/home/anylog/deeptector/images/20200306202533614.jpg', 'rb')
+    'type': (None, '"image/jpeg"'),
+    'filename': None, # (None, '/home/anylog/deeptector/images/20200306202533614.jpg')
+}
 
-DIRECTORY_PATH = os.path.expandvars(os.path.expanduser('$HOME/Downloads/sample_data/images'))
-
-
-def read_json(excepton:bool=False)->dict:
-    data = {}
-    if os.path.isfile('deeptector.json'):
-        try:
-            with open('deeptector.json') as f:
-                try:
-                    data = json.load(f)
-                except Exception as error:
-                    print(f'Failed to load JSON data (Error: {error})')
-        except Exception as error:
-            if excepton is True:
-                print(f'Failed to read JSON file (Error: {error})')
-    return data
-
-def create_data(dbms:str, table:str, file_name:str, file_content:str, detections:list, status:str)->dict:
-    """
-    :args:
-        dbms:str - logical database name
-        table:str - table name
-        file_name:str - file data is stored in
-        file_content:str - content in file
-        detections:list - list results values
-        status:str - ok / nok
-    :sample payload:
-    {
-        "id": "f85b2ddc-761d-88da-c524-12283fbb0f21",
-        "dbms": "ntt",
-        "table": "deeptechtor",
-        "file_name": "20200306202533614.jpeg",
-        "file_type": "image/jpeg",
-        "file_content": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD",
-        "detection": [
-                {"class": "kizu", "bbox": [666, 275, 682, 291], "score": 0.83249},
-                {"class": "kizu", "bbox": [669, 262, 684, 277], "score": 0.83249},
-                {"class": "kizu", "bbox": [688, 261, 706,276], "score": 0.72732},
-                {"class": "kizu", "bbox": [698, 277, 713, 292], "score": 0.72659},
-        ],
-        "status": "ok"
-    }
-    """
-    payload = {
-        'id': support.generate_string_hash(file_name=file_name, data=file_content),
-        'dbms': dbms,
-        'table': table,
-        'file_name': file_name,
-        'file_type': support.media_type(file_suffix=file_name.rsplit('.', 1)[-1]),
-        'file_content': file_content,
-        'detection': detections,
-        'status': status
-    }
-
-    return payload
-
+def __get_data(url, headers, files, exception:bool=False)->dict:
+    output = {}
+    try:
+        r = requests.post(url=url, headers=headers, files=files)
+    except Exception as error:
+        if exception is True:
+            print(f'Failed to get data from Deeptector (Error: {error})')
+    else:
+        if int(r.status_code) != 200:
+            print(f'Failed to get data from Deeptector (Network Error: {r.status_code})')
+        else:
+            try:
+                output = r.json()
+            except Exception as error:
+                output = r.text
+    return output
 
 def main():
-    """
-    Main for deeptector code (using either an existing file or cURL)
-    :positional arguments:
-        dir_name              image directory path
-        conn                  {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
-        protocol              format to save data       [options; post,mqtt]
-    :optional arguments:
-        -h, --help                      show this help message and exit
-        --topic         TOPIC           topic to send data agaisnt
-        --dbms          DBMS            Logical database to store data in
-        --table         TABLE           Logical database to store data in
-        --sleep         SLEEP           wait time between each round of inserts
-        --exception     [EXCEPTION]     whether or not to print exceptions to screen
-    :params:
-        dir_name:str - full path
-        image_data:list - list of images in directory
-        list_dir:list - list of files in dir
-    """
     parser = argparse.ArgumentParser()
     parser.add_argument('dir_name', type=str, default=DIRECTORY_PATH, help='image directory path')
     parser.add_argument('conn', type=str, default='127.0.0.1:32149',
@@ -103,40 +56,11 @@ def main():
                         help='whether or not to print exceptions to screen')
     args = parser.parse_args()
 
-    dir_name = os.path.expandvars(os.path.expanduser(args.dir_name))
-    image_data = read_json(excepton=args.exception)
+    full_path = os.path.expandvars(os.path.expanduser(args.dir_name))
+    for image in os.listdir(dir_name):
+        file_path = os.path.join(full_path, image)
+        FILES['imageFile'] = open(file_path, 'rb')
+        FILES['filename'] = (None, file_path)
 
-    if not os.path.isdir(dir_name):
-        print(f'Failed to locate {dir_name}')
-        exit(1)
-    if len(image_data) == 0:
-        print('Missing imagge data')
-        exit(1)
-
-    list_dir = os.listdir(dir_name)
-    while True:
-        for image in image_data:
-            if image in list_dir:
-                full_path = os.path.join(dir_name, image)
-
-                file_content = file_processing.main(file_name=full_path, exception=args.exception) # read file
-
-                detection = [] # extract results from IMAGES
-                if 'detection' in image_data[image]['result']:
-                    detection = image_data[image]['result']['detection']
-
-                # create payload
-                payload = create_data(dbms=args.dbms, table=args.table, file_name=image, file_content=file_content,
-                                      detections=detection, status=image_data[image]['status'])
-
-                # publish payload
-                publish_data.publish_data(payload=payload, insert_process='post', conn=args.conn,
-                                          topic=args.topic, rest_timeout=30, dir_name=None,
-                                              compress=False, exception=args.exception)
-            time.sleep(0.5)
-        time.sleep(args.sleep)
-
-
-if __name__ == '__main__':
-    main()
-
+        data = __get_data(url=URL, headers=HEADERS, files=FILES, exception=args.exception)
+        print(image, data)
