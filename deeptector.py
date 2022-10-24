@@ -187,37 +187,38 @@ def main():
         json_data = __read_json(json_file=args.json_file, excepton=args.exception)
 
     full_path = os.path.expandvars(os.path.expanduser(args.dir_name))
-    for image in os.listdir(full_path):
-        file_path = os.path.join(full_path, image)
-        data = {}
-        if args.deeptector_url is not None:
-            FILES['imageFile'] = open(file_path, 'rb')
-            FILES['filename'] = (None, file_path)
-            data = __get_data(url=args.deeptector_url, headers=HEADERS, files=FILES, exception=args.exception)
-        elif image in json_data:
-            try:
-                data = json_data[image]
-            except Exception as error:
-                data = error
+    while True:
+        for image in os.listdir(full_path):
+            file_path = os.path.join(full_path, image)
+            data = {}
+            if args.deeptector_url is not None:
+                FILES['imageFile'] = open(file_path, 'rb')
+                FILES['filename'] = (None, file_path)
+                data = __get_data(url=args.deeptector_url, headers=HEADERS, files=FILES, exception=args.exception)
+            elif image in json_data:
+                try:
+                    data = json_data[image]
+                except Exception as error:
+                    data = error
 
-        if not isinstance(data, dict) or sorted(list(data)) != ['result', 'status']:
-            print(f'Failed to get data for image {image} (Error; {data})')
-        elif data == {}:
-            print(f'Failed to get data from {image} (Error: empty data set)')
-        else:
-            file_content = file_processing.main(file_name=file_path, exception=args.exception)  # read file
-            detection = []  # extract results from IMAGES
-            if 'detection' in data['result']:
-                detection = data['result']['detection']
-            # create payload
-            payload = create_data(dbms=args.dbms, table=args.table, file_name=image, file_content=file_content,
-                                  detections=detection, status=data['status'])
-            # publish data
-            publish_data.publish_data(payload=payload, insert_process=args.protocol, conn=args.conn,
-                                      topic=args.topic, rest_timeout=30, dir_name=None,
-                                      compress=False, exception=args.exception)
+            if not isinstance(data, dict) or sorted(list(data)) != ['result', 'status']:
+                print(f'Failed to get data for image {image} (Error; {data})')
+            elif data == {}:
+                print(f'Failed to get data from {image} (Error: empty data set)')
+            else:
+                file_content = file_processing.main(file_name=file_path, exception=args.exception)  # read file
+                detection = []  # extract results from IMAGES
+                if 'detection' in data['result']:
+                    detection = data['result']['detection']
+                # create payload
+                payload = create_data(dbms=args.dbms, table=args.table, file_name=image, file_content=file_content,
+                                      detections=detection, status=data['status'])
+                # publish data
+                publish_data.publish_data(payload=payload, insert_process=args.protocol, conn=args.conn,
+                                          topic=args.topic, rest_timeout=30, dir_name=None,
+                                          compress=False, exception=args.exception)
+                time.sleep(args.sleep)
             time.sleep(args.sleep)
-        time.sleep(args.sleep)
 
 
 
