@@ -193,7 +193,7 @@ def main():
         if args.deeptector_url is not None:
             FILES['imageFile'] = open(file_path, 'rb')
             FILES['filename'] = (None, file_path)
-            data = __get_data(url=args.url, headers=HEADERS, files=FILES, exception=args.exception)
+            data = __get_data(url=args.deeptector_url, headers=HEADERS, files=FILES, exception=args.exception)
         elif image in json_data:
             try:
                 data = json_data[image]
