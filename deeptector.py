@@ -65,5 +65,5 @@ def main():
         data = __get_data(url=URL, headers=HEADERS, files=FILES, exception=args.exception)
         print(image, data)
 
-if __name__ == '__main__';
+if __name__ == '__main__':
     main()
