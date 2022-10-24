@@ -101,8 +101,11 @@ def print_content(payloads:list):
         dbms:str - logical database name
         table:str - table name, if data is dict use keys as table name(s)
     """
-    for payload in payloads:
-        print(support.json_dumps(payload))
+    if isinstance(payloads, list):
+        for payload in payloads:
+            print(support.json_dumps(payload))
+    else:
+        print(support.json_dumps(payloads))
 
 
 def write_to_file(payloads:list, data_dir:str=os.path.join(ROOT_PATH, 'data'), compress:bool=False,
