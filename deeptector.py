@@ -12,7 +12,9 @@ import argparse
 import os
 import requests
 
+DIRECTORY_PATH = os.path.expandvars(os.path.expanduser('/home/anylog/deeptector/images'))
 URL = "http://10.31.1.197/v3/predict/e99aefb2-abfc-4ab0-88fb-59e3e8f2b47f"
+
 HEADERS = {
     # 'Content-Type': 'multipart/form-data',
     'predictApiKey': '8KK7aDH5fttoV.Dd',
@@ -24,6 +26,7 @@ FILES = {
     'type': (None, '"image/jpeg"'),
     'filename': None, # (None, '/home/anylog/deeptector/images/20200306202533614.jpg')
 }
+
 
 def __get_data(url, headers, files, exception:bool=False)->dict:
     output = {}
