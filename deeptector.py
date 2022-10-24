@@ -60,7 +60,7 @@ def main():
     args = parser.parse_args()
 
     full_path = os.path.expandvars(os.path.expanduser(args.dir_name))
-    for image in os.listdir(dir_name):
+    for image in os.listdir(full_path):
         file_path = os.path.join(full_path, image)
         FILES['imageFile'] = open(file_path, 'rb')
         FILES['filename'] = (None, file_path)
