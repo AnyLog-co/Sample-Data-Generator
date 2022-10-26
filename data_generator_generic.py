@@ -198,7 +198,7 @@ def main():
         --dir-name      DIR_NAME        directory when storing to file
         --compress      [COMPRESS]      whether to zip data dir
         --exception     [EXCEPTION]     whether to print exceptions
-    :params:w
+    :params:
         total_rows:int - total number of rows (based on args.total_rows)
         array_counter:int - placeholder for values in certain data set(s)
         row_counter:int - number of rows inserted

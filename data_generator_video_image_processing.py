@@ -167,7 +167,6 @@ def main():
                                       topic=args.topic, rest_timeout=args.timeout, dir_name=None,
                                       compress=False, exception=args.exception)
 
-        print('test')
 
 if __name__ == '__main__':
     main()
