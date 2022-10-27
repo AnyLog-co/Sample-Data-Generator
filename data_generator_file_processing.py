@@ -22,10 +22,10 @@ DEVICE_NAME='anylog-data-generator'
 PROFILE_NAME='anylog-video-generator'
 
 
-def create_data(process_id:str, file_name:str, binary_file:str, device_name:str="anylog-data-generator",
-                start_ts:str=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                end_ts:str=(datetime.datetime.utcnow() + datetime.timedelta(seconds=5)).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                profile_name="anylog-video-generator", num_cars:int=0, speed:float=0)->dict:
+def __create_data(process_id:str, file_name:str, binary_file:str, device_name:str="anylog-data-generator",
+                  start_ts:str=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                  end_ts:str=(datetime.datetime.utcnow() + datetime.timedelta(seconds=5)).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                  profile_name="anylog-video-generator", num_cars:int=0, speed:float=0)->dict:
     """
     Given the user information, create a JSON object
     :args:
@@ -90,29 +90,51 @@ def create_data(process_id:str, file_name:str, binary_file:str, device_name:str=
     return data
 
 
+def __publish_data(payload:dict, insert_process:str, conns:list, topic:str, rest_timeout:float, conn_id:int=0,
+                   exception:bool=False)->int:
+    """
+    Publish data
+    :args:
+        payload:dict - content to store data
+        insert_process:str - protocol to store data wih
+        conns:list - list of connections
+        topic:str - REST / MQTT topic
+        rest_timeout:flloat - REST timeout
+        conn_id:int - placeholder for current conn
+        exception:bool - whether or not to print error message(s)
+    :param:
+        conn:str - current connection info
+    :return:
+        conn_id
+    """
+    if conns is not None:
+        conn = conns[conn_id]
+        conn_id += 1
+        if conn_id == len(conns):
+            conn_id = 0
+    publish_data.publish_data(payload=payload, insert_process=insert_process, conn=conn, topic=topic,
+                              rest_timeout=rest_timeout, dir_name=None, compress=False, exception=exception)
+    return conn_id
+
+
 def main():
     """
-    Main for processing files of vide or image type
+    Main for processing files of video or image and correlating it to a car speed & count row
     :positional arguments:
-        file_name             file(s) to store in AnyLog. Use comma to send multiple files
-    :optional arguments:
-        -h, --help            show this help message and exit
-        --device-name       DEVICE_NAME     name of device data is coming from
-        --profile-name      PROFILE_NAME    name of device profile data is coming from
-        --protocol          PROTOCOL        format to save data
-            * file
-            * (REST) POST
+        dir_name              directory where files are stored
+        conn                  {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
+        protocol              format to save data
+            * post (default)
             * mqtt
-            * kafka
-        --conn              CONN            IP:Port credentials for either REST, MQTT or Kafka
-        --topic             TOPIC           topic to send data agaisnt
-        --dbms              DBMS            Logical database to store data in
-        --table             TABLE           Logical database to store data in
-        --authentication    AUTHENTICATION  username, password
-        --timeout           TIMEOUT         REST timeout (in seconds)
-        --compress          COMPRESS        Whether to compress create files, or decompress files being sent
-        --exception         [EXCEPTION]     whether or not to print exceptions to screen
-
+            * print
+    :optional arguments:
+        -h, --help                      show this help message and exit
+        --topic         TOPIC           topic to send data agaisnt
+        --dbms          DBMS            Logical database to store data in
+        --table         TABLE           Logical database to store data in
+        --timeout       TIMEOUT         REST timeout (in seconds)
+        --reverse       [REVERSE]       whether or not reverse order of files in directory
+        --exception     [EXCEPTION]     whether or not to print exceptions to screen
     :global:
         process_id:uuid.UUID - UUID for process
     :params:
@@ -122,7 +144,7 @@ def main():
     parser.add_argument('dir_name', type=str, default='$HOME/Downloads/videos', help='directory where files are stored')
     parser.add_argument('conn', type=str, default='127.0.0.1:32149',
                         help='{user}:{password}@{ip}:{port} for sending data either via REST or MQTT')
-    parser.add_argument('protocol', type=str, choices=['post', 'mqtt'], default='post', help='format to save data')
+    parser.add_argument('protocol', type=str, choices=['post', 'mqtt', 'print'], default='post', help='format to save data')
     parser.add_argument('--topic',    type=str, default='anylog-data-gen', help='topic to send data agaisnt')
     parser.add_argument('--dbms',     type=str, default='edgex', help='Logical database to store data in')
     parser.add_argument('--table',    type=str, default='image', help='Logical database to store data in')
@@ -134,38 +156,48 @@ def main():
     args = parser.parse_args()
 
     dir_full_path = os.path.expandvars(os.path.expanduser(args.dir_name))
-    list_dirs = os.listdir(dir_full_path)
-    if args.reverse is True:
-        list_dirs = list(reversed(list_dirs))
-
     conns = None
-    conn = None
     conn_id = 0
     if args.conn is not None:
         conns = args.conn.split(',')
 
-    for file_name in list_dirs:
-        full_file_path =  os.path.join(dir_full_path, file_name)
+    if os.path.isdir(dir_full_path):
+        payload = {}
+        list_dirs = os.listdir(dir_full_path)
+        if args.reverse is True:
+            list_dirs = list(reversed(list_dirs))
+        for file_name in list_dirs:
+            payload = None
+            full_file_path =  os.path.join(dir_full_path, file_name)
+            car_info = car_insight.car_counter()
+
+            # convert file content into binary-string
+            file_content = file_processing.main(file_name=full_file_path, exception=args.exception)
+
+            if file_content is not None:
+                payload = create_data(process_id=PROCESS_ID, binary_file=file_content, file_name=file_name,
+                                      device_name=DEVICE_NAME, profile_name=PROFILE_NAME,
+                                      start_ts=car_info['start_ts'], end_ts=car_info['end_ts'],
+                                      num_cars=car_info['cars'], speed=car_info['speed'])
+
+            conn_id = __publish_data(payload=payload, insert_process=args.protocol, conns=conns, topic=args.topic,
+                                     rest_time=args.timeout, conn_id=conn_id, exception=args.exception)
+    elif os.path.isfile(dir_full_path):
+        payload = {}
+        file_content = file_processing.main(file_name=dir_full_path, exception=args.exception)
         car_info = car_insight.car_counter()
-
-        # convert file content into binary-string
-        file_content = file_processing.main(file_name=full_file_path, exception=args.exception)
-
+        if sys.platform.startswith('win'):
+            file_name = dir_full_path.split('\\')[-1]
+        else:
+            file_name = dir_full_path.split('/')[-1]
         if file_content is not None:
             payload = create_data(process_id=PROCESS_ID, binary_file=file_content, file_name=file_name,
                                   device_name=DEVICE_NAME, profile_name=PROFILE_NAME,
                                   start_ts=car_info['start_ts'], end_ts=car_info['end_ts'],
                                   num_cars=car_info['cars'], speed=car_info['speed'])
 
-        if conns is not None:
-            conn = conns[conn_id]
-            if conns is not None:
-                conn_id += 1
-                if conn_id == len(conns):
-                    conn_id = 0
-            publish_data.publish_data(payload=payload, insert_process=args.protocol, conn=conn,
-                                      topic=args.topic, rest_timeout=args.timeout, dir_name=None,
-                                      compress=False, exception=args.exception)
+        conn_id = __publish_data(payload=payload, insert_process=args.protocol, conns=conns, topic=args.topic,
+                                 rest_time=args.timeout, conn_id=conn_id, exception=args.exception)
 
 
 if __name__ == '__main__':

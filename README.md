@@ -8,7 +8,7 @@ AnyLog via _MQTT_, _PUT_ or _POST_. In addition, users can also provide their ow
 
 Sample `run mqtt client` for [generic data generator](anylog_scripts/data_generator_generic.al) provide _REST_ examples
 for each data type. 
-### Deployment Options
+### Deployment
 ```shell
 localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py --help
 positional arguments:
@@ -50,7 +50,7 @@ localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py trig post 
   --timezone local \
   --enable-timezone-range \
   --conn 10.0.0.226:32149 \
-  --topic test \
+  --topic trig_data \
   --exception  
 ```
 
@@ -80,6 +80,63 @@ localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py trig post 
   {"dbms": "test", "table": "synchrophasor", "location": "38.89773, -77.03653", "phasor": "bXlvzdYc", "frequency": 1216.6996978149687, "dfreq": 2326.468559576384, "analog": 4.591088473171304, "timestamp": "2022-08-27T15:50:12.205323Z"}
 ```
 ## Video & Image Processing
+[data_generator_file_processing.py](data_generator_file_processing.py) stores files in a MongoDB database, and associates 
+it with JSON object of (average) car speed and number of cars. The data generator is based on the type of data
+coming in via _EdgeX_. 
 
+Sample `run mqtt client` for [file processing](anylog_scripts/data_generator_file_processing.al) provide _REST_ example.
+The example also provides directions to starting a _MongoDB_ database on AnyLog, and is identical to the code in
+`AL > !local_scripts/sample_code/mongodb_process.al`. 
+
+Videos used for testing this data generator can be found in [Google Docs](https://drive.google.com/drive/folders/1sOYcH8Ie8tL4Cvt2xXEfLjlEz1yoYZMM?usp=sharing) 
+
+### Deployment Options
+```shell
+localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py --help 
+positional arguments:
+  dir_name                              directory where files are stored
+  conn                                  {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
+  protocl   {post,mqtt,print}           format to save data
+optional arguments:
+  -h, --help                    show this help message and exit
+  --topic       TOPIC           topic to send data agaisnt
+  --dbms        DBMS            Logical database to store data in
+  --table       TABLE           Logical database to store data in
+  --timeout     TIMEOUT         REST timeout (in seconds)
+  --reverse     [REVERSE]       whether or not reverse order of files in directory
+  --exception   [EXCEPTION]     whether or not to print exceptions to screen
+  
+  
+localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py $HOME/sample_data/video 10.0.0.226:32149 post \
+  --topic anylogedgex-videos \
+  --dbms test \
+  --timeout 30 \
+  --reverse \
+  --exception
+```
+
+### Sample JSON
+```json
+{
+    "apiVersion": "v2",
+    "id": "6b055b44-6eae-4f5d-b2fc-f9df19bf42cf",
+    "deviceName": "anylog-data-generator",
+    "origin": 1660163909,
+    "profileName": "anylog-video-generator",
+    "readings": [{
+        "start_ts": "2022-01-01 00:00:00",
+        "end_ts": "2022-01-01 00:00:05",
+        "binaryValue": "AAAAHGZ0eXBtcDQyAAAAAWlzb21tcDQxbXA0MgADWChtb292AAAAbG12aGQAAAAA3xnEUt8ZxFMAAHUwAANvyQABAA",
+        "mediaType": "video/mp4",
+        "origin": 1660163909,
+        "profileName": "traffic_data",
+        "resourceName": "OnvifSnapshot",
+        "valueType": "Binary",
+        "num_cars": 5,
+        "speed": 65.3
+    }],
+    "sourceName": "OnvifSnapshot"
+}
+```
 
 ## Deeptector
