@@ -186,9 +186,19 @@ def main():
     elif args.json_file is not None:
         json_data = __read_json(json_file=args.json_file, excepton=args.exception)
 
+    conns = None
+    conn_id = 0
+    if args.conn is not None:
+        conns = args.conn.split(',')
+
     full_path = os.path.expandvars(os.path.expanduser(args.dir_name))
     while True:
         for image in os.listdir(full_path):
+            if conns is not None:
+                conn = conns[conn_id]
+                conn_id += 1
+                if conn_id == len(conns):
+                    conn_id = 0
             file_path = os.path.join(full_path, image)
             data = {}
             if args.deeptector_url is not None:
@@ -214,7 +224,7 @@ def main():
                 payload = create_data(dbms=args.dbms, table=args.table, file_name=image, file_content=file_content,
                                       detections=detection, status=data['status'])
                 # publish data
-                publish_data.publish_data(payload=payload, insert_process=args.protocol, conn=args.conn,
+                publish_data.publish_data(payload=payload, insert_process=args.protocol, conn=conn,
                                           topic=args.topic, rest_timeout=30, dir_name=None,
                                           compress=False, exception=args.exception)
                 time.sleep(args.sleep)
