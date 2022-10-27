@@ -4,9 +4,10 @@ The following repository provides code to send (sample) data into AnyLog. Sample
 
 ## Requirements 
 * [pytz](https://pypi.org/project/pytz/)
-* 
 * [paho-mqtt](https://pypi.org/project/paho-mqtt/)  
 * [requests](https://pypi.org/project/requests/)   
+
+
 ## Generic Data Generator 
 [data_generator_generic.py](data_generator_generic.py) provides users different sets of dummy data, and send it into 
 AnyLog via _MQTT_, _PUT_ or _POST_. In addition, users can also provide their own JSON file to be pushed into AnyLog.
