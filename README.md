@@ -60,6 +60,16 @@ localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py trig post 
   --conn 10.0.0.226:32149 \
   --topic trig_data \
   --exception  
+
+localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py performance mqtt test \
+  --total-rows 1000000 \
+  --batch-size 1000 \
+  --sleep 0.5 \
+  --timezone local \
+  --performance-testing \ 
+  --conn 10.0.0.226:32150 \
+  --topic performance_data \
+  --exception  
 ```
 
 ### Sample JSON
