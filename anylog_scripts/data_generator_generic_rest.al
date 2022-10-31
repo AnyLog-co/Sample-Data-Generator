@@ -1,5 +1,5 @@
 # trig
-<run mqtt client where broker=local and port=!anylog_broker_port and log=false and topic=(
+<run mqtt client where broker=rest and port=!anylog_rest_port and user-agent=anylog and log=false and topic=(
     name=trig_data and
     dbms="bring [dbms]" and
     table="bring [table]" and
@@ -11,7 +11,7 @@
 )>
 
 # performance
-<run mqtt client where broker=local and port=!anylog_broker_port and log=false and topic=(
+<run mqtt client where broker=rest and port=!anylog_rest_port and user-agent=anylog and log=false and topic=(
     name=performance_data and
     dbms="bring [dbms]" and
     table="bring [table]" and
@@ -20,7 +20,7 @@
 )>
 
 # Ping / PercentageCPU
-<run mqtt client where broker=local and port=!anylog_broker_port and log=false and topic=(
+<run mqtt client where broker=rest and port=!anylog_rest_port and user-agent=anylog and log=false and topic=(
     name=lsl_data and
     dbms="bring [dbms]" and
     table="bring [table]" and
@@ -32,7 +32,7 @@
 )>
 
 # OPCUA
-<run mqtt client where broker=local and port=!anylog_broker_port and log=false and topic=(
+<run mqtt client where broker=rest and port=!anylog_rest_port and user-agent=anylog and log=false and topic=(
     name=opcua_data and
     dbms="bring [dbms]" and
     table="bring [table]" and
@@ -70,7 +70,7 @@
 )>
 
 # Power - this combines 2 types of data sets into a single run MQTT client
-<run mqtt client where broker=local and port=!anylog_broker_port and log=false and topic=(
+<run mqtt client where broker=rest and port=!anylog_rest_port and user-agent=anylog and log=false and topic=(
     name=power_data and
     dbms="bring [dbms]" and
     table="bring [table]" and

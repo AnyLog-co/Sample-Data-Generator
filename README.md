@@ -12,8 +12,10 @@ The following repository provides code to send (sample) data into AnyLog. Sample
 [data_generator_generic.py](data_generator_generic.py) provides users different sets of dummy data, and send it into 
 AnyLog via _MQTT_, _PUT_ or _POST_. In addition, users can also provide their own JSON file to be pushed into AnyLog.
 
-Sample `run mqtt client` for [generic data generator](anylog_scripts/data_generator_generic.al) provide _REST_ examples
-for each data type. 
+Sample `run mqtt client` for [data_generator_generic_rest.al](anylog_scripts/data_generator_generic_rest.al) provide 
+_REST_ examples  for each data type, while [data_generator_generic_rest.al](anylog_scripts/data_generator_generic.al) 
+provides non-rest (local MQTT broker) sample code. 
+
 ### Deployment
 ```shell
 localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py --help
