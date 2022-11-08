@@ -65,7 +65,7 @@ def generate_timestamp(timezone:str='utc', enable_timezone_range:bool=True)->str
     if timezone in timezones: # selected timezone
         timezone = timezones[timezone]
         timestamp = timestamp.astimezone(timezone)
-        if enable_timezone_range is true:
+        if enable_timezone_range is True:
             timestamp += datetime.timedelta(days=random.choice(range(-30, 31)), hours=random.choice(range(-23, 24)),
                                             minutes=random.choice(range(-59, 60)))
         timestamp = timestamp.astimezone(timezone).isoformat().replace('t', ' ')
