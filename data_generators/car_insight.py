@@ -2,7 +2,7 @@ import random
 import timestamp_generator
 
 
-def car_counter() -> dict:
+def car_counter(timezone:str, enable_timezone_range:bool=False) -> dict:
     """
     Generate car insight information
     :params:
@@ -18,7 +18,7 @@ def car_counter() -> dict:
             - cars
             - speed
     """
-    start_ts, end_ts = timestamp_generator.cars_timestamps()
+    start_ts, end_ts = timestamp_generator.cars_timestamps(timezone=timezone, enable_timezone_range=enable_timezone_range)
     hours = start_ts.hour
 
     if 5 <= hours < 7:

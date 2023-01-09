@@ -22,7 +22,8 @@ DEVICE_NAME='anylog-data-generator'
 PROFILE_NAME='anylog-video-generator'
 
 
-def __create_data(process_id:str, file_name:str, binary_file:str, device_name:str="anylog-data-generator",
+def __create_data(process_id:str, file_name:str, binary_file:str, table_name:str='edgx_images',
+                  device_name:str="anylog-data-generator",
                   start_ts:str=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                   end_ts:str=(datetime.datetime.utcnow() + datetime.timedelta(seconds=5)).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                   profile_name="anylog-video-generator", num_cars:int=0, speed:float=0)->dict:
@@ -31,6 +32,7 @@ def __create_data(process_id:str, file_name:str, binary_file:str, device_name:st
     :args:
         process_id:str - generated UUID process
         files_dict:dict - content to store
+        table_name:str - table name
         device_name:str - name of device data is coming from
         profile_name:str - name of device profile data is coming from
     :params:
@@ -43,6 +45,7 @@ def __create_data(process_id:str, file_name:str, binary_file:str, device_name:st
         "apiVersion": "v2",
         "id": "6b055b44-6eae-4f5d-b2fc-f9df19bf42cf",
         "deviceName": "anylog-data-generator",
+        "table_name": "edgx_images",
         "origin": 1660163909,
         "profileName": "anylog-video-generator",
         "readings": [{
@@ -149,6 +152,10 @@ def main():
     parser.add_argument('--dbms',     type=str, default='edgex', help='Logical database to store data in')
     parser.add_argument('--table',    type=str, default='image', help='Logical database to store data in')
     parser.add_argument('--timeout', type=float, default=30, help='REST timeout (in seconds)')
+    parser.add_argument('--timezone', type=str, choices=['local', 'utc', 'et', 'br', 'jp', 'ws', 'au', 'it'],
+                       default='local', help='timezone for generated timestamp(s)')
+    parser.add_argument('--enable-timezone-range', type=bool, nargs='?', const=True, default=False,
+                       help='set timestamp within a range of +/- 1 month')
     parser.add_argument('--reverse', type=bool, nargs='?', const=True, default=False,
                         help='whether or not to print exceptions to screen')
     parser.add_argument('--exception', type=bool, nargs='?',     const=True, default=False,
@@ -169,23 +176,23 @@ def main():
         for file_name in list_dirs:
             payload = None
             full_file_path =  os.path.join(dir_full_path, file_name)
-            car_info = car_insight.car_counter()
+            car_info = car_insight.car_counter(timezone=args.timezone, enable_timezone_range=args.enable_timezone_range)
 
             # convert file content into binary-string
             file_content = file_processing.main(file_name=full_file_path, exception=args.exception)
 
             if file_content is not None:
-                payload = create_data(process_id=PROCESS_ID, binary_file=file_content, file_name=file_name,
+                payload = __create_data(process_id=PROCESS_ID, binary_file=file_content, file_name=file_name,
                                       device_name=DEVICE_NAME, profile_name=PROFILE_NAME,
                                       start_ts=car_info['start_ts'], end_ts=car_info['end_ts'],
                                       num_cars=car_info['cars'], speed=car_info['speed'])
 
             conn_id = __publish_data(payload=payload, insert_process=args.protocol, conns=conns, topic=args.topic,
-                                     rest_time=args.timeout, conn_id=conn_id, exception=args.exception)
+                                     rest_timeout=args.timeout, conn_id=conn_id, exception=args.exception)
     elif os.path.isfile(dir_full_path):
         payload = {}
         file_content = file_processing.main(file_name=dir_full_path, exception=args.exception)
-        car_info = car_insight.car_counter()
+        car_info = car_insight.car_counter(timezone=args.timezone, enable_timezone_range=args.enable_timezone_range)
         if sys.platform.startswith('win'):
             file_name = dir_full_path.split('\\')[-1]
         else:
@@ -197,7 +204,7 @@ def main():
                                   num_cars=car_info['cars'], speed=car_info['speed'])
 
         conn_id = __publish_data(payload=payload, insert_process=args.protocol, conns=conns, topic=args.topic,
-                                 rest_time=args.timeout, conn_id=conn_id, exception=args.exception)
+                                 rest_timeout=args.timeout, conn_id=conn_id, exception=args.exception)
 
 
 if __name__ == '__main__':

@@ -38,36 +38,37 @@
     table="bring [table]" and
     column.timestamp.timestamp="bring [timestamp]" and
     column.fic1_pv=(type=float and value="bring [fic1_pv]") and
-    column.fic1_mv=(type=float and value="bring [fic1_pv]") and
-    column.fic1_sv=(type=float and value="bring [fic1_pv]") and
-    column.lic1_pv=(type=float and value="bring [fic1_pv]") and
-    column.lic1_mv=(type=float and value="bring [fic1_pv]") and
-    column.lic1_sv=(type=float and value="bring [fic1_pv]") and
-    column.fic2_pv=(type=float and value="bring [fic1_pv]") and
-    column.fic2_mv=(type=float and value="bring [fic1_pv]") and
-    column.fic2_sv=(type=float and value="bring [fic1_pv]") and
-    column.lic2_pv=(type=float and value="bring [fic1_pv]") and
-    column.lic2_mv=(type=float and value="bring [fic1_pv]") and
-    column.lic2_sv=(type=float and value="bring [fic1_pv]") and
-    column.fic3_pv=(type=float and value="bring [fic1_pv]") and
-    column.fic3_mv=(type=float and value="bring [fic1_pv]") and
-    column.fic3_sv=(type=float and value="bring [fic1_pv]") and
-    column.lic3_pv=(type=float and value="bring [fic1_pv]") and
-    column.lic3_mv=(type=float and value="bring [fic1_pv]") and
-    column.lic3_sv=(type=float and value="bring [fic1_pv]") and
-    column.fic4_pv=(type=float and value="bring [fic1_pv]") and
-    column.fic4_mv=(type=float and value="bring [fic1_pv]") and
-    column.fic4_sv=(type=float and value="bring [fic1_pv]") and
-    column.lic4_pv=(type=float and value="bring [fic1_pv]") and
-    column.lic4_mv=(type=float and value="bring [fic1_pv]") and
-    column.lic4_sv=(type=float and value="bring [fic1_pv]") and
-    column.fic5_pv=(type=float and value="bring [fic1_pv]") and
-    column.fic5_mv=(type=float and value="bring [fic1_pv]") and
-    column.fic5_sv=(type=float and value="bring [fic1_pv]") and
-    column.lic5_pv=(type=float and value="bring [fic1_pv]") and
-    column.lic5_mv=(type=float and value="bring [fic1_pv]") and
-    column.lic5_sv=(type=float and value="bring [fic1_pv]")
+    column.fic1_mv=(type=float and value="bring [fic1_mv]") and
+    column.fic1_sv=(type=float and value="bring [fic1_sv]") and
+    column.lic1_pv=(type=float and value="bring [lic1_pv]") and
+    column.lic1_mv=(type=float and value="bring [lic1_mv]") and
+    column.lic1_sv=(type=float and value="bring [lic1_sv]") and
+    column.fic2_pv=(type=float and value="bring [fic2_pv]") and
+    column.fic2_mv=(type=float and value="bring [fic2_mv]") and
+    column.fic2_sv=(type=float and value="bring [fic2_sv]") and
+    column.lic2_pv=(type=float and value="bring [lic2_pv]") and
+    column.lic2_mv=(type=float and value="bring [lic2_mv]") and
+    column.lic2_sv=(type=float and value="bring [lic2_sv]") and
+    column.fic3_pv=(type=float and value="bring [fic3_pv]") and
+    column.fic3_mv=(type=float and value="bring [fic3_mv]") and
+    column.fic3_sv=(type=float and value="bring [fic3_sv]") and
+    column.lic3_pv=(type=float and value="bring [lic3_pv]") and
+    column.lic3_mv=(type=float and value="bring [lic3_mv]") and
+    column.lic3_sv=(type=float and value="bring [lic3_sv]") and
+    column.fic4_pv=(type=float and value="bring [fic4_pv]") and
+    column.fic4_mv=(type=float and value="bring [fic4_mv]") and
+    column.fic4_sv=(type=float and value="bring [fic4_sv]") and
+    column.lic4_pv=(type=float and value="bring [lic4_pv]") and
+    column.lic4_mv=(type=float and value="bring [lic4_mv]") and
+    column.lic4_sv=(type=float and value="bring [lic4_sv]") and
+    column.fic5_pv=(type=float and value="bring [fic5_pv]") and
+    column.fic5_mv=(type=float and value="bring [fic5_mv]") and
+    column.fic5_sv=(type=float and value="bring [fic5_sv]") and
+    column.lic5_pv=(type=float and value="bring [lic5_pv]") and
+    column.lic5_mv=(type=float and value="bring [lic5_mv]") and
+    column.lic5_sv=(type=float and value="bring [lic5_sv]")
 )>
+
 
 # Power - this combines 2 types of data sets into a single run MQTT client
 <run mqtt client where broker=local and port=!anylog_broker_port and log=false and topic=(
