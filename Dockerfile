@@ -26,13 +26,13 @@ RUN apk upgrade
 RUN apk add bash-completion
 RUN apk update
 
-RUN python3.9 -m pip install --upgrade pip
-RUN python3.9 -m pip install paho-mqtt
-RUN python3.9 -m pip install pytz
-RUN python3.9 -m pip install requests
-
-RUN rm -rf video_processing_demo
-
-RUN mkdir -p $ANYLOG_PATH/Sample-Data-Generator/data
-
-ENTRYPOINT bash $ANYLOG_PATH/Sample-Data-Generator/docker_call.sh
+#RUN python3.9 -m pip install --upgrade pip
+#RUN python3.9 -m pip install paho-mqtt
+#RUN python3.9 -m pip install pytz
+#RUN python3.9 -m pip install requests
+#
+#RUN rm -rf video_processing_demo
+#
+#RUN mkdir -p $ANYLOG_PATH/Sample-Data-Generator/data
+#
+#ENTRYPOINT bash $ANYLOG_PATH/Sample-Data-Generator/docker_call.sh
