@@ -21,7 +21,8 @@ def publish_data(payload:list, insert_process:str, conn:str=None, topic:str=None
     auth = ()
     if insert_process in ['put', 'post', 'mqtt']:
         if '@' in conn:
-            auth, conn = conn.split('@')
+            
+            auth, empty, conn = conn.split('@')
             auth = tuple(auth.split(':'))
 
     if insert_process == "print":
