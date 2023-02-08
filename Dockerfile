@@ -30,7 +30,7 @@ RUN python3.9 -m pip install --upgrade pip
 RUN python3.9 -m pip install --upgrade -r $ANYLOG_PATH/Sample-Data-Generator/requirements.txt || true
 
 RUN rm -rf $ANYLOG_PATH/Sample-Data-Generator/anylog_scripts
-RUN rm -rf $ANYLOG_PATH/Sample-Data-Generator/data_generator_deeptector.py
+RUN rm -rf $ANYLOG_PATH/Sample-Data-Generator/data_generator_images.py
 RUN rm -rf $ANYLOG_PATH/Sample-Data-Generator/data_generator_videos.py
 RUN rm -rf $ANYLOG_PATH/Sample-Data-Generator/requirements.txt
 

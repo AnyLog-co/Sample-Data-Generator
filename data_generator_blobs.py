@@ -2,19 +2,17 @@ import argparse
 import os
 import sys
 
+import data_generator_images
 import data_generator_videos
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
-PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'publishing_protocols')
-sys.path.insert(0, DATA_GENERATORS)
-sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
 
 def main():
     """
     The following provides an example for storing blobs (ex. images and videos) with associated values into AnyLog.
     The data set for this data generator can be downloaded here: https://drive.google.com/drive/folders/1EuArx1VepoLj3CXGrCRcxzWZyurgUO3u?usp=share_link
+
     :note:
         on the AnyLog side, make sure MongoDB is running and associated `run mqtt client` is active. Otherwise, data will
         not come in and/or will not be stored
@@ -78,11 +76,15 @@ def main():
     else:
         sub_dir = args.dir_name.rsplit('/')[-1]
 
-    if sub_dir == 'videos': # go to car data example
+    if sub_dir == "videos": # go to car data example
         data_generator_videos.main(dir_name=args.dir_name, conns=args.conn, protocol=args.protocol, topic=args.topic,
                                    db_name=args.db_name, table=args.table, timezone=args.timezone,
                                    timeout=args.timeout, enable_timezone_range=args.enable_timezone_range,
                                    reverse=args.reverse, exception=args.exception)
+    if sub_dir == "images":
+        data_generator_images.main(dir_name=args.dir_name, conns=args.conn, protocol=args.protocol, topic=args.topic,
+                                   db_name=args.db_name, table=args.table, timeout=args.timeout, reverse=args.reverse,
+                                   exception=args.exception)
 
 
 if __name__ == '__main__':
