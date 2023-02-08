@@ -16,7 +16,7 @@ def main():
     The following provides an example for storing blobs (ex. images and videos) with associated values into AnyLog.
     The data set for this data generator can be downloaded here: https://drive.google.com/drive/folders/1EuArx1VepoLj3CXGrCRcxzWZyurgUO3u?usp=share_link
     :note:
-        on the AnyLog side, make sure MongoDB is running and associated `run mqtt client` is active. Otherwise data will
+        on the AnyLog side, make sure MongoDB is running and associated `run mqtt client` is active. Otherwise, data will
         not come in and/or will not be stored
     :positional arguments:
         dir_name    directory where files are stored
@@ -69,9 +69,9 @@ def main():
         print(f"Failed to locate data directory {args.dir_name}, cannot continue...")
         exit(1)
 
-    if 'win' in sys.platform and args.dir_name[-1] == '\\':
+    if 'win32' in sys.platform and args.dir_name[-1] == '\\':
         sub_dir = args.dir_name[:-1].rsplit('\\')[-1]
-    elif 'win' in sys.platform:
+    elif 'win32' in sys.platform:
         sub_dir = args.dir_name.rsplit('\\')[-1]
     elif args.dir_name[-1] == '/':
         sub_dir = args.dir_name[:-1].rsplit('/')[-1]
@@ -80,7 +80,7 @@ def main():
 
     if sub_dir == 'videos': # go to car data example
         data_generator_videos.main(dir_name=args.dir_name, conns=args.conn, protocol=args.protocol, topic=args.topic,
-                                   db_name=args.db_name, table=args.table_name, timezone=args.timezone,
+                                   db_name=args.db_name, table=args.table, timezone=args.timezone,
                                    timeout=args.timeout, enable_timezone_range=args.enable_timezone_range,
                                    reverse=args.reverse, exception=args.exception)
 

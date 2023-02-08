@@ -94,7 +94,7 @@ def post_data(payloads:list, conn:str, topic:str="demo", auth:tuple=(), timeout:
 
     str_payloads = support.json_dumps(payloads=payloads)
     try:
-        r = requests.post(url=f'http://{conn}', headers=headers, auth=auth, timeout=timeout, data=str_payloads)
+        r = requests.post(url=f"http://{conn}", headers=headers, auth=auth, timeout=timeout, data=str_payloads)
     except Exception as error:
         status = False
         if exception is True:
