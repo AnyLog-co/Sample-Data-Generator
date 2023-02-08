@@ -65,7 +65,7 @@ def __convert_base64(file_data:bytes, exception:bool)->(bool, str):
     return status, base64_msg
 
 
-def main(file_name:str, exception:bool=False)->dict:
+def main(file_name:str, exception:bool=False)->str:
     """
     Given image file(s), read information and store into dictionary
     :args:

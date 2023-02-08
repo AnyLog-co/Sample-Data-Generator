@@ -98,7 +98,7 @@ localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py performanc
   {"dbms": "test", "table": "synchrophasor", "location": "38.89773, -77.03653", "phasor": "bXlvzdYc", "frequency": 1216.6996978149687, "dfreq": 2326.468559576384, "analog": 4.591088473171304, "timestamp": "2022-08-27T15:50:12.205323Z"}
 ```
 ## Video & Image Processing
-[data_generator_file_processing.py](data_generator_file_processing.py) stores files in a MongoDB database, and associates 
+[data_generator_file_processing.py](data_generator_videos.py) stores files in a MongoDB database, and associates 
 it with JSON object of (average) car speed and number of cars. The data generator is based on the type of data
 coming in via _EdgeX_. 
 

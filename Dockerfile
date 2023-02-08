@@ -31,7 +31,7 @@ RUN python3.9 -m pip install --upgrade -r $ANYLOG_PATH/Sample-Data-Generator/req
 
 RUN rm -rf $ANYLOG_PATH/Sample-Data-Generator/anylog_scripts
 RUN rm -rf $ANYLOG_PATH/Sample-Data-Generator/data_generator_deeptector.py
-RUN rm -rf $ANYLOG_PATH/Sample-Data-Generator/data_generator_file_processing.py
+RUN rm -rf $ANYLOG_PATH/Sample-Data-Generator/data_generator_videos.py
 RUN rm -rf $ANYLOG_PATH/Sample-Data-Generator/requirements.txt
 
 ENTRYPOINT bash $ANYLOG_PATH/Sample-Data-Generator/docker_call.sh
