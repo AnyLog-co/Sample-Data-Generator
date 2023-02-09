@@ -28,15 +28,15 @@ PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'publishing_protocols')
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
-import support
+import publishing_protocols.support as support
+import publishing_protocols.publish_data as publish_data
 
-import publish_data
-import lsl_data
-import opcua_data
-import performance_testing
-import power_company
-import timestamp_generator
-import trig
+import data_generators.lsl_data as lsl_data
+import data_generators.opcua_data as opcua_data
+import data_generators.performance_testing as performance_testing
+import data_generators.power_company as power_company
+import data_generators.timestamp_generator as timestamp_generator
+import data_generators.trig as trig
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data')
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value

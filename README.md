@@ -1,20 +1,14 @@
 # Sample Data Generator
-The following repository provides code to send (sample) data into AnyLog. Sample images and videos can be found in 
-[Google Drive](https://drive.google.com/drive/folders/1EuArx1VepoLj3CXGrCRcxzWZyurgUO3u?usp=sharing)
+Sample data generators used to demonstrate and test AnyLog 
 
 ## Requirements 
-* [pytz](https://pypi.org/project/pytz/)
-* [paho-mqtt](https://pypi.org/project/paho-mqtt/)  
-* [requests](https://pypi.org/project/requests/)   
-
+```shell
+python3 -m pip install -r $HOME/Sample-Data-Generator/requirements.txt
+```
 
 ## Generic Data Generator 
 [data_generator_generic.py](data_generator_generic.py) provides users different sets of dummy data, and send it into 
-AnyLog via _MQTT_, _PUT_ or _POST_. In addition, users can also provide their own JSON file to be pushed into AnyLog.
-
-Sample `run mqtt client` for [data_generator_generic_rest.al](anylog_scripts/data_generator_generic_rest.al) provide 
-_REST_ examples  for each data type, while [data_generator_generic_rest.al](anylog_scripts/data_generator_generic.al) 
-provides non-rest (local MQTT broker) sample code. 
+AnyLog via _MQTT_, _PUT_ or _POST_.
 
 ### Deployment
 ```shell
@@ -98,42 +92,72 @@ localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py performanc
   {"dbms": "test", "table": "synchrophasor", "location": "38.89773, -77.03653", "phasor": "bXlvzdYc", "frequency": 1216.6996978149687, "dfreq": 2326.468559576384, "analog": 4.591088473171304, "timestamp": "2022-08-27T15:50:12.205323Z"}
 ```
 ## Video & Image Processing
-[data_generator_file_processing.py](data_generator_videos.py) stores files in a MongoDB database, and associates 
-it with JSON object of (average) car speed and number of cars. The data generator is based on the type of data
-coming in via _EdgeX_. 
+[sample_data_generator_blobs.py](data_generator_blobs.py) stores images or videos into MongoDB, and associates them with
+correlating data. The code requires using the images / videos found in our [Google Docs](https://drive.google.com/drive/folders/1sOYcH8Ie8tL4Cvt2xXEfLjlEz1yoYZMM?usp=sharing), 
+which is open to the public. 
 
-Sample `run mqtt client` for [file processing](anylog_scripts/data_generator_file_processing.al) provide _REST_ example.
-The example also provides directions to starting a _MongoDB_ database on AnyLog, and is identical to the code in
-`AL > !local_scripts/sample_code/mongodb_process.al`. 
 
-Videos used for testing this data generator can be found in [Google Docs](https://drive.google.com/drive/folders/1sOYcH8Ie8tL4Cvt2xXEfLjlEz1yoYZMM?usp=sharing) 
+### AnyLog Requirements
+Blobs data require: 
+* [MongoDB](https://github.com/AnyLog-co/documentation/blob/mastaer/deployments/database_configuration.md#mongodb) to be 
+running on the node - in order to accept blobs coming in
+* `run mqtt client` active associated with the data coming 
+
 
 ### Deployment Options
 ```shell
-localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py --help 
+localhost:~/$ python3 Sample-Data-Generator/data_generator_blobs.py --help 
 positional arguments:
-  dir_name                              directory where files are stored
-  conn                                  {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
-  protocl   {post,mqtt,print}           format to save data
+  dir_name              directory where files are stored - data is generated based on the file
+  conn                  {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
+  protocol              format to save data
+    * post
+    * mqtt
+    * print      
 optional arguments:
-  -h, --help                    show this help message and exit
-  --topic       TOPIC           topic to send data agaisnt
-  --dbms        DBMS            Logical database to store data in
-  --table       TABLE           Logical database to store data in
-  --timeout     TIMEOUT         REST timeout (in seconds)
-  --reverse     [REVERSE]       whether or not reverse order of files in directory
-  --exception   [EXCEPTION]     whether or not to print exceptions to screen
-  
-  
-localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py $HOME/sample_data/video 10.0.0.226:32149 post \
-  --topic anylogedgex-videos \
-  --dbms test \
-  --timeout 30 \
+  -h, --help                show this help message and exit
+  --topic       TOPIC       topic to send data agaisnt
+  --db-name     DB_NAME     Logical database to store data in
+  --table       TABLE       Logical database to store data in
+  --sleep       SLEEP       Wait time between each file to insert
+  --timeout     TIMEOUT     REST timeout (in seconds)
+  --timezone    TIMEZONE    timezone for generated timestamp(s)
+    * local 
+    * utc 
+    * et 
+    * br
+    * jp
+    * ws
+    * au
+    * it
+  --enable-timezone-range  [ENABLE_TIMEZONE_RANGE]   set timestamp within a range of +/- 1 month
+  --reverse                [REVERSE]                 whether to store data in reversed (file) order
+  --exception              [EXCEPTION]               whether to print exceptions to screen
+
+localhost:~/$ python3 Sample-Data-Generator/data_generator_blobs.py $HOME/Downloads/sample_data/images 10.0.0.183:32149 post \
+  --db-name test \
+  --table factory_data \
+  --topic image_mapping \
+  --exception 
+ 
+ localhost:~/$ python3 Sample-Data-Generator/data_generator_blobs.py $HOME/Downloads/sample_data/videos 10.0.0.183:32149 post \
+  --db-name test \
+  --table factory_data \
+  --topic video-mapping \
+  --sleep 10 \
   --reverse \
-  --exception
+  --exception 
 ```
 
 ### Sample JSON
+The first JSON object provides an example for video data. The video is associated with values, such as: 
+* start / end timestamp 
+* number of cars 
+* speed 
+While the second JSON provides an example of image data. The data is associated with information regarding the image,
+such as:  
+* whether it's _Ok_ or _Nok_ - `status`
+* "coordinates" on the image that have a detected value - `detection`
 ```json
 {
     "apiVersion": "v2",
@@ -154,67 +178,11 @@ localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py $HOME/samp
         "speed": 65.3
     }],
     "sourceName": "OnvifSnapshot"
-}
-```
-
-## Deeptector
-[data_generator_deeptector.py](data_generator_images.py) provides the capbaility of transfering data generated by 
-NTT's _Deeptector_ into AnyLog. Since AnyLog does not have their own _Deeptector_, the code allows for testing via a 
-preset [JSON file](data_generators/factory_data.json) and a preset image, which can be downloaded from our
-[Google Docs](https://drive.google.com/drive/folders/1GqkJSnGqJ7WAlcu2Phu2CSn19bGw68Na?usp=sharing). 
-
-Sample `run mqtt client` for [deeptector convertor](anylog_scripts/data_generator_deeptector.al) provide _REST_ example.
-The example also provides directions to starting a _MongoDB_ database on AnyLog, and is identical to the code in
-`AL > !local_scripts/sample_code/deeptector.al`. 
-
-
-### Deployment
-```shell
-localhost:~/$ python3 Sample-Data-Generator/data_generator_images.py --help
-positional arguments:
-    dir_name              image directory path
-    conn                  {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
-    protocol              format to save data
-        * print
-        * post (default)
-        * mqtt
-optional arguments:
-    -h, --help                          show this help message and exit
-    --topic             TOPIC           topic to send data agaisnt
-    --dbms              DBMS            Logical database to store data in
-    --table             TABLE           Logical database to store data in
-    --json-file         JSON_FILE       JSON file with results to be used as a dummy deeptector
-    --deeptector-url    DEEPTECTOR_URL  URL for deeptector
-    --sleep             SLEEP           sleep between each image
-    --batch-sleep       BATCH_SLEEP     wait time between each round of inserts
-    --exception         [EXCEPTION]     whether or not to print exceptions to screen
-
-localhost:~/$ python3 Sample-Data-Generator/data_generator_images.py $HOME/sample_data/image 10.0.0.226:32149 post \
-  --topic deeptector \
-  --dbms ntt \
-  --table deeptector \
-  --json-file $HOME/Sample-Data-Generator//data_generators/factory_data.json \
-  --sleep 0.5 \
-  --batch-sleep 10 \ 
-  --exception
- 
- localhost:~/$ python3 Sample-Data-Generator/data_generator_images.py $HOME/sample_data/image 10.0.0.226:32149 post \
-  --topic deeptector \
-  --dbms ntt \
-  --table deeptector \
-  --deeptector-url http://10.31.1.197/v3/predict/e99aefb2-abfc-4ab0-88fb-59e3e8f2b47f \
-  --sleep 0.5 \
-  --batch-sleep 10 \ 
-  --exception
-  
-```
-
-### Sample JSON 
-```json
+}, 
 {
     "id": "f85b2ddc-761d-88da-c524-12283fbb0f21",
     "dbms": "ntt",
-    "table": "deeptechtor",
+    "table": "images",
     "file_name": "20200306202533614.jpeg",
     "file_type": "image/jpeg",
     "file_content": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD",

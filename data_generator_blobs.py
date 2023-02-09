@@ -2,20 +2,21 @@ import argparse
 import os
 import sys
 
-import data_generator_images
-import data_generator_videos
-
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
+DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
+sys.path.insert(0, DATA_GENERATORS)
+
+import data_generators.data_generator_images as data_generator_images
+import data_generators.data_generator_videos as data_generator_videos
 
 
 def main():
     """
     The following provides an example for storing blobs (ex. images and videos) with associated values into AnyLog.
     The data set for this data generator can be downloaded here: https://drive.google.com/drive/folders/1EuArx1VepoLj3CXGrCRcxzWZyurgUO3u?usp=share_link
-
     :note:
-        on the AnyLog side, make sure MongoDB is running and associated `run mqtt client` is active. Otherwise, data will
-        not come in and/or will not be stored
+        on the AnyLog side, make sure MongoDB is running and associated `run mqtt client` is active. Otherwise, data
+        will not come in and/or will not be stored
     :positional arguments:
         dir_name    directory where files are stored
         conn        {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
@@ -27,6 +28,7 @@ def main():
         -h, --help                show this help message and exit
         --topic     TOPIC         topic to send data agaisnt
         --table     TABLE         Logical database to store data in
+        --sleep     SLEEP         Wait time between each file to insert
         --timeout   TIMEOUT       REST timeout (in seconds)
         --timezone  TIMEZONE      timezone for generated timestamp(s)
             * local
@@ -42,7 +44,8 @@ def main():
         --exception                 [EXCEPTION]                 whether to print exceptions to screen
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('dir_name', type=str, default='$HOME/Downloads/sample_data/videos', help='directory where files are stored')
+    parser.add_argument('dir_name', type=str, default='$HOME/Downloads/sample_data/videos',
+                        help='directory where files are stored - data is generated based on the file')
     parser.add_argument('conn', type=str, default='127.0.0.1:32149',
                         help='{user}:{password}@{ip}:{port} for sending data either via REST or MQTT')
     parser.add_argument('protocol', type=str, choices=['post', 'mqtt', 'print'], default='post',
@@ -50,6 +53,7 @@ def main():
     parser.add_argument('--topic', type=str, default='anylog-data-gen', help='topic to send data agaisnt')
     parser.add_argument('--db-name', type=str, default='edgex', help='Logical database to store data in')
     parser.add_argument('--table', type=str, default='image', help='Logical database to store data in')
+    parser.add_argument('--sleep', type=float, default=5, help='Wait time between each file to insert')
     parser.add_argument('--timeout', type=float, default=30, help='REST timeout (in seconds)')
     parser.add_argument('--timezone', type=str, choices=['local', 'utc', 'et', 'br', 'jp', 'ws', 'au', 'it'],
                         default='local', help='timezone for generated timestamp(s)')
@@ -76,15 +80,15 @@ def main():
     else:
         sub_dir = args.dir_name.rsplit('/')[-1]
 
-    if sub_dir == "videos": # go to car data example
+    if sub_dir == "videos":
         data_generator_videos.main(dir_name=args.dir_name, conns=args.conn, protocol=args.protocol, topic=args.topic,
-                                   db_name=args.db_name, table=args.table, timezone=args.timezone,
+                                   db_name=args.db_name, table=args.table, sleep=args.sleep, timezone=args.timezone,
                                    timeout=args.timeout, enable_timezone_range=args.enable_timezone_range,
                                    reverse=args.reverse, exception=args.exception)
     if sub_dir == "images":
         data_generator_images.main(dir_name=args.dir_name, conns=args.conn, protocol=args.protocol, topic=args.topic,
-                                   db_name=args.db_name, table=args.table, timeout=args.timeout, reverse=args.reverse,
-                                   exception=args.exception)
+                                   db_name=args.db_name, table=args.table, sleep=args.sleep, timeout=args.timeout,
+                                   reverse=args.reverse, exception=args.exception)
 
 
 if __name__ == '__main__':

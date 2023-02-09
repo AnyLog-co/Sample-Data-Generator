@@ -1,4 +1,3 @@
-import argparse
 import datetime
 import os
 import random
@@ -7,8 +6,8 @@ import time
 import uuid
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-DATA_GENERATORS = os.path.join(ROOT_PATH, "data_generators")
-PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, "publishing_protocols")
+DATA_GENERATORS = os.path.join(ROOT_PATH, "")
+PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, "../publishing_protocols")
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
@@ -93,7 +92,7 @@ def __create_data(process_id:str, file_name:str, binary_file:str, db_name:str="t
 
 
 def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:str="127.0.0.1:32148", protocol:str="post",
-         topic:str="anylog-data-gen", db_name:str="test", table:str="car_data", timezone:str="local",
+         topic:str="anylog-data-gen", db_name:str="test", table:str="car_data", sleep:float=5, timezone:str="local",
          timeout:int=30, enable_timezone_range:bool=False, reverse:bool=False, exception:bool=False):
     """
     Data generator for car traffic videos
@@ -107,6 +106,7 @@ def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:str="127.0.0.1
         topic:str - REST / MQTT topic
         db_name:str - logical database name
         table:str - table name
+        sleep:float - wait time between each insert
         timezone:str - timezone for generated timestamp(s)
         timeout:int - REST timeout
         enable_timezone_range:bool - set timestamp within a range of +/- 1 month
@@ -139,4 +139,5 @@ def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:str="127.0.0.1
             conn = random.choice(conns.split(','))
             publish_data.publish_data(payload=[payload], insert_process=protocol, conn=conn, topic=topic,
                                       rest_timeout=timeout, dir_name=None, compress=False, exception=exception)
+        time.sleep(5)
 
