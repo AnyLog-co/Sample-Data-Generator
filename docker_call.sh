@@ -1,40 +1,241 @@
-if [[ -z ${TABLE_NAME} ]] ; then TABLE_NAME="" ; fi
-if [[ -z ${TOTAL_ROWS} ]] ; then TOTAL_ROWS=1000000 ; fi
-if [[ -z ${BATCH_SIZE} ]] ; then BATCH_SIZE=1000 ; fi
-if [[ -z ${SLEEP} ]] ; then SLEEP=0.5 ; fi
-if [[ -z ${TIMEZONE} ]] ; then TIMEZONE=local ; fi
-if [[ -z ${CONN} ]] ; then CONN="" ; fi
-if [[ -z ${TOPIC} ]] ; then TOPIC="" ; fi
-if [[ -z ${REST_TIMEOUT} ]] ; then REST_TIMEOUT=30 ; fi
-if [[ -z ${DIR_NAME} ]] ; then DIR_NAME=$ANYLOG_PATH/Sample-Data-Generator/data ; fi
-
-if [[ ! ${ENABLE_TIMEZONE_RANGE} == true ]] && [[ ! ${ENABLE_TIMEZONE_RANGE} == false ]] ; then ENABLE_TIMEZONE_RANGE=false ; fi
-if [[ ! ${PERFORMANCE_TESTING} == true ]] && [[ ! ${PERFORMANCE_TESTING} == false ]] ; then PERFORMANCE_TESTING=false ; fi
-if [[ ! ${COMPRESS} == true ]] && [[ ! ${COMPRESS} == false ]] ; then COMPRESS=false ; fi
-if [[ ! ${EXCEPTION} == true ]] && [[ ! ${EXCEPTION} == false ]] ; then EXCEPTION=false ; fi
-
-if [[ ${INSERT_PROCESS} == print ]] ; then
-  bash $ANYLOG_PATH/Sample-Data-Generator/docker_scripts/data_generataor_generic_print.sh
-elif [[ ${INSERT_PROCESS} == file ]] && [[ ${COMPRESS} == true ]] ; then
-  bash $ANYLOG_PATH/Sample-Data-Generator/docker_scripts/data_generataor_generic_file_compress.sh
-elif [[ ${INSERT_PROCESS} == file ]] && [[ ${COMPRESS} == false ]] ; then
-  bash $ANYLOG_PATH/Sample-Data-Generator/docker_scripts/data_generataor_generic_file.sh
-elif [[ ! ${INSERT_PROCESS} == file ]] && [[ ! ${INSERT_PROCESS} == print ]] ; then
-  if [[ ! ${CONN} ]] ; then
-    echo "Missing connection credentials, cannot continue"
-    exit 1
+#!/bin/bash
+if [[ ${INSERT_PROCESS} == file ]] ; then
+  if [[ ${PERFORMANCE_TESTING} == true ]] && [[ ${EXCEPTION} == true ]] && [[ ${COMPRESS} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --data-dir $ANYLOG_PATH/data \
+      --performance-testing \
+      --compress \
+      --exception
+  elif [[ ${PERFORMANCE_TESTING} == true ]] && [[ ${EXCEPTION} == true ]] && [[ ! ${COMPRESS} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --data-dir $ANYLOG_PATH/data \
+      --performance-testing \
+      --exception
+  elif [[ ${PERFORMANCE_TESTING} == true ]] && [[ ! ${EXCEPTION} == true ]] && [[ ${COMPRESS} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --data-dir $ANYLOG_PATH/data \
+      --performance-testing \
+      --compress
+  elif [[ ${PERFORMANCE_TESTING} == true ]] && [[ ! ${EXCEPTION} == true ]] && [[ ! ${COMPRESS} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --data-dir $ANYLOG_PATH/data \
+      --performance-testing
+  elif [[ ${ENABLE_TIMEZONE_RANGE} == true ]] && [[ ${EXCEPTION} == true ]] && [[ ${COMPRESS} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --data-dir $ANYLOG_PATH/data \
+      --enable-timezone-range \
+      --compress \
+      --exception
+  elif [[ ${ENABLE_TIMEZONE_RANGE} == true ]] && [[ ${EXCEPTION} == true ]] && [[ ! ${COMPRESS} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --data-dir $ANYLOG_PATH/data \
+      --enable-timezone-range \
+      --exception
+  elif [[ ${ENABLE_TIMEZONE_RANGE} == true ]] && [[ ! ${EXCEPTION} == true ]] && [[ ${COMPRESS} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --data-dir $ANYLOG_PATH/data \
+      --enable-timezone-range \
+      --compress
+  elif [[ ${ENABLE_TIMEZONE_RANGE} == true ]] && [[ ! ${EXCEPTION} == true ]] && [[ ! ${COMPRESS} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --data-dir $ANYLOG_PATH/data \
+      --enable-timezone-range
+  elif [[ ${EXCEPTION} == true ]] && [[ ${COMPRESS} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --data-dir $ANYLOG_PATH/data \
+      --compress \
+      --exception
+  elif [[ ! ${EXCEPTION} == true ]] && [[ ${COMPRESS} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --data-dir $ANYLOG_PATH/data \
+      --compress
+  elif [[ ${EXCEPTION} == true ]] && [[ ! ${COMPRESS} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --data-dir $ANYLOG_PATH/data \
+      --exception
+    else
+      python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --data-dir $ANYLOG_PATH/data
+    fi
+elif [[ ${INSERT_PROCESS} == print ]] ; then
+  if [[ ${PERFORMANCE_TESTING} == true ]] && [[ ${EXCEPTION} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --performance-testing \
+      --exception
+  elif [[ ${PERFORMANCE_TESTING} == true ]] && [[ ! ${EXCEPTION} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --performance-testing
+  elif [[ ${ENABLE_TIMEZONE_RANGE} == true ]] && [[ ${EXCEPTION} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --enable-timezone-range \
+      --exception
+  elif [[ ${ENABLE_TIMEZONE_RANGE} == true ]] && [[ ! ${EXCEPTION} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --enable-timezone-range
+  elif [[ ${EXCEPTION} == true ]] ; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --exception
+  else
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE}
+    fi
+else
+  if [[ ${PERFORMANCE_TESTING} == true ]] && [[ ${EXCEPTION} == true ]] ; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --conn ${CONN} \
+      --topic ${TOPIC} \
+      --rest_timeout=${REST_TIMEOUT} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --performance-testing \
+      --exception
+  elif [[ ${PERFORMANCE_TESTING} == true ]] && [[ ! ${EXCEPTION} == true ]] ; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --conn ${CONN} \
+      --topic ${TOPIC} \
+      --rest_timeout=${REST_TIMEOUT} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --performance-testing
+  elif [[ ${ENABLE_TIMEZONE_RANGE} == true ]] && [[ ${EXCEPTION} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --conn ${CONN} \
+      --topic ${TOPIC} \
+      --rest_timeout=${REST_TIMEOUT} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --enable-timezone-range \
+      --exception
+  elif [[ ${ENABLE_TIMEZONE_RANGE} == true ]] && [[ ! ${EXCEPTION} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --conn ${CONN} \
+      --topic ${TOPIC} \
+      --rest_timeout=${REST_TIMEOUT} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --enable-timezone-range
+  elif [[ ${EXCEPTION} == true ]]; then
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --conn ${CONN} \
+      --topic ${TOPIC} \
+      --rest_timeout=${REST_TIMEOUT} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE} \
+      --exception
+  else
+    python3.9 $ANYLOG_PATH/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME} \
+      --conn ${CONN} \
+      --topic ${TOPIC} \
+      --rest_timeout=${REST_TIMEOUT} \
+      --table-name ${TABLE_NAME} \
+      --total-rows ${TOTAL_ROWS} \
+      --batch-size ${BATCH_SIZE} \
+      --sleep ${SLEEP} \
+      --timezone ${TIMEZONE}
   fi
-  if [[ ! ${INSERT_PROCESS} == put ]] && [[ -z ${TOPIC} ]] ;
-  then
-    echo "Missing `topic` value for ${INSERT_PROCESS} insert process, cannot continue"
-    exit 1
-  fi
-elif [[ ${INSERT_PROCESS} == put ]] ; then
-  bash $ANYLOG_PATH/Sample-Data-Generator/docker_scripts/data_generataor_generic_rest_put.sh
-elif [[ ${INSERT_PROCESS} == put ]] ; then
-  bash $ANYLOG_PATH/Sample-Data-Generator/docker_scripts/data_generataor_generic_post_mqtt.sh
+
 fi
-
-#if [[ ${INSERT_PROCESS} == put ]] ; then bash $ANYLOG_PATH/Sample-Data-Generator/docker_scripts/run_put.sh ; fi
-#if [[ ${INSERT_PROCESS} == post ]] || [[ ${INSERT_PROCESS} == mqtt ]] ; then bash $ANYLOG_PATH/Sample-Data-Generator/docker_scripts/run_post_mqtt.sh ; fi
-
