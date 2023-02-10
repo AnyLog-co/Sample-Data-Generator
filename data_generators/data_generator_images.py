@@ -219,8 +219,6 @@ def main(dir_name:str="$HOME/Downloads/sample_data/images", conns:str="127.0.0.1
         """
         detection, status = __get_data(file_name=file_name, exception=exception)
 
-        print(detection, status)
-
         if file_content is not None:
             payload = __create_data(db_name=db_name, table=table, file_name=file_name, file_content=file_content,
                                     detections=detection, status=status)

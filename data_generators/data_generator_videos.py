@@ -139,5 +139,5 @@ def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:str="127.0.0.1
             conn = random.choice(conns.split(','))
             publish_data.publish_data(payload=[payload], insert_process=protocol, conn=conn, topic=topic,
                                       rest_timeout=timeout, dir_name=None, compress=False, exception=exception)
-        time.sleep(5)
+        time.sleep(sleep)
 

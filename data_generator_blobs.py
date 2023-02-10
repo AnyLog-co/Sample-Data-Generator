@@ -48,7 +48,7 @@ def main():
                         help='directory where files are stored - data is generated based on the file')
     parser.add_argument('conn', type=str, default='127.0.0.1:32149',
                         help='{user}:{password}@{ip}:{port} for sending data either via REST or MQTT')
-    parser.add_argument('protocol', type=str, choices=['post', 'mqtt', 'print'], default='post',
+    parser.add_argument('protocol', type=str, choices=['post', 'mqtt', 'print', 'put'], default='post',
                         help='format to save data')
     parser.add_argument('--topic', type=str, default='anylog-data-gen', help='topic to send data agaisnt')
     parser.add_argument('--db-name', type=str, default='edgex', help='Logical database to store data in')
