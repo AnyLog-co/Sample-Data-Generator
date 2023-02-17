@@ -101,7 +101,7 @@ def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=
         time.sleep(5)
         if r[0] != 0:
             if exception is True:
-                print('There was a network error when publishing content')
+                print(f"There was a network error when publishing content (Error Code: {r})")
             status = False
             
     return status
