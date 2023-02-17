@@ -1,7 +1,38 @@
 import random
 from paho.mqtt import client
 import support
-import time
+
+MQTT_ERROR_CODES = { # based on: https://www.vtscada.com/help/Content/D_Tags/D_MQTT_ErrMsg.htm + ChatGTP information
+    -1: "MQTT_ERR_NO_CONN",
+    1: "Connection Refused: Unacceptable protocol version",
+    2: "Connection Refused: Identifier rejected",
+    3: "Connection Refused: Server Unavailable",
+    4: "Connection Refused: Bad username or password",
+    5: "Connection Refused: Authorization error",
+    6: "Connection lost or bad",
+    7: "Timeout waiting for Length bytes",
+    8: "Timeout waiting for Payload",
+    9: "Timeout waiting for CONNACK",
+    10: "Timeout waiting for SUBACK",
+    11: "Timeout waiting for UNSUBACK",
+    12:	"Timeout waiting for PINGRESP",
+    13: "Malformed Remaining Length",
+    14: "Problem with the underlying communication port",
+    15: "Address could not be parsed",
+    16:	"Malformed received MQTT packet",
+    17:	"Subscription failure",
+    18:	"Payload decoding failure",
+    19:	"Failed to compile a Decoder",
+    20:	"The received MQTT packet type is not supported on this client",
+    21:	"Timeout waiting for PUBACK",
+    22:	"Timeout waiting for PUBREC",
+    23:	"Timeout waiting for PUBCOMP",
+    39: "MQTT_ERR_PAYLOAD_SIZE",
+    0x18: "MQTT_ERR_REFUSED_BAD_USERNAME_OR_PASSWORD",
+    0x21: "MQTT_ERR_REFUSED_IDENTIFIER_REJECTED",
+    0x24: "MQTT_ERR_REFUSED_NOT_AUTHORIZED",
+    0x80: "MQTT_ERR_REFUSED",
+}
 
 
 def connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=None, exception:bool=True)->client.Client:
@@ -30,7 +61,7 @@ def connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=No
         mqtt_client = None
 
     # set username and password
-    if mqtt_client is not None and username is not False and password is not None:
+    if mqtt_client is not None and username is not None and password is not None:
         try:
             mqtt_client.username_pw_set(username, password)
         except Exception as e:
@@ -98,10 +129,12 @@ def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=
             print(f'Failed to publish results in {mqtt_client} (Error: {e})')
         status = False
     else:
-        time.sleep(5)
         if r[0] != 0:
             if exception is True:
-                print(f"There was a network error when publishing content (Error Code: {r})")
+                error_msg = "Unknown"
+                if r[0]in MQTT_ERROR_CODES:
+                    error_msg = MQTT_ERROR_CODES[r[0]]
+                print(f"There was a network error when publishing content (Error Code: {r[0]} - {error_msg})")
             status = False
             
     return status
