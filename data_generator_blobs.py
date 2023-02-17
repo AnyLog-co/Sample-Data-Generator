@@ -8,7 +8,7 @@ sys.path.insert(0, DATA_GENERATORS)
 
 import data_generators.data_generator_images as data_generator_images
 import data_generators.data_generator_videos as data_generator_videos
-
+import publishing_protocols.publish_data as publish_data
 
 def main():
     """
@@ -71,6 +71,18 @@ def main():
         print(f"Failed to locate data directory {args.dir_name}, cannot continue...")
         exit(1)
 
+    conns = None
+    if args.conn is not None:
+        conns = args.conn.split(',')
+
+    if args.protocol == "mqtt":
+        conns = publish_data.connect_mqtt(conns, exception=args.exception)
+        if not conns:
+            print("Failed to set connection for MQTT publisher")
+            exit(1)
+    elif args.protocol in ["post", "put"]:
+        conns = publish_data.setup_put_post_conn(conns=conns)
+
     if 'win32' in sys.platform and args.dir_name[-1] == '\\':
         sub_dir = args.dir_name[:-1].rsplit('\\')[-1]
     elif 'win32' in sys.platform:
@@ -81,14 +93,17 @@ def main():
         sub_dir = args.dir_name.rsplit('/')[-1]
 
     if sub_dir == "videos":
-        data_generator_videos.main(dir_name=args.dir_name, conns=args.conn, protocol=args.protocol, topic=args.topic,
+        data_generator_videos.main(dir_name=args.dir_name, conns=conns, protocol=args.protocol, topic=args.topic,
                                    db_name=args.db_name, table=args.table, sleep=args.sleep, timezone=args.timezone,
                                    timeout=args.timeout, enable_timezone_range=args.enable_timezone_range,
                                    reverse=args.reverse, exception=args.exception)
     if sub_dir == "images":
-        data_generator_images.main(dir_name=args.dir_name, conns=args.conn, protocol=args.protocol, topic=args.topic,
+        data_generator_images.main(dir_name=args.dir_name, conns=conns, protocol=args.protocol, topic=args.topic,
                                    db_name=args.db_name, table=args.table, sleep=args.sleep, timeout=args.timeout,
                                    reverse=args.reverse, exception=args.exception)
+
+    if args.protocol == "mqtt":
+        publish_data.disconnect_mqtt(conns=conns, exception=args.exception)
 
 
 if __name__ == '__main__':

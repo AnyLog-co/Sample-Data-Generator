@@ -127,10 +127,19 @@ def mqtt_process(mqtt_client:client.Client, payloads:list, topic:str, exception:
     """
     status = True
 
-    for payload in payloads:
-        str_payloads = support.json_dumps(payloads=payload)
+    if isinstance(payloads, list):
+        for payload in payloads:
+            str_payloads = support.json_dumps(payloads=payload)
+            if send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, exception=exception) is False:
+                status = False
+    elif isinstance(payloads, dict):
+        str_payloads = support.json_dumps(payloads=payloads)
         if send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, exception=exception) is False:
             status = False
+    else:
+        status = False
+        if exception is True:
+            print(f"Invalid payload in format {type(payloads)}")
 
     return status
 

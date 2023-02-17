@@ -30,7 +30,6 @@ sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
 import publishing_protocols.support as support
 import publishing_protocols.publish_data as publish_data
-import publishing_protocols.mqtt_protocol as mqtt_protocol
 
 import data_generators.lsl_data as lsl_data
 import data_generators.opcua_data as opcua_data

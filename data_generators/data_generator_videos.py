@@ -91,8 +91,8 @@ def __create_data(process_id:str, file_name:str, binary_file:str, db_name:str="t
     return data
 
 
-def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:str="127.0.0.1:32148", protocol:str="post",
-         topic:str="anylog-data-gen", db_name:str="test", table:str="car_data", sleep:float=5, timezone:str="local",
+def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:dict={}, protocol:str="post",
+         topic:str="anylog-data-gen", db_name:str="test", table:str="video", sleep:float=5, timezone:str="local",
          timeout:int=30, enable_timezone_range:bool=False, reverse:bool=False, exception:bool=False):
     """
     Data generator for car traffic videos
@@ -136,8 +136,9 @@ def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:str="127.0.0.1
                                     start_ts=car_info["start_ts"], end_ts=car_info["end_ts"], num_cars=car_info["cars"],
                                     speed=car_info["speed"])
 
-            conn = random.choice(conns.split(','))
-            publish_data.publish_data(payload=[payload], insert_process=protocol, conn=conn, topic=topic,
+            publish_data.publish_data(payload=[payload], insert_process=protocol, conns=conns, topic=topic,
                                       rest_timeout=timeout, dir_name=None, compress=False, exception=exception)
+
         time.sleep(sleep)
+
 
