@@ -4,7 +4,7 @@ import support
 import time
 
 
-def connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=None, exception:bool=True):
+def connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=None, exception:bool=True)->client.Client:
     """
     Connect to an MQTT broker
     :args:
@@ -50,6 +50,29 @@ def connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=No
     return mqtt_client
 
 
+def disconnect_mqtt(conn_info:str, mqtt_conn:client.Client, exception:bool=False)->bool:
+    """
+    Disconnect from MQTT client
+    :args:
+        mqtt_conn:paho.mqtt.client.Client - connection to MQTT
+        exception:bool - whether to print exception
+    :params:
+        status:bool
+    :return:
+        status
+    """
+    status = True
+
+    try:
+        mqtt_conn.disconnect()
+    except Exception as error:
+        status = False
+        if exception is True:
+            print(f"Failed to disconnect from {conn_info} (Error: {error})")
+
+    return status
+
+
 def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=False)->bool:
     """
     Send data into an MQTT broker
@@ -84,19 +107,17 @@ def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=
     return status
 
 
-
-def mqtt_process(payloads:dict, topic:str, broker:str, port:int, username:str=None, password:str=None,
-                 exception:bool=True)->bool:
+def mqtt_process(mqtt_client:client.Client, payloads:list, topic:str, exception:bool=True)->bool:
     """
     Main for MQTT process
     :args:
-        payloads:dict - content to send into MQTT
+        payloads:list - content to send into MQTT
         topic:str - MQTT topic name
         broker:str - MQTT broker address
         port:int - IP associated with broker
         username:str - User associated with MQTT connection information
         password:str - password associated with user
-        exception:bool - whether or not to print exception
+        exception:bool - whether to print exception
     :params:
         status:bool
         mqtt_client:client.Client - MQTT client connection
@@ -104,15 +125,12 @@ def mqtt_process(payloads:dict, topic:str, broker:str, port:int, username:str=No
     :return:
         status
     """
+    status = True
 
-    status = False
-    mqtt_client = connect_mqtt_broker(broker=broker, port=port, username=username, password=password, 
-                                      exception=exception)
-
-    if mqtt_client is not None:
-        for payload in payloads:
-            str_payloads = support.json_dumps(payloads=payload)    
-            status = send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, exception=exception)
+    for payload in payloads:
+        str_payloads = support.json_dumps(payloads=payload)
+        if send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, exception=exception) is False:
+            status = False
 
     return status
 

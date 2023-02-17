@@ -30,6 +30,7 @@ sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
 import publishing_protocols.support as support
 import publishing_protocols.publish_data as publish_data
+import publishing_protocols.mqtt_protocol as mqtt_protocol
 
 import data_generators.lsl_data as lsl_data
 import data_generators.opcua_data as opcua_data
@@ -41,6 +42,20 @@ import data_generators.trig as trig
 DATA_DIR = os.path.join(ROOT_PATH, 'data')
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
 SECOND_INCREMENTS = 86400  # second increments (0.864) for 100000 rows
+
+
+def __row_size(arg):
+    try:
+        value = int(arg)
+    except Exception as error:
+        output = argparse.ArgumentTypeError(f"User input value {arg} is not of type integer (Error: {error})")
+    else:
+        if value < 0:
+            output = argparse.ArgumentTypeError(f"User input value must be greater or equal to 0")
+        else:
+            output = value
+
+    return output
 
 
 def __rows_summary(db_name:str)->str:
@@ -166,6 +181,7 @@ def include_timestamp(payload:dict, timezone:str='utc', enable_timezone_range:bo
     return payload
 
 
+
 def main():
     """
     :positional arguments::
@@ -215,9 +231,9 @@ def main():
     parse.add_argument('db_name', type=str, default='test', help='logical database name')
     parse.add_argument('--table-name', type=str, default=None,
                        help='Change default table name (valid for data_types except power)')
-    parse.add_argument('--total-rows', type=int, default=1000000,
+    parse.add_argument('--total-rows', type=__row_size, default=1000000,
                        help='number of rows to insert. If set to 0, will run continuously')
-    parse.add_argument('--batch-size', type=int, default=1000, help='number of rows to insert per iteration')
+    parse.add_argument('--batch-size', type=__row_size, default=10, help='number of rows to insert per iteration')
     parse.add_argument('--sleep', type=float, default=0.5, help='wait time between each row')
     parse.add_argument('--timezone', type=str, choices=['local', 'utc', 'et', 'br', 'jp', 'ws', 'au', 'it'],
                        default='local', help='timezone for generated timestamp(s)')
@@ -235,8 +251,9 @@ def main():
     args = parse.parse_args()
 
     total_rows = args.total_rows
+    if args.batch_size <= 0:
+        args.batch_size = 1
     array_counter = 0
-    row_counter = 0
     data = []
 
     if args.data_type == 'examples':
@@ -244,102 +261,77 @@ def main():
         exit(1)
 
     conns = None
-    conn = None
-    conn_id = 0
     if args.conn is not None:
         conns = args.conn.split(',')
+
+    if args.insert_process == "mqtt":
+        conns = publish_data.connect_mqtt(conns, exception=args.exception)
+        if not conns:
+            print("Failed to set connection for MQTT publisher")
+            exit(1)
+    elif args.insert_process in ["post", "put"]:
+        conns = publish_data.setup_put_post_conn(conns=conns)
 
     if args.performance_testing is True:
         if total_rows == 0:
             total_rows = 1000000
+        second_increments = 0 * (SECOND_INCREMENTS / args.total_rows)
+
+    if total_rows > 0:
         for row in range(total_rows):
-            second_increments = row * (SECOND_INCREMENTS/args.total_rows)
             payload, array_counter, = row_generator(data_type=args.data_type, db_name=args.db_name,
                                                     array_counter=array_counter)
-            payload = include_timestamp(payload=payload, performance_testing=True, microseconds=MICROSECONDS,
-                                        second_increments=second_increments)
+            if args.performance_testing is True:
+                payload = include_timestamp(payload=payload, performance_testing=True, microseconds=MICROSECONDS,
+                                            second_increments=second_increments)
+                second_increments = (row + 1) * (SECOND_INCREMENTS / args.total_rows)
+            else:
+                if args.timezone != 'local':
+                    args.timezone = args.timezone.upper()
+                payload = include_timestamp(payload=payload, timezone=args.timezone,
+                                            enable_timezone_range=args.enable_timezone_range, performance_testing=False)
+
             if args.data_type != 'power' and args.table_name is not None:
                 payload['table'] = args.table_name
-            if isinstance(payload, dict):
-                data.append(payload)
-            else:
-                data += payload
-            row_counter += 1
-            if row_counter == args.batch_size:
-                if conns is not None:
-                    conn = conns[conn_id]
-                publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, topic=args.topic,
-                                          compress=args.compress, rest_timeout=args.rest_timeout,
+
+            data.append(payload)
+
+            if len(data) % args.batch_size == 0 or row == total_rows-1:
+                publish_data.publish_data(payload=data, insert_process=args.insert_process, conns=conns,
+                                          topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
                                           dir_name=args.dir_name, exception=args.exception)
                 data = []
-                row_counter = 0
-                if conns is not None:
-                    conn_id += 1
-                    if conn_id == len(conns):
-                        conn_id = 0
-            time.sleep(args.sleep)
-        if len(data) > 0:
-            if conns is not None:
-                conn = conns[conn_id]
-            publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, topic=args.topic,
-                                      compress=args.compress, rest_timeout=args.rest_timeout, dir_name=args.dir_name,
-                                      exception=args.exception)
-    elif total_rows != 0:
-        if args.timezone != 'local':
-            args.timezone = args.timezone.upper()
-        for row in range(total_rows):
-            payload, array_counter, = row_generator(data_type=args.data_type, db_name=args.db_name,
-                                                    array_counter=array_counter)
-            payload = include_timestamp(payload=payload, timezone=args.timezone,
-                                        enable_timezone_range=args.enable_timezone_range, performance_testing=False)
-            if isinstance(payload, dict):
-                data.append(payload)
-            else:
-                data += payload
-            row_counter += 1
-            if row_counter == args.batch_size:
-                if conns is not None:
-                    conn = conns[conn_id]
-                publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, topic=args.topic,
-                                          compress=args.compress, rest_timeout=args.rest_timeout,
-                                          dir_name=args.dir_name, exception=args.exception)
-                data = []
-                row_counter = 0
-                if conns is not None:
-                    conn_id += 1
-                    if conn_id == len(conns):
-                        conn_id = 0
-            time.sleep(args.sleep)
-        if len(data) > 0:
-            if conns is not None:
-                conn = conns[conn_id]
-            publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, topic=args.topic,
-                                      compress=args.compress, rest_timeout=args.rest_timeout, dir_name=args.dir_name,
-                                      exception=args.exception)
+
     else:
         while True:
+            row = 0
             payload, array_counter, = row_generator(data_type=args.data_type, db_name=args.db_name,
                                                     array_counter=array_counter)
-            payload = include_timestamp(payload=payload, timezone=args.timezone,
-                                        enable_timezone_range=args.enable_timezone_range, performance_testing=False)
-            if isinstance(payload, dict):
-                data.append(payload)
+            if args.performance_testing is True:
+                payload = include_timestamp(payload=payload, performance_testing=True, microseconds=MICROSECONDS,
+                                            second_increments=second_increments)
+                second_increments = (row + 1) * (SECOND_INCREMENTS / args.total_rows)
             else:
-                data += payload
-            row_counter += 1
-            if row_counter == args.batch_size:
-                if conns is not None:
-                    conn = conns[conn_id]
-                publish_data.publish_data(payload=data, insert_process=args.insert_process, conn=conn, topic=args.topic,
-                                          compress=args.compress, rest_timeout=args.rest_timeout,
+                if args.timezone != 'local':
+                    args.timezone = args.timezone.upper()
+                payload = include_timestamp(payload=payload, timezone=args.timezone,
+                                            enable_timezone_range=args.enable_timezone_range, performance_testing=False)
+
+            if args.data_type != 'power' and args.table_name is not None:
+                payload['table'] = args.table_name
+
+            data.append(payload)
+
+            if len(data) % args.batch_size == 0:
+                publish_data.publish_data(payload=data, insert_process=args.insert_process, conns=conns,
+                                          topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
                                           dir_name=args.dir_name, exception=args.exception)
                 data = []
-                row_counter = 0
-                if conns is not None:
-                    conn_id += 1
-                    if conn_id == len(conns):
-                        conn_id = 0
-            time.sleep(args.sleep)
+
+            row += 1
+
+    if args.insert_process == "mqtt":
+        publish_data.disconnect_mqtt(conns=conns, exception=args.exception)
 
 
 if __name__ == '__main__':

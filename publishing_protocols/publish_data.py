@@ -1,8 +1,69 @@
+import random
+
 import generic_protocol
 import mqtt_protocol
 import rest_protocols
 
-def publish_data(payload:list, insert_process:str, conn:str=None, topic:str=None, rest_timeout:int=30,
+
+def setup_put_post_conn(conns:list)->dict:
+    """
+    Convert connection information to dictionary format for PUT and POST commands
+        {user}:{password}@{ip}:{port} --> {"{ip}:{port}" : ({user}, {password})
+    :args:
+        conns:list - list of connection information
+    :params:
+        connections:dict - converted conns
+    :return:
+        connections
+    """
+    connections = {}
+    for conn in conns:
+        ip_port = conn.split("@")[-1].split(':')
+        connections[ip_port] = None
+        if '@' in conn:
+            connections[ip_port] = tuple(list(conn.split('@')[0].split(':')))
+
+    return connections
+
+
+def connect_mqtt(conns:list, exception:bool=False)->dict:
+    """
+    connect to MQTT client
+    :args:
+        conns:list - list of connections
+        exception:bool - whether to print exceptions
+    :params:
+        mqtt_conns:dict - MQTT connections
+        mqtt_conn:paho.mqtt.client.Client
+    :return:
+        mqtt_conns
+    """
+    mqtt_conns = {}
+    user = None
+    password = None
+    for conn in conns:
+        broker, port = conn.split("@")[-1].split(':')
+        if '@' in conn:
+            user, password = conn.split("@")[0].split(':')
+        mqtt_conn = mqtt_protocol.connect_mqtt_broker(broker=broker, port=port, username=user, password=password, exception=exception)
+        if mqtt_conn is not None:
+            mqtt_conns[conn.split('@')[-1]] = mqtt_conn
+
+    return mqtt_conns
+
+
+def disconnect_mqtt(conns:dict, exception:bool=False):
+    """
+    Disconnect from MQTT client
+    :args:
+        conns:dict - MQTT connection information
+        exception:bool - whether to print exceptions
+    """
+    for conn in conns:
+        mqtt_protocol.disconnect_mqtt(conn_info=conn, mqtt_conn=conns[conn], exception=exception)
+
+
+def publish_data(payload:list, insert_process:str, conns:dict={}, topic:str=None, rest_timeout:int=30,
                  dir_name:str=None, compress:bool=False, exception:bool=False):
     """
     Publish data based on the insert_process
@@ -18,12 +79,16 @@ def publish_data(payload:list, insert_process:str, conn:str=None, topic:str=None
     :params:
         status:bool
     """
-    auth = ()
-    if insert_process in ['put', 'post', 'mqtt']:
-        if '@' in conn:
-            
-            auth, empty, conn = conn.split('@')
-            auth = tuple(auth.split(':'))
+    conn = None
+    auth = None
+    mqtt_conn = None
+    if conns:
+        conn = random.choice(list(conns.keys()))
+    if insert_process in ['put', 'post']:
+        auth = conns[conn]
+    elif insert_process == "mqtt":
+        conn = random.choice(list(conns.keys()))
+        mqtt_conn = conns[conn]
 
     if insert_process == "print":
         generic_protocol.print_content(payloads=payload)
@@ -42,13 +107,6 @@ def publish_data(payload:list, insert_process:str, conn:str=None, topic:str=None
         if status is False and exception is False:
             print(f'Failed to insert one or more batches of data into {conn} via POST')
     elif insert_process == 'mqtt':
-        broker, port = conn.split(':')
-        username = ""
-        password = ""
-        if auth != ():
-            username, password = auth
-
-        status = mqtt_protocol.mqtt_process(payloads=payload, topic=topic, broker=broker, port=port, username=username,
-                                            password=password, exception=exception)
+        status = mqtt_protocol.mqtt_process(mqtt_client=mqtt_conn, payloads=payload, topic=topic, exception=exception)
         if status is False and exception is False:
             print(f'Failed to send MQTT message against connection {conn}')
