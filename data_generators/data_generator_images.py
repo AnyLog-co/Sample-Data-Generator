@@ -14,7 +14,7 @@ PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, "../publishing_protocols")
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
-import data_generators.file_processing as file_processing
+import data_generators.file_processing_base64 as file_processing
 import publishing_protocols.publish_data as publish_data
 import publishing_protocols.support as support
 
@@ -175,8 +175,8 @@ def __create_data(db_name:str, table:str, file_name:str, file_content:str, detec
     return payload
 
 
-def main(dir_name:str="$HOME/Downloads/sample_data/images", conns:str="127.0.0.1:32148", protocol:str="post",
-         topic:str="anylog-data-gen", db_name:str="test", table:str="car_data", sleep:float=5, timeout:int=30,
+def main(dir_name:str="$HOME/Downloads/sample_data/images", conns:dict={}, protocol:str="post",
+         topic:str="image-data", db_name:str="test", table:str="image", sleep:float=5, timeout:int=30,
          reverse:bool=False, exception:bool=False):
     """
     Data generator for image  - must use images in https://drive.google.com/drive/folders/1EuArx1VepoLj3CXGrCRcxzWZyurgUO3u?usp=share_link
@@ -220,11 +220,11 @@ def main(dir_name:str="$HOME/Downloads/sample_data/images", conns:str="127.0.0.1
         detection, status = __get_data(file_name=file_name, exception=exception)
 
         if file_content is not None:
+
             payload = __create_data(db_name=db_name, table=table, file_name=file_name, file_content=file_content,
                                     detections=detection, status=status)
 
-            conn = random.choice(conns.split(','))
-            publish_data.publish_data(payload=[payload], insert_process=protocol, conn=conn, topic=topic,
+            publish_data.publish_data(payload=payload, insert_process=protocol, conns=conns, topic=topic,
                                       rest_timeout=timeout, dir_name=None, compress=False, exception=exception)
         time.sleep(sleep)
 

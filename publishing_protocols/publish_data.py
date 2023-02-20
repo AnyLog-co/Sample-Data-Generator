@@ -87,7 +87,6 @@ def publish_data(payload:list, insert_process:str, conns:dict={}, topic:str=None
     if insert_process in ['put', 'post']:
         auth = conns[conn]
     elif insert_process == "mqtt":
-        conn = random.choice(list(conns.keys()))
         mqtt_conn = conns[conn]
 
     if insert_process == "print":
@@ -110,3 +109,6 @@ def publish_data(payload:list, insert_process:str, conns:dict={}, topic:str=None
         status = mqtt_protocol.mqtt_process(mqtt_client=mqtt_conn, payloads=payload, topic=topic, exception=exception)
         if status is False and exception is False:
             print(f'Failed to send MQTT message against connection {conn}')
+        else:
+            print('success')
+
