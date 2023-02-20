@@ -12,3 +12,5 @@ requests>=0.0
 sys>=0.0
 time>=0.0
 uuid>=0.0
+opencv-python>=0
+numpy>=0.0

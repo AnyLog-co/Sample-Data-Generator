@@ -2,14 +2,13 @@ import io
 import os.path
 
 
-def __read_file(file_name:str, exception:bool=False)->(bool, io.BytesIO):
+def read_file(file_name:str, exception:bool=False)->(bool, io.BytesIO):
     status = True
     content = None
-    full_path = os.path.expanduser(os.path.expandvars(file_name))
 
-    if os.path.isfile(full_path):
+    if os.path.isfile(file_name):
         try:
-            with open(full_path, "rb") as f:
+            with open(file_name, "rb") as f:
                 try:
                     content = io.BytesIO(f.read())
                 except Exception as error:
@@ -26,12 +25,17 @@ def __read_file(file_name:str, exception:bool=False)->(bool, io.BytesIO):
     return status, content
 
 
+def extract_results(content:io.BytesIO, exception:bool=False)->str:
+    try:
+        output = content.read()
+    except Exception as error:
+        output = None
+        if exception is True:
+            print(f"Failed to read content from file (Error: {error})")
+
+    return output
+
+
 def main(file_name:str, exception:bool=False):
-    bytesio_msg = None
-    status, content = __read_file(file_name=file_name, exception=exception)
-    print(content.read())
-
-
-
-if __name__ == '__main__':
-    main(file_name='$HOME/Downloads/sample_data/images/20200306202543226.jpeg', exception=True)
+    status, content = read_file(file_name=file_name, exception=exception)
+    return extract_results(content=content, exception=exception)

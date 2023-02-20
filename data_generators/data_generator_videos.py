@@ -1,6 +1,5 @@
 import datetime
 import os
-import random
 import sys
 import time
 import uuid
@@ -11,7 +10,9 @@ PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, "../publishing_protocols")
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
-import data_generators.file_processing_base64 as file_processing
+import data_generators.file_processing_base64 as file_processing_base64
+import data_generators.file_processing_bytesIO as file_processing_bytesIO
+import data_generators.file_processing_cv2 as file_processing_cv2
 import data_generators.car_insight as car_insight
 import publishing_protocols.support as support
 import publishing_protocols.publish_data as publish_data
@@ -93,7 +94,8 @@ def __create_data(process_id:str, file_name:str, binary_file:str, db_name:str="t
 
 def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:dict={}, protocol:str="post",
          topic:str="video-data", db_name:str="test", table:str="video", sleep:float=5, timezone:str="local",
-         timeout:int=30, enable_timezone_range:bool=False, reverse:bool=False, exception:bool=False):
+         timeout:int=30, enable_timezone_range:bool=False, reverse:bool=False, file_base64:bool=True,
+         file_byteio:bool=False, file_cv2:bool=False, exception:bool=False):
     """
     Data generator for car traffic videos
     :args:
@@ -128,7 +130,12 @@ def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:dict={}, proto
     for file_name in list_dir:
         full_file_path = os.path.join(dir_full_path, file_name)
         car_info = car_insight.car_counter(timezone=timezone, enable_timezone_range=enable_timezone_range)
-        file_content = file_processing.main(file_name=full_file_path, exception=exception)
+        if file_base64 is True:
+            file_content = file_processing_base64.main(file_name=full_file_path, exception=exception)
+        elif file_byteio is True:
+            file_content = file_processing_bytesIO.main(file_name=full_file_path, exception=exception)
+        elif file_cv2 is True:
+            file_content = file_cv2.main(file_name=full_file_path, exception=exception)
 
         if file_content is not None:
             payload = __create_data(process_id=PROCESS_ID, binary_file=file_content, file_name=file_name,
