@@ -1,6 +1,8 @@
 import random
 from paho.mqtt import client
+import time
 import support
+import sys
 
 MQTT_ERROR_CODES = { # based on: https://www.vtscada.com/help/Content/D_Tags/D_MQTT_ErrMsg.htm + ChatGTP information
     -1: "MQTT_ERR_NO_CONN",
@@ -33,6 +35,13 @@ MQTT_ERROR_CODES = { # based on: https://www.vtscada.com/help/Content/D_Tags/D_M
     0x24: "MQTT_ERR_REFUSED_NOT_AUTHORIZED",
     0x80: "MQTT_ERR_REFUSED",
 }
+
+
+def __wait(message_size:int):
+    wait_time = int(message_size / 2048) + 1
+    if wait_time > 5:
+        wait_time = 5
+    time.sleep(wait_time)
 
 
 def connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=None, exception:bool=True)->client.Client:
@@ -122,6 +131,7 @@ def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=
         status
     """
     status = True
+
     try:
         r = mqtt_client.publish(topic, message, qos=0, retain=False)
     except Exception as e:
@@ -129,6 +139,7 @@ def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=
             print(f'Failed to publish results in {mqtt_client} (Error: {e})')
         status = False
     else:
+        __wait(message_size=sys.getsizeof(message))
         if r[0] != 0:
             if exception is True:
                 error_msg = "Unknown"
@@ -163,6 +174,7 @@ def mqtt_process(mqtt_client:client.Client, payloads:list, topic:str, exception:
     if isinstance(payloads, list):
         for payload in payloads:
             str_payloads = support.json_dumps(payloads=payload)
+            print(sys.getsizeof(str_payloads))
             if send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, exception=exception) is False:
                 status = False
     elif isinstance(payloads, dict):
