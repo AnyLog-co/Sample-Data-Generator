@@ -13,9 +13,7 @@ PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, "../publishing_protocols")
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
-import data_generators.file_processing_base64 as file_processing_base64
-import data_generators.file_processing_bytesIO as file_processing_bytesIO
-import data_generators.file_processing_cv2 as file_processing_cv2
+import data_generators.file_processing as file_processing
 import publishing_protocols.publish_data as publish_data
 import publishing_protocols.support as support
 
@@ -178,7 +176,7 @@ def __create_data(db_name:str, table:str, file_name:str, file_content:str, detec
 
 def main(dir_name:str="$HOME/Downloads/sample_data/images", conns:dict={}, protocol:str="post",
          topic:str="image-data", db_name:str="test", table:str="image", sleep:float=5, timeout:int=30,
-         reverse:bool=False, file_base64:bool=True, file_byteio:bool=False, file_cv2:bool=False, exception:bool=False):
+         reverse:bool=False, conversion_type:str='base64', exception:bool=False):
     """
     Data generator for image  - must use images in https://drive.google.com/drive/folders/1EuArx1VepoLj3CXGrCRcxzWZyurgUO3u?usp=share_link
     :args:
@@ -194,6 +192,7 @@ def main(dir_name:str="$HOME/Downloads/sample_data/images", conns:dict={}, proto
         sleep:float - wait time between each insert
         timeout:int - REST timeout
         reverse:bool - whether to store data in reversed (file) order
+        conversion_type:str - Format to convert file to - cv2 can be used for live camera feed
         exception:bool - whether to print exceptions
     :params:
         dir_full_path:str - full path of dir_name
@@ -211,12 +210,7 @@ def main(dir_name:str="$HOME/Downloads/sample_data/images", conns:dict={}, proto
 
     for file_name in list_dir:
         full_file_path = os.path.join(dir_full_path, file_name)
-        if file_base64 is True:
-            file_content = file_processing_base64.main(file_name=full_file_path, exception=exception)
-        elif file_byteio is True:
-            file_content = file_processing_bytesIO.main(file_name=full_file_path, exception=exception)
-        elif file_cv2 is True:
-            file_content = file_processing_cv2.main(file_name=full_file_path, exception=exception)
+        file_content = file_processing.main(conversion_type=conversion_type, file_name=full_file_path, exception=exception)
 
         """
         # data from remote machine (NTTDocomo Deeptector)  
