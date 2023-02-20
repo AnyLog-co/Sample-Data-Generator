@@ -15,6 +15,7 @@ sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
 import data_generators.file_processing_base64 as file_processing_base64
 import data_generators.file_processing_bytesIO as file_processing_bytesIO
+import data_generators.file_processing_cv2 as file_processing_cv2
 import publishing_protocols.publish_data as publish_data
 import publishing_protocols.support as support
 
@@ -215,7 +216,7 @@ def main(dir_name:str="$HOME/Downloads/sample_data/images", conns:dict={}, proto
         elif file_byteio is True:
             file_content = file_processing_bytesIO.main(file_name=full_file_path, exception=exception)
         elif file_cv2 is True:
-            file_content = file_cv2.main(file_name=full_file_path, exception=exception)
+            file_content = file_processing_cv2.main(file_name=full_file_path, exception=exception)
 
         """
         # data from remote machine (NTTDocomo Deeptector)  

@@ -135,7 +135,7 @@ def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:dict={}, proto
         elif file_byteio is True:
             file_content = file_processing_bytesIO.main(file_name=full_file_path, exception=exception)
         elif file_cv2 is True:
-            file_content = file_cv2.main(file_name=full_file_path, exception=exception)
+            file_content = file_processing_cv2.main(file_name=full_file_path, exception=exception)
 
         if file_content is not None:
             payload = __create_data(process_id=PROCESS_ID, binary_file=file_content, file_name=file_name,
