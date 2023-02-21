@@ -1,4 +1,5 @@
 import argparse
+import importlib
 import os
 import sys
 
@@ -9,6 +10,7 @@ sys.path.insert(0, DATA_GENERATORS)
 import data_generators.data_generator_images as data_generator_images
 import data_generators.data_generator_videos as data_generator_videos
 import publishing_protocols.publish_data as publish_data
+from data_generators.file_processing import check_conversion_type
 
 def main():
     """
@@ -40,6 +42,10 @@ def main():
             * au
             * it
         --enable-timezone-range     [ENABLE_TIMEZONE_RANGE]     set timestamp within a range of +/- 1 month
+        --conversion-type           CONVERSION_TYPE             Format to convert file to - cv2 can be used for live camera feed
+            * base64
+            * bytesio
+            * cv2
         --reverse                   [REVERSE]                   whether to store data in reversed (file) order
         --exception                 [EXCEPTION]                 whether to print exceptions to screen
     """
@@ -59,6 +65,8 @@ def main():
                         default='local', help='timezone for generated timestamp(s)')
     parser.add_argument('--enable-timezone-range', type=bool, nargs='?', const=True, default=False,
                         help='set timestamp within a range of +/- 1 month')
+    parser.add_argument('--conversion-type', type=check_conversion_type, default='base64', choices=['base64', 'bytesio', 'cv2'],
+                        help='Format to convert file to - cv2 can be used for live camera feed')
     parser.add_argument('--reverse', type=bool, nargs='?', const=True, default=False,
                         help='whether to store data in reversed (file) order')
     parser.add_argument('--exception', type=bool, nargs='?', const=True, default=False,
@@ -96,11 +104,11 @@ def main():
         data_generator_videos.main(dir_name=args.dir_name, conns=conns, protocol=args.protocol, topic=args.topic,
                                    db_name=args.db_name, table=args.table, sleep=args.sleep, timezone=args.timezone,
                                    timeout=args.timeout, enable_timezone_range=args.enable_timezone_range,
-                                   reverse=args.reverse, exception=args.exception)
+                                   reverse=args.reverse, conversion_type=args.conversion_type, exception=args.exception)
     if sub_dir == "images":
         data_generator_images.main(dir_name=args.dir_name, conns=conns, protocol=args.protocol, topic=args.topic,
                                    db_name=args.db_name, table=args.table, sleep=args.sleep, timeout=args.timeout,
-                                   reverse=args.reverse, exception=args.exception)
+                                   reverse=args.reverse, conversion_type=args.conversion_type, exception=args.exception)
 
     if args.protocol == "mqtt":
         publish_data.disconnect_mqtt(conns=conns, exception=args.exception)
