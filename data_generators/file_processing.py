@@ -1,6 +1,7 @@
 import argparse
 import importlib
 import os
+import sys
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('data_generators')[0]
 PUBLISHING_PROTOCOL = os.path.join(ROOT_PATH, 'publishing_protocol')
