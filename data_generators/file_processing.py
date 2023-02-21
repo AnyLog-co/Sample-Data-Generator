@@ -1,6 +1,5 @@
 import argparse
 import importlib
-import numpy
 import os
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('data_generators')[0]
@@ -8,6 +7,7 @@ PUBLISHING_PROTOCOL = os.path.join(ROOT_PATH, 'publishing_protocol')
 sys.path.insert(0, PUBLISHING_PROTOCOL)
 
 from publishing_protocols.support import json_dumps
+
 
 def __read_file(file_name:str, exception:bool=False)->bytes:
     """
