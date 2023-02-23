@@ -8,7 +8,46 @@ import support
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit('protocols', 1)[0]
 
 
-def __timestamp_to_fn(orig_timestamp:str)->str:
+def __write_blob(file_name:str, blob:str, exception:bool=False)->bool:
+    """
+    Write blob to file
+    :args:
+        file_name:str - file to write content  into
+        blob:str - blob to write into file
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+    :return:
+        status
+    """
+    status = True
+
+    try:
+        with open(file_name, 'wb') as f:
+            try:
+                f.write(blob)
+            except Exception as error:
+                status = False
+                if exception is True:
+                    print(f"Failed to write to file {file_name} (Error: {error})")
+    except Exception as error:
+        status = False
+        if exception is True:
+            print(f"Failed to open file {file_name} for data to be written (Error: {error})")
+
+    return status
+
+
+def __timestamp_to_flle_name(orig_timestamp:str)->int:
+    """
+    convert timestamp to integer for filename
+    :args:
+        orig_timestamp - timestamp to convert into integer
+    :params:
+        timestamp:int - converted timestamp
+    :return:
+        timestamp
+    """
     if '+' in orig_timestamp:
         timestamp = int(datetime.datetime.strptime(orig_timestamp.split('+')[0], '%Y-%m-%d %H:%M:%S.%f').timestamp())
     elif orig_timestamp.count('-') > 2:
@@ -136,7 +175,7 @@ def write_to_file(payloads:list, data_dir:str=os.path.join(ROOT_PATH, 'data'), c
         del payload['dbms']
         del payload['table']
         if file_name not in file_list:
-            file_list[file_name] = __timestamp_to_fn(payload['timestamp'])
+            file_list[file_name] = __timestamp_to_flle_name(payload['timestamp'])
             file_name += f".{file_list[file_name]}.json"
             file_path = os.path.join(data_dir, file_name)
             status = __write_to_file(file_path=file_path, payload=payload, append=False, compress=compress, exception=exception)
