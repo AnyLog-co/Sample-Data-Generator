@@ -87,6 +87,9 @@ def main():
                        help='whether to print exceptions')
     args = parser.parse_args()
 
+    sub_dir = ""
+    conns = None
+
     # validate directory exists + if so, get sub_ddir (videos || images)
     args.dir_name = os.path.expanduser(os.path.expandvars(args.dir_name))
     if not os.path.isdir(args.dir_name):
@@ -101,7 +104,6 @@ def main():
     else:
         sub_dir = args.dir_name.rsplit('/')[-1]
 
-    conns = None
     if args.conn is not None:
         conns = args.conn.split(',')
         if args.protocol == "mqtt":
@@ -111,17 +113,20 @@ def main():
                 exit(1)
         elif args.protocol in ["post", "put"]:
             conns = publish_data.setup_put_post_conn(conns=conns)
+            if args.protocol == "put" and args.conversion_type != "bytesio":
+                args.conversion_type = "bytesio" # must be bytesio for PUT
 
     if sub_dir == "videos":
         data_generator_videos.main(dir_name=args.dir_name, conns=conns, protocol=args.protocol, topic=args.topic,
                                    db_name=args.db_name, table=args.table, sleep=args.sleep, timezone=args.timezone,
                                    timeout=args.timeout, enable_timezone_range=args.enable_timezone_range,
-                                   reverse=args.reverse, conversion_type=args.conversion_type, exception=args.exception)
+                                   reverse=args.reverse, conversion_type=args.conversion_type,
+                                   results_dir=args.results_dir, exception=args.exception)
     if sub_dir == "images":
         data_generator_images.main(dir_name=args.dir_name, conns=conns, protocol=args.protocol, topic=args.topic,
                                    db_name=args.db_name, table=args.table, sleep=args.sleep, timeout=args.timeout,
-                                   reverse=args.reverse, conversion_type=args.conversion_type, exception=args.exception)
-
+                                   reverse=args.reverse, conversion_type=args.conversion_type,
+                                   results_dir=args.results_dir, compress=args.compress, exception=args.exception)
     if args.protocol == "mqtt":
         publish_data.disconnect_mqtt(conns=conns, exception=args.exception)
 

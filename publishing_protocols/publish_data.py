@@ -63,12 +63,12 @@ def disconnect_mqtt(conns:dict, exception:bool=False):
         mqtt_protocol.disconnect_mqtt(conn_info=conn, mqtt_conn=conns[conn], exception=exception)
 
 
-def publish_data(payload:list, insert_process:str, conns:dict={}, topic:str=None, rest_timeout:int=30,
-                 dir_name:str=None, compress:bool=False, exception:bool=False):
+def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, rest_timeout:int=30, blob_data_type:str='',
+                 conversion_type:str="base64", dir_name:str=None, compress:bool=False, exception:bool=False):
     """
     Publish data based on the insert_process
     :args:
-        payload:list - content to store
+        payload - content to store either as a dict or list of dicts
         insert_process:str - format to store content in
         conn:str - connection information
         topic:str - REST POST + MQTT topic
@@ -90,11 +90,22 @@ def publish_data(payload:list, insert_process:str, conns:dict={}, topic:str=None
         mqtt_conn = conns[conn]
 
     if insert_process == "print":
-        generic_protocol.print_content(payloads=payload)
-    elif insert_process == "file":
-        status = generic_protocol.write_to_file(payloads=payload, data_dir=dir_name, compress=compress, exception=exception)
-        if status is False and exception is False:
-            print(f'Failed to store content into file')
+        generic_protocol.print_content(payloads=payload, conversion_type=conversion_type)
+
+    # elif insert_process == "file":
+    #     blob = ''
+    #     if blob_data_type == 'image':
+    #         blob = payload["file_content"]
+    #         del payload["file_content"]
+    #     elif blob_data_type == 'video':
+    #         blob = payload["readings"]["binaryValue"]
+    #         del payload["readings"]["binaryValue"]
+    #
+    #     status = generic_protocol.write_to_file(payloads=payload, blob=blob, data_dir=dir_name, conversion_type=conversion_type,
+    #                                             compress=compress, exception=exception)
+
+        # if status is False and exception is False:
+        #     print(f'Failed to store content into file')
     elif insert_process == 'put':
         status = rest_protocols.put_data(payloads=payload, conn=conn, auth=auth, timeout=rest_timeout,
                                          exception=exception)

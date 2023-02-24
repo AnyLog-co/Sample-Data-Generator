@@ -93,7 +93,7 @@ def __create_data(process_id:str, file_name:str, binary_file:str, db_name:str="t
 def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:dict={}, protocol:str="post",
          topic:str="video-data", db_name:str="test", table:str="video", sleep:float=5, timezone:str="local",
          timeout:int=30, enable_timezone_range:bool=False, reverse:bool=False, conversion_type:str='base64',
-         exception:bool=False):
+         results_dir:str=None, exception:bool=False):
     """
     Data generator for car traffic videos
     :args:

@@ -38,7 +38,7 @@ def __write_blob(file_name:str, blob:str, exception:bool=False)->bool:
     return status
 
 
-def __timestamp_to_flle_name(orig_timestamp:str)->int:
+def __timestamp_to_file_name(orig_timestamp:str)->int:
     """
     convert timestamp to integer for filename
     :args:
@@ -132,7 +132,7 @@ def __zip_file(file_name:str, exception:bool)->bool:
     return status
 
 
-def print_content(payloads:list):
+def print_content(payloads:list, conversion_type:str):
     """
     Print data to screen
     :args:
@@ -175,7 +175,7 @@ def write_to_file(payloads:list, data_dir:str=os.path.join(ROOT_PATH, 'data'), c
         del payload['dbms']
         del payload['table']
         if file_name not in file_list:
-            file_list[file_name] = __timestamp_to_flle_name(payload['timestamp'])
+            file_list[file_name] = __timestamp_to_file_name(payload['timestamp'])
             file_name += f".{file_list[file_name]}.json"
             file_path = os.path.join(data_dir, file_name)
             status = __write_to_file(file_path=file_path, payload=payload, append=False, compress=compress, exception=exception)

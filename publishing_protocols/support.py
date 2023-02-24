@@ -22,8 +22,8 @@ def json_dumps(payloads:dict)->str:
     """
     try:
         return json.dumps(payloads)
-    except Exception as e:
-        return data
+    except Exception as error:
+        return payloads
 
 
 def json_loads(data:str)->dict:

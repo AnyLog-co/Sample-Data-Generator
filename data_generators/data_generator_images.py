@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import time
+import uuid
 
 import requests
 
@@ -161,7 +162,7 @@ def __create_data(db_name:str, table:str, file_name:str, file_content:str, detec
     }
     """
     payload = {
-        'id': support.generate_string_hash(file_name=file_name, data=file_content),
+        'id': str(uuid.uuid4()),
         'dbms': db_name,
         'table': table,
         'file_name': file_name,
@@ -176,7 +177,8 @@ def __create_data(db_name:str, table:str, file_name:str, file_content:str, detec
 
 def main(dir_name:str="$HOME/Downloads/sample_data/images", conns:dict={}, protocol:str="post",
          topic:str="image-data", db_name:str="test", table:str="image", sleep:float=5, timeout:int=30,
-         reverse:bool=False, conversion_type:str='base64', exception:bool=False):
+         reverse:bool=False, conversion_type:str='base64', results_dir:str=None, compress:bool=False,
+         exception:bool=False):
     """
     Data generator for image  - must use images in https://drive.google.com/drive/folders/1EuArx1VepoLj3CXGrCRcxzWZyurgUO3u?usp=share_link
     :args:
@@ -220,11 +222,11 @@ def main(dir_name:str="$HOME/Downloads/sample_data/images", conns:dict={}, proto
         detection, status = __get_data(file_name=file_name, exception=exception)
 
         if file_content is not None:
-
             payload = __create_data(db_name=db_name, table=table, file_name=file_name, file_content=file_content,
                                     detections=detection, status=status)
 
             publish_data.publish_data(payload=payload, insert_process=protocol, conns=conns, topic=topic,
-                                      rest_timeout=timeout, dir_name=None, compress=False, exception=exception)
+                                      rest_timeout=timeout, dir_name=results_dir, blob_data_type='image',
+                                      conversion_type=conversion_type, compress=compress, exception=exception)
         time.sleep(sleep)
 
