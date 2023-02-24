@@ -47,10 +47,6 @@ def __write_blob(file_path:str, payload:dict, compress:bool, blob_data_type:str,
     return payload
 
 
-
-
-
-
 def __write_to_file(file_path:str, payload:dict, append:bool, compress:bool, exception:bool)->bool:
     """
     Write content to file
