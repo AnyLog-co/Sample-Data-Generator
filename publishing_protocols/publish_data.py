@@ -4,7 +4,6 @@ import generic_protocol
 import mqtt_protocol
 import rest_protocols
 
-
 def setup_put_post_conn(conns:list)->dict:
     """
     Convert connection information to dictionary format for PUT and POST commands
@@ -90,22 +89,19 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
         mqtt_conn = conns[conn]
 
     if insert_process == "print":
+        if conversion_type == 'bytesio' and blob_data_type == 'image':
+            payload['file_content'] = payload['file_content'].__str__()
+        elif conversion_type == 'bytesio' and blob_data_type == 'video':
+            payload["readings"]["binaryValue"] = payload['file_content'].__str__()
         generic_protocol.print_content(payloads=payload, conversion_type=conversion_type)
 
-    # elif insert_process == "file":
-    #     blob = ''
-    #     if blob_data_type == 'image':
-    #         blob = payload["file_content"]
-    #         del payload["file_content"]
-    #     elif blob_data_type == 'video':
-    #         blob = payload["readings"]["binaryValue"]
-    #         del payload["readings"]["binaryValue"]
-    #
-    #     status = generic_protocol.write_to_file(payloads=payload, blob=blob, data_dir=dir_name, conversion_type=conversion_type,
-    #                                             compress=compress, exception=exception)
-
-        # if status is False and exception is False:
-        #     print(f'Failed to store content into file')
+    elif insert_process == "file" and blob_data_type == "":
+        status = generic_protocol.write_to_file(payloads=payload, data_dir=dir_name, compress=compress,
+                                                exception=exception)
+    elif insert_process == "file" and blob_data_type != "":
+        status = generic_protocol.write_blob_to_file(payloads=payload, data_dir=dir_name, blob_data_type=blob_data_type,
+                                                     conversion_type=conversion_type, compress=compress,
+                                                     exception=exception)
     elif insert_process == 'put':
         status = rest_protocols.put_data(payloads=payload, conn=conn, auth=auth, timeout=rest_timeout,
                                          exception=exception)

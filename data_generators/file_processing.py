@@ -133,7 +133,7 @@ def convert_bytesio(file_name:str, exception:bool=False)->(bool, str):
 
     if status is True and isinstance(bytesio_bytes, io.BytesIO):
         try:
-            file_content = bytesio_bytes.read().__str__()
+            file_content = bytesio_bytes.read()
         except Exception as error:
             status = False
             if exception is True:
@@ -149,7 +149,7 @@ def convert_bytesio(file_name:str, exception:bool=False)->(bool, str):
     return status, file_content
 
 
-def convert_cv2(file_name:str, exception:bool=False)->(bool, str):
+def convert_opencv(file_name:str, exception:bool=False)->(bool, str):
     """
     Convert file to cv2
         - read content (binary format)
@@ -226,7 +226,7 @@ def main(conversion_type:str, file_name:str, exception:bool=False)->(bool, str):
     elif conversion_type == "bytesio":
         status, file_content = convert_bytesio(file_name=full_file_path, exception=exception)
     elif conversion_type == "opencv":
-        status, file_content = convert_cv2(file_name=file_name, exception=exception)
+        status, file_content = convert_opencv(file_name=file_name, exception=exception)
     else:
         print(f"Unable to convert to format {conversion_type}")
         exit(1)
