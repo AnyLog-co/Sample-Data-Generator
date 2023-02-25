@@ -1,6 +1,74 @@
 import requests
 import support
 
+NETWORK_ERRORS_GENERIC = {
+    1: "Informational",
+    2: "Successful",
+    3: "Redirection",
+    4: "Client Error",
+    5: "Server Error",
+    7: "Developer Error"
+}
+NETWORK_ERRORS = {
+    100: "Continue",
+    101: "Switching Protocols",
+    200: "OK",
+    201: "Created",
+    202: "Accepted",
+    203: "Non-Authoritative Information",
+    204: "No Content",
+    205: "Reset Content",
+    206: "Partial Content",
+    300: "Multiple Choices",
+    301: "Moved Permanently",
+    302: "Found",
+    303: "See Other",
+    304: "Not Modified",
+    305: "Use Proxy",
+    307: "Temporary Redirect",
+    400: "Bad Request",
+    401: "Unauthorized",
+    402: "Payment Required",
+    403: "Forbidden",
+    404: "Not Found",
+    405: "Method Not Allowed",
+    406: "Not Acceptable",
+    407: "Proxy Authentication Required",
+    408: "Request Timeout",
+    409: "Conflict",
+    410: "Gone",
+    411: "Length Required",
+    412: "Precondition Failed",
+    413: "Payload Too Large",
+    414: "URI Too Long",
+    415: "Unsupported Media Type",
+    416: "Range Not Satisfiable",
+    417: "Expectation Failed",
+    418: "I'm a teapot",
+    426: "Upgrade Required",
+    500: "Internal Server Error",
+    501: "Not Implemented",
+    502: "Bad Gateway",
+    503: "Service Unavailable",
+    504: "Gateway Time-out",
+    505: "HTTP Version Not Supported",
+    102: "Processing",
+    207: "Multi-Status",
+    226: "IM Used",
+    308: "Permanent Redirect",
+    422: "Unprocessable Entity",
+    423: "Locked",
+    424: "Failed Dependency",
+    428: "Precondition Required",
+    429: "Too Many Requests",
+    431: "Request Header Fields Too Large",
+    451: "Unavailable For Legal Reasons",
+    506: "Variant Also Negotiates",
+    507: "Insufficient Storage",
+    511: "Network Authentication Required"
+}
+
+
 def __convert_data(payloads:list)->dict:
     """
     Extract logical database name and table name from payload
@@ -60,10 +128,18 @@ def put_data(payloads:list, conn:str, auth:tuple=(), timeout:int=30, exception:b
             if exception is True:
                 print(f'Failed to execute PUT for {table} against {conn} (Error: {error})')
         else:
-            if int(r.status_code) != 200:
+            status_code = int(r.status_code)
+            if status_code != 200:
                 status = False
                 if exception is True:
-                    print(f'Failed to execute PUT for {table} against {conn} (Network Error: {r.status_code})')
+                    error_msg = f"Failed to execute PUT for {table} against {conn} (Network Error: {status_code} - %s)"
+                    if status_code in NETWORK_ERRORS:
+                        error_msg = error_msg % NETWORK_ERRORS[status_code]
+                    elif int(str(status_code)[0]) in NETWORK_ERRORS_GENERIC:
+                        error_msg = error_msg % NETWORK_ERRORS_GENERIC[int(str(status_code)[0])]
+                    else:
+                        error_msg.replace(" %s)", ")")
+                    print(error_msg)
 
     return status
 
@@ -103,10 +179,18 @@ def post_data(payloads:list, conn:str, topic:str="demo", auth:tuple=(), timeout:
     else:
         if int(r.status_code) != 200:
             status = False
-            if exception is True:
-                print(f'Failed to execute POST against {conn} (Network Error: {r.status_code})')
-            exit(1)
-
+            status_code = int(r.status_code)
+            if status_code != 200:
+                status = False
+                if exception is True:
+                    error_msg = f"Failed to execute POST against {conn} (Network Error: {status_code} - %s)"
+                    if status_code in NETWORK_ERRORS:
+                        error_msg = error_msg % NETWORK_ERRORS[status_code]
+                    elif int(str(status_code)[0]) in NETWORK_ERRORS_GENERIC:
+                        error_msg = error_msg % NETWORK_ERRORS_GENERIC[int(str(status_code)[0])]
+                    else:
+                        error_msg.replace(" %s)", ")")
+                    print(error_msg)
 
     return status
 

@@ -17,7 +17,7 @@ def setup_put_post_conn(conns:list)->dict:
     """
     connections = {}
     for conn in conns:
-        ip_port = conn.split("@")[-1].split(':')
+        ip_port = conn.split("@")[-1]
         connections[ip_port] = None
         if '@' in conn:
             connections[ip_port] = tuple(list(conn.split('@')[0].split(':')))
@@ -88,11 +88,12 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
     elif insert_process == "mqtt":
         mqtt_conn = conns[conn]
 
+    if conversion_type == 'bytesio' and blob_data_type == 'image' and insert_process != "file":
+        payload['file_content'] = payload['file_content'].__str__()
+    elif conversion_type == 'bytesio' and blob_data_type == 'video' and insert_process != "file":
+        payload["readings"]["binaryValue"] = payload['file_content'].__str__()
+
     if insert_process == "print":
-        if conversion_type == 'bytesio' and blob_data_type == 'image':
-            payload['file_content'] = payload['file_content'].__str__()
-        elif conversion_type == 'bytesio' and blob_data_type == 'video':
-            payload["readings"]["binaryValue"] = payload['file_content'].__str__()
         generic_protocol.print_content(payloads=payload, conversion_type=conversion_type)
 
     elif insert_process == "file" and blob_data_type == "":
