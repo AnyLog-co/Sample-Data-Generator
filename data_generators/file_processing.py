@@ -46,13 +46,13 @@ def check_conversion_type(arg):
     :return:
         arg
     """
-    if arg not in ['base64', 'bytesio', 'cv2']:
+    if arg not in ['base64', 'bytesio', 'opencv']:
         raise argparse.ArgumentTypeError(f"Invalid option {arg}. Supported types: base64, bytesio, cv2")
     elif arg == 'base64' and  importlib.util.find_spec("base64") is None:
         raise argparse.ArgumentTypeError(f"Unable to locate package base64 for conversion type {arg}")
     elif arg == 'bytesio' and importlib.util.find_spec('io') is None:
         raise argparse.ArgumentTypeError(f"Unable to locate package io for conversion type {arg}")
-    elif arg == 'cv2' and importlib.util.find_spec('cv2') is None:
+    elif arg == 'opencv' and importlib.util.find_spec('cv2') is None:
         raise argparse.ArgumentTypeError(f"Unable to locate package opencv2-python for conversion type {arg}")
 
     return arg
@@ -138,11 +138,18 @@ def convert_bytesio(file_name:str, exception:bool=False)->(bool, str):
             status = False
             if exception is True:
                 print(f"Failed to read content from file (Error: {error})")
+    # if status is True and isinstance(bytesio_bytes, bytes):
+    #     try:
+    #         file_content = bytesio_bytes.decode('ascii')
+    #     except Exception as error:
+    #         status = False
+    #         if exception is True:
+    #             print(f'Failed to convert encoded message to ASCII based value (Error: {error})')
 
     return status, file_content
 
 
-def convert_cv2(file_name:str, exception:bool=False)->(bool, str):
+def convert_opencv(file_name:str, exception:bool=False)->(bool, str):
     """
     Convert file to cv2
         - read content (binary format)
@@ -218,7 +225,10 @@ def main(conversion_type:str, file_name:str, exception:bool=False)->(bool, str):
         status, file_content = convert_base64(file_name=full_file_path, exception=exception)
     elif conversion_type == "bytesio":
         status, file_content = convert_bytesio(file_name=full_file_path, exception=exception)
-    elif conversion_type == "cv2":
-        status, file_content = convert_cv2(file_name=file_name, exception=exception)
+    elif conversion_type == "opencv":
+        status, file_content = convert_opencv(file_name=file_name, exception=exception)
+    else:
+        print(f"Unable to convert to format {conversion_type}")
+        exit(1)
 
     return file_content

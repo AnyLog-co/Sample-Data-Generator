@@ -1,14 +1,25 @@
 import datetime
 import gzip
 import os
-import sys
+import time
+
 import support
 
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit('protocols', 1)[0]
 
+import file_processing
 
-def __timestamp_to_fn(orig_timestamp:str)->str:
+def __timestamp_to_file_name(orig_timestamp:str)->int:
+    """
+    convert timestamp to integer for filename
+    :args:
+        orig_timestamp - timestamp to convert into integer
+    :params:
+        timestamp:int - converted timestamp
+    :return:
+        timestamp
+    """
     if '+' in orig_timestamp:
         timestamp = int(datetime.datetime.strptime(orig_timestamp.split('+')[0], '%Y-%m-%d %H:%M:%S.%f').timestamp())
     elif orig_timestamp.count('-') > 2:
@@ -19,6 +30,21 @@ def __timestamp_to_fn(orig_timestamp:str)->str:
         timestamp = int(datetime.datetime.strptime(orig_timestamp, '%Y-%m-%dT%H:%M:%S.%fZ').timestamp())
 
     return timestamp
+
+
+def __write_blob(file_path:str, payload:dict, compress:bool, blob_data_type:str, conversion_type:str,
+                 exception:bool=False)->dict:
+    blob = None
+    if blob_data_type == "image" and "file_content" in payload:
+        blob = payload["file_content"]
+    elif blob_data_type == "video" and "readings" in payload and "binaryValue" in payload["readings"]:
+        blob = payload["readings"]["binaryValue"]
+    elif conversion_type == 'bytesio' and blob_data_type == 'image':
+        payload['file_content'] = payload['file_content'].__str__()
+    elif conversion_type == 'bytesio' and blob_data_type == 'video':
+        payload["readings"]["binaryValue"] = payload['file_content'].__str__()
+
+    return payload
 
 
 def __write_to_file(file_path:str, payload:dict, append:bool, compress:bool, exception:bool)->bool:
@@ -93,7 +119,7 @@ def __zip_file(file_name:str, exception:bool)->bool:
     return status
 
 
-def print_content(payloads:list):
+def print_content(payloads:list, conversion_type:str):
     """
     Print data to screen
     :args:
@@ -131,18 +157,89 @@ def write_to_file(payloads:list, data_dir:str=os.path.join(ROOT_PATH, 'data'), c
     if not os.path.isdir(data_dir):
         os.makedirs(data_dir)
 
-    for payload in payloads:
-        file_name = f"{payload['dbms']}.{payload['table']}"
-        del payload['dbms']
-        del payload['table']
+    if isinstance(payloads, list):
+        for payload in payloads:
+            file_name = f"{payload['dbms']}.{payload['table']}"
+            del payload['dbms']
+            del payload['table']
+
+            if file_name not in file_list:
+                file_list[file_name] = __timestamp_to_file_name(payload['timestamp'])
+                file_name += f".{file_list[file_name]}.json"
+                file_path = os.path.join(data_dir, file_name)
+                append=False
+            else:
+                file_name += f".{file_list[file_name]}.json"
+                file_path = os.path.join(data_dir, file_name)
+                append = True
+            status = __write_to_file(file_path=file_path, payload=payload, append=append, compress=compress,
+                                     exception=exception)
+    else:
+        file_name = f"{payloads['dbms']}.{payloads['table']}"
+        del payloads['dbms']
+        del payloads['table']
+
         if file_name not in file_list:
-            file_list[file_name] = __timestamp_to_fn(payload['timestamp'])
+            file_list[file_name] = __timestamp_to_file_name(payloads['timestamp'])
             file_name += f".{file_list[file_name]}.json"
             file_path = os.path.join(data_dir, file_name)
-            status = __write_to_file(file_path=file_path, payload=payload, append=False, compress=compress, exception=exception)
+            append = False
         else:
             file_name += f".{file_list[file_name]}.json"
             file_path = os.path.join(data_dir, file_name)
-            status = __write_to_file(file_path=file_path, payload=payload, append=True, compress=compress, exception=exception)
+            append = True
+        status = __write_to_file(file_path=file_path, payload=payloads, append=append, compress=compress,
+                                 exception=exception)
 
     return status
+
+
+def write_blob_to_file(payloads:dict, data_dir:str=os.path.join(ROOT_PATH, 'data'), compress:bool=False,
+                       blob_data_type:str='', conversion_type:str="base64", exception:bool=False)->bool:
+    append = False
+    status = True
+
+    if not os.path.isdir(data_dir):
+        os.makedirs(data_dir)
+
+    if blob_data_type == 'image':
+        blob_file_name = os.path.join(data_dir, f"{payloads['dbms']}.{payloads['table']}.{payloads['file_name']}")
+        json_file_name = blob_file_name.rsplit(".", 1)[0] + ".json"
+        blob = payloads['file_content']
+        del payloads['dbms']
+        del payloads['table']
+        del payloads['file_name']
+        del payloads['file_content']
+    elif blob_data_type == 'video':
+        blob_file_name = os.path.join(data_dir, f"{payloads['dbName']}.{payloads['device_name']}.{payloads['origin']}.mp4")
+        if conversion_type == "opencv":
+            blob_file_name = blob_file_name.replace(".mp4", "png")
+        json_file_name = blob_file_name.rsplit(".", 1)[0] + ".json"
+        blob = payloads['readings']['binaryValue']
+        del payloads['dbName']
+        del payloads['device_name']
+        del payloads['readings']['binaryValue']
+
+    status = file_processing.main(content=blob, conversion_type=conversion_type, file_path=blob_file_name,
+                                  exception=exception)
+
+    if status is False and blob_data_type == 'image':
+        payloads['file_content'] = blob
+    elif status is False and blob_data_type == 'video':
+        payloads['readings']['binaryValue'] = blob
+
+    if os.path.isfile(json_file_name):
+        append = True
+
+    status = __write_to_file(file_path=json_file_name, payload=payloads, append=append, compress=compress,
+                             exception=exception)
+
+
+
+
+
+
+
+
+
+

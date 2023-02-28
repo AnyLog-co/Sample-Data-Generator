@@ -4,7 +4,6 @@ import generic_protocol
 import mqtt_protocol
 import rest_protocols
 
-
 def setup_put_post_conn(conns:list)->dict:
     """
     Convert connection information to dictionary format for PUT and POST commands
@@ -18,7 +17,7 @@ def setup_put_post_conn(conns:list)->dict:
     """
     connections = {}
     for conn in conns:
-        ip_port = conn.split("@")[-1].split(':')
+        ip_port = conn.split("@")[-1]
         connections[ip_port] = None
         if '@' in conn:
             connections[ip_port] = tuple(list(conn.split('@')[0].split(':')))
@@ -63,12 +62,12 @@ def disconnect_mqtt(conns:dict, exception:bool=False):
         mqtt_protocol.disconnect_mqtt(conn_info=conn, mqtt_conn=conns[conn], exception=exception)
 
 
-def publish_data(payload:list, insert_process:str, conns:dict={}, topic:str=None, rest_timeout:int=30,
-                 dir_name:str=None, compress:bool=False, exception:bool=False):
+def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, rest_timeout:int=30, blob_data_type:str='',
+                 conversion_type:str="base64", dir_name:str=None, compress:bool=False, exception:bool=False):
     """
     Publish data based on the insert_process
     :args:
-        payload:list - content to store
+        payload - content to store either as a dict or list of dicts
         insert_process:str - format to store content in
         conn:str - connection information
         topic:str - REST POST + MQTT topic
@@ -89,12 +88,21 @@ def publish_data(payload:list, insert_process:str, conns:dict={}, topic:str=None
     elif insert_process == "mqtt":
         mqtt_conn = conns[conn]
 
+    if conversion_type == 'bytesio' and blob_data_type == 'image' and insert_process != "file":
+        payload['file_content'] = payload['file_content'].__str__()
+    elif conversion_type == 'bytesio' and blob_data_type == 'video' and insert_process != "file":
+        payload["readings"]["binaryValue"] = payload['file_content'].__str__()
+
     if insert_process == "print":
-        generic_protocol.print_content(payloads=payload)
-    elif insert_process == "file":
-        status = generic_protocol.write_to_file(payloads=payload, data_dir=dir_name, compress=compress, exception=exception)
-        if status is False and exception is False:
-            print(f'Failed to store content into file')
+        generic_protocol.print_content(payloads=payload, conversion_type=conversion_type)
+
+    elif insert_process == "file" and blob_data_type == "":
+        status = generic_protocol.write_to_file(payloads=payload, data_dir=dir_name, compress=compress,
+                                                exception=exception)
+    elif insert_process == "file" and blob_data_type != "":
+        status = generic_protocol.write_blob_to_file(payloads=payload, data_dir=dir_name, blob_data_type=blob_data_type,
+                                                     conversion_type=conversion_type, compress=compress,
+                                                     exception=exception)
     elif insert_process == 'put':
         status = rest_protocols.put_data(payloads=payload, conn=conn, auth=auth, timeout=rest_timeout,
                                          exception=exception)
@@ -109,6 +117,3 @@ def publish_data(payload:list, insert_process:str, conns:dict={}, topic:str=None
         status = mqtt_protocol.mqtt_process(mqtt_client=mqtt_conn, payloads=payload, topic=topic, exception=exception)
         if status is False and exception is False:
             print(f'Failed to send MQTT message against connection {conn}')
-        else:
-            print('success')
-
