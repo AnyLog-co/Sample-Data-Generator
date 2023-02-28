@@ -117,6 +117,3 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
         status = mqtt_protocol.mqtt_process(mqtt_client=mqtt_conn, payloads=payload, topic=topic, exception=exception)
         if status is False and exception is False:
             print(f'Failed to send MQTT message against connection {conn}')
-        else:
-            print('success')
-
