@@ -131,7 +131,6 @@ def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=
         status
     """
     status = True
-    print(sys.getsizeof(message))
     try:
         r = mqtt_client.publish(topic, message, qos=0, retain=False)
     except Exception as e:
@@ -170,11 +169,9 @@ def mqtt_process(mqtt_client:client.Client, payloads:list, topic:str, exception:
         status
     """
     status = True
-    print(time.time())
     if isinstance(payloads, list):
         for payload in payloads:
             str_payloads = support.json_dumps(payloads=payload)
-            print(sys.getsizeof(str_payloads))
             if send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, exception=exception) is False:
                 status = False
     elif isinstance(payloads, dict):
