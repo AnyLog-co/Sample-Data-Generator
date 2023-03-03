@@ -1,7 +1,6 @@
 import datetime
 import gzip
 import os
-import time
 
 import support
 

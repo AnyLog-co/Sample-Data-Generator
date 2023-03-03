@@ -49,7 +49,6 @@ def __take_photo(camera_id:int, exception:bool=False)->(numpy.ndarray):
         if exception is True:
             print(f"Failed to take photo with camera ID {camera_id} (Error: {error})")
 
-    print(type(cv2_content))
 
     if cv2_content is not None:
         try:
@@ -101,7 +100,8 @@ def main():
     """
     Data Generator for live camera feed
     :sample-policy:
-    {
+    {"mapping": {
+        "id": "livefeed",
         "dbms": "bring [dbms]",
         "table": "bring [table]",
         "timestamp": {
@@ -128,7 +128,7 @@ def main():
             "type": "string",
             "bring": "[unit]"
         }
-    }
+    }}
     :positional arguments:
         camera_id             Camera ID to be used by cv2
         conn                  {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
@@ -182,8 +182,8 @@ def main():
             frame = __take_photo(camera_id=args.camera_id, exception=args.exception)
             if frame is not None:
                 payload = __create_payload(camera_id=args.camera_id, db_name=args.db_name, table=args.table, frame=frame)
-                publish_data.publish_data(payload=[payload], insert_process=args.protocol, conns=conns, topic=args.topic,
-                                          rest_timeout=args.rest_tiimeout, dir_name=None, compress= False, exception=args.exception)
+                publish_data.publish_data(payload=payload, insert_process=args.protocol, conns=conns, topic=args.topic,
+                                          rest_timeout=args.timeout, dir_name=None, compress= False, exception=args.exception)
             time.sleep(args.sleep)
     else:
         while True:
@@ -191,7 +191,7 @@ def main():
             if frame is not None:
                 payload = __create_payload(camera_id=args.camera_id, db_name=args.db_name, table=args.table, frame=frame)
                 publish_data.publish_data(payload=[payload], insert_process=args.protocol, conns=conns, topic=args.topic,
-                                          rest_timeout=args.rest_tiimeout, dir_name=None, compress=False,
+                                          rest_timeout=args.timeout, dir_name=None, compress=False,
                                           exception=args.exception)
             time.sleep(args.sleep)
 

@@ -1,3 +1,4 @@
+import json
 import requests
 import support
 
@@ -168,7 +169,7 @@ def post_data(payloads:list, conn:str, topic:str="demo", auth:tuple=(), timeout:
         'Content-Type': 'text/plain'
     }
 
-    str_payloads = support.json_dumps(payloads=payloads)
+    str_payloads = json.dumps(payloads)
     try:
         r = requests.post(url=f"http://{conn}", headers=headers, auth=auth, timeout=timeout, data=str_payloads)
     except Exception as error:
