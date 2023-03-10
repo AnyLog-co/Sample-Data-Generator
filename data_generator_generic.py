@@ -329,9 +329,6 @@ def main():
 
             row += 1
 
-    if args.insert_process == "mqtt":
-        publish_data.disconnect_mqtt(conns=conns, exception=args.exception)
-
 
 if __name__ == '__main__':
     main()

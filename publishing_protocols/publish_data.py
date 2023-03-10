@@ -45,22 +45,13 @@ def connect_mqtt(conns:list, exception:bool=False)->dict:
         broker, port = conn.split("@")[-1].split(':')
         if '@' in conn:
             user, password = conn.split("@")[0].split(':')
-        mqtt_conn = mqtt_protocol.connect_mqtt_broker(broker=broker, port=port, username=user, password=password, exception=exception)
-        if mqtt_conn is not None:
-            mqtt_conns[conn.split('@')[-1]] = mqtt_conn
+
+        mqtt_conns[conn.split('@')[-1]] = {
+            "user": user,
+            "password": password
+        }
 
     return mqtt_conns
-
-
-def disconnect_mqtt(conns:dict, exception:bool=False):
-    """
-    Disconnect from MQTT client
-    :args:
-        conns:dict - MQTT connection information
-        exception:bool - whether to print exceptions
-    """
-    for conn in conns:
-        mqtt_protocol.disconnect_mqtt(conn_info=conn, mqtt_conn=conns[conn], exception=exception)
 
 
 def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, rest_timeout:int=30, blob_data_type:str='',
@@ -86,8 +77,6 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
         conn = random.choice(list(conns.keys()))
     if insert_process in ['put', 'post']:
         auth = conns[conn]
-    elif insert_process == "mqtt":
-        mqtt_conn = conns[conn]
 
     if conversion_type == 'bytesio' and blob_data_type == 'image' and insert_process != "file":
         payload['file_content'] = payload['file_content'].__str__()
@@ -115,6 +104,19 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
         if status is False and exception is False:
             print(f'Failed to insert one or more batches of data into {conn} via POST')
     elif insert_process == 'mqtt':
-        status = mqtt_protocol.mqtt_process(mqtt_client=mqtt_conn, payloads=payload, topic=topic, exception=exception)
+        # Connect to MQTT client
+        mqtt_client = mqtt_protocol.connect_mqtt_broker(broker=conn.split(":")[0], port=conn.split(":")[1],
+                                                        username=conns[conn]["user"], password=conns[conn]["password"],
+                                                        exception=exception)
+        # start loop
+        mqtt_client.loop_start()
+
+        # insert data
+        status = mqtt_protocol.mqtt_process(mqtt_client=mqtt_client, payloads=payload, topic=topic, exception=exception)
         if status is False and exception is False:
             print(f'Failed to send MQTT message against connection {conn}')
+        # stop loop
+        mqtt_client.loop_stop()
+
+        # disconnect from node
+        mqtt_protocol.disconnect_mqtt(conn_info=conn, mqtt_conn=mqtt_client, exception=exception)

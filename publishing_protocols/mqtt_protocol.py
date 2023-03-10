@@ -42,7 +42,6 @@ def __wait(message_size:int):
     if wait_time > 60:
         wait_time = 60
     time.sleep(wait_time)
-    # print(time.time())
 
 def connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=None, exception:bool=True)->client.Client:
     """

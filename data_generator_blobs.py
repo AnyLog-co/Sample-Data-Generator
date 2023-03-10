@@ -127,8 +127,6 @@ def main():
                                    db_name=args.db_name, table=args.table, sleep=args.sleep, timeout=args.timeout,
                                    reverse=args.reverse, conversion_type=args.conversion_type,
                                    results_dir=args.results_dir, compress=args.compress, exception=args.exception)
-    if args.protocol == "mqtt":
-        publish_data.disconnect_mqtt(conns=conns, exception=args.exception)
 
 
 if __name__ == '__main__':
