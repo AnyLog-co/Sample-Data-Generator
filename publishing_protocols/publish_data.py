@@ -54,7 +54,7 @@ def connect_mqtt(conns:list, exception:bool=False)->dict:
     return mqtt_conns
 
 
-def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, rest_timeout:int=30, blob_data_type:str='',
+def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, rest_timeout:int=30, qos:int=0, blob_data_type:str='',
                  conversion_type:str="base64", dir_name:str=None, compress:bool=False, exception:bool=False):
     """
     Publish data based on the insert_process
@@ -112,7 +112,7 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
         mqtt_client.loop_start()
 
         # insert data
-        status = mqtt_protocol.mqtt_process(mqtt_client=mqtt_client, payloads=payload, topic=topic, exception=exception)
+        status = mqtt_protocol.mqtt_process(mqtt_client=mqtt_client, payloads=payload, topic=topic, qos=qos, exception=exception)
         if status is False and exception is False:
             print(f'Failed to send MQTT message against connection {conn}')
         # stop loop

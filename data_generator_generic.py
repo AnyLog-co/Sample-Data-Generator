@@ -244,6 +244,7 @@ def main():
                        help='{user}:{password}@{ip}:{port} for sending data either via REST or MQTT')
     parse.add_argument('--topic', type=str, default=None, help='topic for publishing data via REST POST or MQTT')
     parse.add_argument('--rest-timeout', type=float, default=30, help='how long to wait before stopping REST')
+    parse.add_argument('--qos', type=int, choice=list(range(0, 4)), default=0, help='MQTT Quality of Service')
     parse.add_argument('--dir-name', type=str, default=DATA_DIR, help='directory when storing to file')
     parse.add_argument('--compress', type=bool, nargs='?', const=True, default=False, help='whether to zip data dir')
     parse.add_argument('--exception', type=bool, nargs='?', const=True, default=False, help='whether to print exceptions')
@@ -298,7 +299,7 @@ def main():
             if len(data) % args.batch_size == 0 or row == total_rows-1:
                 publish_data.publish_data(payload=data, insert_process=args.insert_process, conns=conns,
                                           topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
-                                          dir_name=args.dir_name, exception=args.exception)
+                                          qos=args.qos, dir_name=args.dir_name, exception=args.exception)
                 data = []
 
     else:
@@ -324,7 +325,7 @@ def main():
             if len(data) % args.batch_size == 0:
                 publish_data.publish_data(payload=data, insert_process=args.insert_process, conns=conns,
                                           topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
-                                          dir_name=args.dir_name, exception=args.exception)
+                                          qos=args.qos, dir_name=args.dir_name, exception=args.exception)
                 data = []
 
             row += 1

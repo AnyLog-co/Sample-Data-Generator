@@ -112,7 +112,7 @@ def disconnect_mqtt(conn_info:str, mqtt_conn:client.Client, exception:bool=False
     return status
 
 
-def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=False)->bool:
+def send_data(mqtt_client:client.Client, topic:str, message:str, qos:int=0, exception:bool=False)->bool:
     """
     Send data into an MQTT broker
     :args:
@@ -131,7 +131,7 @@ def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=
     """
     status = True
     try:
-        r = mqtt_client.publish(topic, message, qos=0, retain=False)
+        r = mqtt_client.publish(topic, message, qos=qos, retain=False)
     except Exception as e:
         if exception is True:
             print(f'Failed to publish results in {mqtt_client} (Error: {e})')
@@ -149,7 +149,7 @@ def send_data(mqtt_client:client.Client, topic:str, message:str, exception:bool=
     return status
 
 
-def mqtt_process(mqtt_client:client.Client, payloads:list, topic:str, exception:bool=True)->bool:
+def mqtt_process(mqtt_client:client.Client, payloads:list, topic:str, qos:int=0, exception:bool=True)->bool:
     """
     Main for MQTT process
     :args:
@@ -171,11 +171,11 @@ def mqtt_process(mqtt_client:client.Client, payloads:list, topic:str, exception:
     if isinstance(payloads, list):
         for payload in payloads:
             str_payloads = support.json_dumps(payloads=payload)
-            if send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, exception=exception) is False:
+            if send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, qos=qos, exception=exception) is False:
                 status = False
     elif isinstance(payloads, dict):
         str_payloads = support.json_dumps(payloads=payloads)
-        if send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, exception=exception) is False:
+        if send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, qos=qos, exception=exception) is False:
             status = False
     else:
         status = False
