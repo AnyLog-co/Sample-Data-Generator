@@ -91,7 +91,7 @@ def __create_data(process_id:str, file_name:str, binary_file:str, db_name:str="t
 
 
 def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:dict={}, protocol:str="post",
-         topic:str="video-data", db_name:str="test", table:str="video", sleep:float=5, timezone:str="local",
+         topic:str="video-data", qos:int=0, db_name:str="test", table:str="video", sleep:float=5, timezone:str="local",
          timeout:int=30, enable_timezone_range:bool=False, reverse:bool=False, conversion_type:str='base64',
          results_dir:str=None, exception:bool=False):
     """
@@ -137,7 +137,7 @@ def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:dict={}, proto
                                     start_ts=car_info["start_ts"], end_ts=car_info["end_ts"], num_cars=car_info["cars"],
                                     speed=car_info["speed"])
 
-            publish_data.publish_data(payload=payload, insert_process=protocol, conns=conns, topic=topic,
+            publish_data.publish_data(payload=payload, insert_process=protocol, conns=conns, topic=topic, qos=qos,
                                       rest_timeout=timeout, dir_name=None, compress=False, exception=exception)
 
         time.sleep(sleep)

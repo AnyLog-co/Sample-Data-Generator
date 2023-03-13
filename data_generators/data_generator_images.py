@@ -176,7 +176,7 @@ def __create_data(db_name:str, table:str, file_name:str, file_content:str, detec
 
 
 def main(dir_name:str="$HOME/Downloads/sample_data/images", conns:dict={}, protocol:str="post",
-         topic:str="image-data", db_name:str="test", table:str="image", sleep:float=5, timeout:int=30,
+         topic:str="image-data", qos:int=0, db_name:str="test", table:str="image", sleep:float=5, timeout:int=30,
          reverse:bool=False, conversion_type:str='base64', results_dir:str=None, compress:bool=False,
          exception:bool=False):
     """
@@ -225,7 +225,7 @@ def main(dir_name:str="$HOME/Downloads/sample_data/images", conns:dict={}, proto
             payload = __create_data(db_name=db_name, table=table, file_name=file_name, file_content=file_content,
                                     detections=detection, status=status)
 
-            publish_data.publish_data(payload=payload, insert_process=protocol, conns=conns, topic=topic,
+            publish_data.publish_data(payload=payload, insert_process=protocol, conns=conns, topic=topic, qos=qos,
                                       rest_timeout=timeout, dir_name=results_dir, blob_data_type='image',
                                       conversion_type=conversion_type, compress=compress, exception=exception)
         time.sleep(sleep)

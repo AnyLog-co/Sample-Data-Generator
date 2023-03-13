@@ -157,6 +157,7 @@ def main():
     parser.add_argument('protocol', type=str, choices=['post', 'mqtt', 'print'], default='post',
                         help='format to save data')
     parser.add_argument('--topic', type=str, default='anylog-data-gen', help='topic to send data agaisnt')
+    parser.add_argument('--qos', type=int, choices=list(range(0, 3)), default=0, help='MQTT Quality of Service')
     parser.add_argument('--db-name', type=str, default='edgex', help='Logical database to store data in')
     parser.add_argument('--table', type=str, default='image', help='Logical database to store data in')
     parser.add_argument('--sleep', type=float, default=5, help='Wait time between each file to insert')
@@ -183,7 +184,8 @@ def main():
             if frame is not None:
                 payload = __create_payload(camera_id=args.camera_id, db_name=args.db_name, table=args.table, frame=frame)
                 publish_data.publish_data(payload=payload, insert_process=args.protocol, conns=conns, topic=args.topic,
-                                          rest_timeout=args.timeout, dir_name=None, compress= False, exception=args.exception)
+                                          qos=args.qos, rest_timeout=args.timeout, dir_name=None, compress= False,
+                                          exception=args.exception)
             time.sleep(args.sleep)
     else:
         while True:
@@ -191,7 +193,7 @@ def main():
             if frame is not None:
                 payload = __create_payload(camera_id=args.camera_id, db_name=args.db_name, table=args.table, frame=frame)
                 publish_data.publish_data(payload=[payload], insert_process=args.protocol, conns=conns, topic=args.topic,
-                                          rest_timeout=args.timeout, dir_name=None, compress=False,
+                                          qos=args.qos, rest_timeout=args.timeout, dir_name=None, compress=False,
                                           exception=args.exception)
             time.sleep(args.sleep)
 

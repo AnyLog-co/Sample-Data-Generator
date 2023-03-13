@@ -73,7 +73,8 @@ def main():
     parser.add_argument('--sleep', type=float, default=5, help='Wait time between each file to insert')
     parser.add_argument('--conn', type=str, default=None,
                        help='{user}:{password}@{ip}:{port} for sending data either via REST or MQTT')
-    parser.add_argument('--topic', type=str, default='anylog-data-gen', help='topic to send data agaisnt')
+    parser.add_argument('--topic', type=str, default='anylog-data-gen', help='topic to send data against')
+    parser.add_argument('--qos', type=int, choices=list(range(0, 3)), default=0, help='MQTT Quality of Service')
     parser.add_argument('--timeout', type=float, default=30, help='REST timeout (in seconds)')
     parser.add_argument('--timezone', type=str, choices=['local', 'utc', 'et', 'br', 'jp', 'ws', 'au', 'it'],
                         default='local', help='timezone for generated timestamp(s)')
@@ -118,14 +119,15 @@ def main():
 
     if sub_dir == "videos":
         data_generator_videos.main(dir_name=args.dir_name, conns=conns, protocol=args.protocol, topic=args.topic,
-                                   db_name=args.db_name, table=args.table, sleep=args.sleep, timezone=args.timezone,
-                                   timeout=args.timeout, enable_timezone_range=args.enable_timezone_range,
-                                   reverse=args.reverse, conversion_type=args.conversion_type,
-                                   results_dir=args.results_dir, exception=args.exception)
+                                   qos=args.qos, db_name=args.db_name, table=args.table, sleep=args.sleep,
+                                   timezone=args.timezone,timeout=args.timeout,
+                                   enable_timezone_range=args.enable_timezone_range, reverse=args.reverse,
+                                   conversion_type=args.conversion_type, results_dir=args.results_dir,
+                                   exception=args.exception)
     if sub_dir == "images":
         data_generator_images.main(dir_name=args.dir_name, conns=conns, protocol=args.protocol, topic=args.topic,
-                                   db_name=args.db_name, table=args.table, sleep=args.sleep, timeout=args.timeout,
-                                   reverse=args.reverse, conversion_type=args.conversion_type,
+                                   qos=args.qos, db_name=args.db_name, table=args.table, sleep=args.sleep,
+                                   timeout=args.timeout, reverse=args.reverse, conversion_type=args.conversion_type,
                                    results_dir=args.results_dir, compress=args.compress, exception=args.exception)
 
 
