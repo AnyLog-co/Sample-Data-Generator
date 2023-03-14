@@ -4,14 +4,40 @@ import datetime
 import numpy
 import os
 import random
+import re
 import time
 import sys
+
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'publishing_protocols')
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
 import publishing_protocols.publish_data as publish_data
+
+
+def __validate_conn_pattern(conn:str)->str:
+    """
+    Validate connection information format is connect
+    :valid formats:
+        127.0.0.1:32049
+        user:passwd@127.0.0.1:32049
+    :args:
+        conn:str - REST connection information
+    :params:
+        pattern1:str - compiled pattern 1 (127.0.0.1:32049)
+        pattern2:str - compiled pattern 2 (user:passwd@127.0.0.1:32049)
+    :return:
+        if fails raises Error
+        if success returns conn
+    """
+    pattern1 = re.compile(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$')
+    pattern2 = re.compile(r'^\w+:\w+@\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$')
+
+    if not pattern1.match(conn) and not pattern2.match(conn):
+        raise argparse.ArgumentTypeError(f'Invalid REST connection format: {conn}')
+
+    return conn
 
 
 def __row_size(arg):
@@ -152,7 +178,7 @@ def main():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('camera_id', type=int, default=0, help='Camera ID to be used by cv2')
-    parser.add_argument('conn', type=str, default='127.0.0.1:32149',
+    parser.add_argument('conn', type=__validate_conn_pattern, default='127.0.0.1:32149',
                         help='{user}:{password}@{ip}:{port} for sending data either via REST or MQTT')
     parser.add_argument('protocol', type=str, choices=['post', 'mqtt', 'print'], default='post',
                         help='format to save data')
@@ -170,13 +196,13 @@ def main():
     conns = None
     if args.conn is not None:
         conns = args.conn.split(',')
-    if args.protocol == "mqtt":
-        conns = publish_data.connect_mqtt(conns, exception=args.exception)
-        if not conns:
-            print("Failed to set connection for MQTT publisher")
-            exit(1)
-    elif args.protocol in ["post", "put"]:
-        conns = publish_data.setup_put_post_conn(conns=conns)
+        if args.protocol == "mqtt":
+            conns = publish_data.connect_mqtt(conns, exception=args.exception)
+            if not conns:
+                print("Failed to set connection for MQTT publisher")
+                exit(1)
+        elif args.protocol in ["post", "put"]:
+            conns = publish_data.setup_put_post_conn(conns=conns)
 
     if args.repeat > 0:
         for i in range(args.repeat):

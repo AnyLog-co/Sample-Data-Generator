@@ -2,6 +2,7 @@ import argparse
 import importlib
 import os
 import sys
+import re
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
@@ -14,6 +15,29 @@ from data_generators.file_processing import check_conversion_type
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data')
 
+
+def __validate_conn_pattern(conn: str) -> str:
+    """
+    Validate connection information format is connect
+    :valid formats:
+        127.0.0.1:32049
+        user:passwd@127.0.0.1:32049
+    :args:
+        conn:str - REST connection information
+    :params:
+        pattern1:str - compiled pattern 1 (127.0.0.1:32049)
+        pattern2:str - compiled pattern 2 (user:passwd@127.0.0.1:32049)
+    :return:
+        if fails raises Error
+        if success returns conn
+    """
+    pattern1 = re.compile(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$')
+    pattern2 = re.compile(r'^\w+:\w+@\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$')
+
+    if not pattern1.match(conn) and not pattern2.match(conn):
+        raise argparse.ArgumentTypeError(f'Invalid REST connection format: {conn}')
+
+    return conn
 
 def main():
     """
@@ -71,7 +95,7 @@ def main():
     parser.add_argument('--db-name', type=str, default='edgex', help='Logical database to store data in')
     parser.add_argument('--table', type=str, default='image', help='Logical database to store data in')
     parser.add_argument('--sleep', type=float, default=5, help='Wait time between each file to insert')
-    parser.add_argument('--conn', type=str, default=None,
+    parser.add_argument('--conn', type=__validate_conn_pattern, default=None,
                        help='{user}:{password}@{ip}:{port} for sending data either via REST or MQTT')
     parser.add_argument('--topic', type=str, default='anylog-data-gen', help='topic to send data against')
     parser.add_argument('--qos', type=int, choices=list(range(0, 3)), default=0, help='MQTT Quality of Service')
