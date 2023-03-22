@@ -1,4 +1,5 @@
 import datetime
+import json
 import gzip
 import os
 
@@ -174,12 +175,26 @@ def write_to_file(payloads:list, data_dir:str=os.path.join(ROOT_PATH, 'data'), c
             status = __write_to_file(file_path=file_path, payload=payload, append=append, compress=compress,
                                      exception=exception)
     else:
-        file_name = f"{payloads['dbms']}.{payloads['table']}"
-        del payloads['dbms']
-        del payloads['table']
+        if 'dbName' in payloads:
+            dbms = payloads['dbName']
+            del payloads['dbName']
+        else:
+            dbms = payloads['dbms']
+            del payloads['dbms']
+        if 'deviceName' in payloads:
+            table = payloads['deviceName']
+            del payloads['deviceName']
+        else:
+            table = payloads['table']
+            del payloads['table']
+
+        file_name = f"{dbms}.{table}"
 
         if file_name not in file_list:
-            file_list[file_name] = __timestamp_to_file_name(payloads['timestamp'])
+            if 'timestamp' in payloads:
+                file_list[file_name] = __timestamp_to_file_name(payloads['timestamp'])
+            else:
+                file_list[file_name] = __timestamp_to_file_name(datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
             file_name += f".{file_list[file_name]}.json"
             file_path = os.path.join(data_dir, file_name)
             append = False

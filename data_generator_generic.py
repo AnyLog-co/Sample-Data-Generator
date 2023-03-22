@@ -19,7 +19,6 @@ import argparse
 import datetime
 import os
 import random
-import re
 import sys
 import time
 
@@ -43,29 +42,6 @@ DATA_DIR = os.path.join(ROOT_PATH, 'data')
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
 SECOND_INCREMENTS = 86400  # second increments (0.864) for 100000 rows
 
-
-def __validate_conn_pattern(conn:str)->str:
-    """
-    Validate connection information format is connect
-    :valid formats:
-        127.0.0.1:32049
-        user:passwd@127.0.0.1:32049
-    :args:
-        conn:str - REST connection information
-    :params:
-        pattern1:str - compiled pattern 1 (127.0.0.1:32049)
-        pattern2:str - compiled pattern 2 (user:passwd@127.0.0.1:32049)
-    :return:
-        if fails raises Error
-        if success returns conn
-    """
-    pattern1 = re.compile(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$')
-    pattern2 = re.compile(r'^\w+:\w+@\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$')
-
-    if not pattern1.match(conn) and not pattern2.match(conn):
-        raise argparse.ArgumentTypeError(f'Invalid REST connection format: {conn}')
-
-    return conn
 
 def __row_size(arg):
     try:
@@ -245,36 +221,37 @@ def main():
         conns:list - list of connection information
         conn_id:int - location along the
     """
-    parse = argparse.ArgumentParser()
-    parse.add_argument('data_type', type=str, choices=['trig', 'performance', 'ping', 'percentagecpu', 'opcua', 'power',
+    parser = argparse.ArgumentParser()
+    parser.add_argument('data_type', type=str, choices=['trig', 'performance', 'ping', 'percentagecpu', 'opcua', 'power',
                                                        'examples'], default='trig',
                        help='type of data to insert into AnyLog')
-    parse.add_argument('insert_process', type=str, choices=['print', 'file', 'put', 'post', 'mqtt'],
+    parser.add_argument('insert_process', type=str, choices=['print', 'file', 'put', 'post', 'mqtt'],
                        default='print', help='format to store generated data')
-    parse.add_argument('db_name', type=str, default='test', help='logical database name')
-    parse.add_argument('--table-name', type=str, default=None,
+    parser.add_argument('db_name', type=str, default='test', help='logical database name')
+    parser.add_argument('--table-name', type=str, default=None,
                        help='Change default table name (valid for data_types except power)')
-    parse.add_argument('--total-rows', type=__row_size, default=1000000,
+    parser.add_argument('--total-rows', type=__row_size, default=1000000,
                        help='number of rows to insert. If set to 0, will run continuously')
-    parse.add_argument('--batch-size', type=__row_size, default=10, help='number of rows to insert per iteration')
-    parse.add_argument('--sleep', type=float, default=0.5, help='wait time between each row')
-    parse.add_argument('--timezone', type=str, choices=['local', 'utc', 'et', 'br', 'jp', 'ws', 'au', 'it'],
+    parser.add_argument('--batch-size', type=__row_size, default=10, help='number of rows to insert per iteration')
+    parser.add_argument('--sleep', type=float, default=0.5, help='wait time between each row')
+    parser.add_argument('--timezone', type=str, choices=['local', 'utc', 'et', 'br', 'jp', 'ws', 'au', 'it'],
                        default='local', help='timezone for generated timestamp(s)')
-    parse.add_argument('--enable-timezone-range', type=bool, nargs='?', const=True, default=False,
+    parser.add_argument('--enable-timezone-range', type=bool, nargs='?', const=True, default=False,
                        help='set timestamp within a range of +/- 1 month')
-    parse.add_argument('--performance-testing', type=bool, nargs='?', const=True, default=False,
+    parser.add_argument('--performance-testing', type=bool, nargs='?', const=True, default=False,
                        help='insert all rows within a 24 hour period')
-    parse.add_argument('--conn', type=__validate_conn_pattern, default=None,
+    parser.add_argument('--conn', type=str, default=None,
                        help='{user}:{password}@{ip}:{port} for sending data either via REST or MQTT')
-    parse.add_argument('--topic', type=str, default=None, help='topic for publishing data via REST POST or MQTT')
-    parse.add_argument('--rest-timeout', type=float, default=30, help='how long to wait before stopping REST')
-    parse.add_argument('--qos', type=int, choices=list(range(0, 3)), default=0, help='MQTT Quality of Service')
-    parse.add_argument('--dir-name', type=str, default=DATA_DIR, help='directory when storing to file')
-    parse.add_argument('--compress', type=bool, nargs='?', const=True, default=False, help='whether to zip data dir')
-    parse.add_argument('--exception', type=bool, nargs='?', const=True, default=False, help='whether to print exceptions')
-    args = parse.parse_args()
+    parser.add_argument('--topic', type=str, default=None, help='topic for publishing data via REST POST or MQTT')
+    parser.add_argument('--rest-timeout', type=float, default=30, help='how long to wait before stopping REST')
+    parser.add_argument('--qos', type=int, choices=list(range(0, 3)), default=0, help='MQTT Quality of Service')
+    parser.add_argument('--dir-name', type=str, default=DATA_DIR, help='directory when storing to file')
+    parser.add_argument('--compress', type=bool, nargs='?', const=True, default=False, help='whether to zip data dir')
+    parser.add_argument('--exception', type=bool, nargs='?', const=True, default=False, help='whether to print exceptions')
+    args = parser.parse_args()
 
     args.dir_name = os.path.expanduser(os.path.expandvars(args.dir_name))
+
     total_rows = args.total_rows
     if args.batch_size <= 0:
         args.batch_size = 1

@@ -138,7 +138,7 @@ def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:dict={}, proto
                                     speed=car_info["speed"])
 
             publish_data.publish_data(payload=payload, insert_process=protocol, conns=conns, topic=topic, qos=qos,
-                                      rest_timeout=timeout, dir_name=None, compress=False, exception=exception)
+                                      rest_timeout=timeout, dir_name=results_dir, compress=False, exception=exception)
 
         time.sleep(sleep)
 
