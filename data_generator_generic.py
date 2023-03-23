@@ -191,6 +191,7 @@ def main():
             * percentagecpu
             * opcua
             * power
+            * nvidia
             * examples - sample row(s) for each datta type
         insert_process      INSERT_PROCESS      format to store generated data              [default: print]
             * print
@@ -223,7 +224,7 @@ def main():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('data_type', type=str, choices=['trig', 'performance', 'ping', 'percentagecpu', 'opcua', 'power',
-                                                       'examples'], default='trig',
+                                                       'nvidia', 'examples'], default='trig',
                        help='type of data to insert into AnyLog')
     parser.add_argument('insert_process', type=str, choices=['print', 'file', 'put', 'post', 'mqtt'],
                        default='print', help='format to store generated data')
@@ -279,7 +280,16 @@ def main():
             total_rows = 1000000
         second_increments = 0 * (SECOND_INCREMENTS / args.total_rows)
 
-    if total_rows > 0:
+    if args.data_type == "nvidia":
+        import data_generators.nvidia_read_logs as nvidia_read_logs
+        nvidia_logs = nvidia_read_logs.nvidia_helm_data(db_name=args.db_name, table=args.table_name,
+                                                        exception=args.exception)
+        for row in nvidia_logs:
+            publish_data.publish_data(payload=row, insert_process=args.insert_process, conns=conns,
+                                      topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
+                                      qos=args.qos, dir_name=args.dir_name, exception=args.exception)
+
+    elif total_rows > 0:
         for row in range(total_rows):
             payload, array_counter, = row_generator(data_type=args.data_type, db_name=args.db_name,
                                                     array_counter=array_counter)
