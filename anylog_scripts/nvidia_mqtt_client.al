@@ -1,4 +1,4 @@
-<run mqtt client where broker=rest and port=!anylog_rest_port and log=false and topic=(
+<run mqtt client where broker=rest and port=!anylog_rest_port and user-agent=anylog and log=false and topic=(
     name=nvidia-data and
     dbms="bring [dbms]" and
     table="bring [table]" and

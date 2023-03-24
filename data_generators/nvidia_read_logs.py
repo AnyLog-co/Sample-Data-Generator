@@ -3,26 +3,37 @@ import csv
 import datetime
 import json
 import os
+import re
+
 
 FILE_NAME = os.path.join(os.path.expanduser(os.path.expandvars(os.path.dirname(__file__))), 'fclog.csv')
 
-DETAILS = {
-    'app': None,
-    'gl2_accounted_message_size': 'message_size',
+MESSAGE_INFO_KEYS = {
+    'Succeeded': 'succeed',
+    'URL': 'url',
+    'UsingPostRenderer': 'using_post_renderer',
+    'action': None,
+    'caller': None,
+    'checksumupdated': 'check_sum_updated',
+    'component': None,
+    'helmVersion': 'version',
+    'info': None,
+    'kustomizationCfg': 'kustomization_cfg',
+    'kustomizationPath': 'kustomization_path',
+    'kustomizeHook': 'kustomize_hook',
+    'kustomizeHookPath': 'kustomize_hook_path',
+    'latest': None,
+    'loop': None,
+    'msg': None,
+    'name': None,
+    'phase': None,
     'release': None,
-    'gl2_remote_ip': 'ip',
-    'gl2_remote_port': 'port',
-    'streams': None,
-    'gl2_message_id': 'message_id',
-    'source': None,
-    'gl2_source_input': 'source_input',
-    'pod_name': 'pod',
-    'namespace_name': 'namespace',
-    'system': None,
-    'container_name': None,
-    'location': None,
-    'gl2_source_node': 'source_node',
-    '_id': 'id'
+    'resource': None,
+    'revision': None,
+    'targetNamespace': 'target_namespace',
+    'ts': 'timestamp',
+    'version': None,
+    'warning': None,
 }
 
 
@@ -59,48 +70,77 @@ def __read_data(file_name:str=FILE_NAME, exception:bool=False)->csv.DictReader:
     return file_content
 
 
-def __extract_message(dbms:str, table:str, message:str, timestamp:str)->dict:
-    """
-    Format content for message information & timestamp
-    :args:
+def __extract_message_info(message_data:str)->dict:
+    message_values = {}
+    for value in message_data.split(" "):
+        if "=" in value and value.split("=")[0].strip() in MESSAGE_INFO_KEYS:
+            key = value.split("=")[0].strip()
+            if MESSAGE_INFO_KEYS[key] is not None:
+                key = MESSAGE_INFO_KEYS[key]
+            message_values[key] = value.split("=")[-1].strip()
+    if 'info' in message_data:
+        message_values['info'] = re.sub(r"\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}", "",
+                                        message_data.split('info="')[-1].split('"')[0].strip())
 
-    """
-    return {
-        'dbms': dbms,
-        'table': table,
-        "timestamp": timestamp,
-        "component": message.split("component=")[-1].split("version")[0].strip(),
-        "version": message.split("version=")[-1].split("info")[0].strip(),
-        "caller": message.split("caller=")[-1].split("component")[0].strip(),
-        "info": message.split('info="')[-1].split('"')[0],
-        "targetNamespace": message.split("targetNamespace=")[-1].split("release=")[0].strip(),
-        "release": message.split("release=")[-1]
-    }
+    return message_values
 
 
-def __extract_additional_details(base_information:dict, additional_details:str, exception:bool=False):
+def __extract_additional_details(additional_details:str, exception:bool=False)->dict:
     try:
         additional_details = ast.literal_eval(additional_details)
     except Exception as error:
         if exception is True:
-            print(f"Failed to convert content into dictionary (Error: {error})")
-        base_information['additional_details'] = additional_details
+            print(f"Failed to convert additional details from string to dict (Error: {error})")
+    else:
+        additional_details['remote_ip'] = additional_details['gl2_remote_ip']
+        additional_details['remote_port'] = int(ast.literal_eval(additional_details['gl2_remote_port']))
+        additional_details['message_size'] = float(ast.literal_eval(additional_details['gl2_accounted_message_size']))
+        additional_details['message_id'] = additional_details['gl2_message_id']
+        additional_details['source_input'] = additional_details['gl2_source_input']
+        additional_details['accounted_message_size'] = float(ast.literal_eval(additional_details['gl2_accounted_message_size']))
+        additional_details['pod'] = additional_details['pod_name']
+        additional_details['namespace'] = additional_details['namespace_name']
+        additional_details['container'] = additional_details['container_name']
+        additional_details['source_node'] = additional_details['gl2_source_node']
+        additional_details['id'] = additional_details['_id']
+
+
+        del additional_details['gl2_remote_ip']
+        del additional_details['gl2_remote_port']
+        del additional_details['gl2_source_input']
+        del additional_details['pod_name']
+        del additional_details['namespace_name']
+        del additional_details['container_name']
+        del additional_details['gl2_source_node']
+        del additional_details['_id']
+        del additional_details['gl2_message_id']
+        del additional_details['gl2_accounted_message_size']
+
+    return additional_details
+
+
+def __merge_data(dbms:str, table:str, timestamp:str, message_data:dict, additional_details:dict)->dict:
+    generated_row = {
+        "dbms": dbms,
+        "table": table,
+        "timestamp": timestamp
+    }
+
+    for key in message_data:
+        generated_row[key] = message_data[key]
+
+    if isinstance(additional_details, str):
+        generated_row['additional_details'] = additional_details
     else:
         for key in additional_details:
-            if key in DETAILS and DETAILS[key] is None:
-                base_information[key] = additional_details[key]
-            elif key in DETAILS and DETAILS[key] is not None:
-                base_information[DETAILS[key]] = additional_details[key]
-            elif key not in base_information:
-                print(key, additional_details[key])
+            if key in generated_row and generated_row[key] != additional_details[key]:
+                generated_row[f"{additional_details['component']}_{key}"] = additional_details[key]
+            elif key not in generated_row:
+                generated_row[key] = additional_details[key]
 
-        base_information['port'] = int(ast.literal_eval(base_information['port']))
-        base_information['message_size'] = float(ast.literal_eval((base_information['message_size'])))
+    return generated_row
 
-    return base_information
-
-
-def nvidia_helm_data(db_name:str, table:str=None, file_name:str=FILE_NAME, exception:bool=False)->list:
+def nvidia_helm_data(db_name:str, table:str='fleet_command', file_name:str=FILE_NAME, exception:bool=False)->list:
     """
     Given an fclog.csv file (NVIDIA Helm) generate dictionary values to be stored in AnyLog.
     The default file has about 27,600 rows between "2022-05-25 00:10:08.857000" and "2022-05-30 01:10:15.208000"
@@ -113,45 +153,24 @@ def nvidia_helm_data(db_name:str, table:str=None, file_name:str=FILE_NAME, excep
         base_information;dict - individual rows of data to be stored
     :return:
         content
-    :sample output:
-    {
-        "timestamp": "2022-05-30T01:10:15.208Z",
-        "component": "helm",
-        "version": "v3",
-        "caller": "helm.go:69",
-        "info": "beginning wait for 6 resources with timeout of 27777h46m39s",
-        "targetNamespace": "egx-system",
-        "release": "helm-operator",
-        "app": "helm-operator",
-        "message_size": 500.0,
-        "ip": "127.0.0.1",
-        "port": 55826,
-        "streams": "[000000000000000000000001]",
-        "message_id": "01G4986YESDCAD5H88HE7SW8AZ",
-        "source": "system-1.egx.nvidia.com",
-        "source_input": "624b89d37a58035d78e001fd",
-        "pod": "helm-operator-654dffb688-c5sxl",
-        "namespace": "helm",
-        "system": "system-1",
-        "container_name": "flux-helm-operator",
-        "location": "system-2",
-        "source_node": "28f73eb7-1879-450a-a538-2c8eede22877",
-        "id": "43489e8b-dfb5-11ec-8504-e6df01411171"
-    }
     """
     content = []
-    if table in [None, ""]:
-        table = 'fclog'
+    keys = []
     csv_data = __read_data(file_name=file_name, exception=exception)
     if csv_data != []:
         for row in csv_data:
-            base_information = __extract_message(dbms=db_name, table=table, message=row['Message'],
-                                                 timestamp=row['Date and Time'])
-            if table is None:
-                base_information['table'] = 'fclog'
-            content.append(__extract_additional_details(base_information=base_information,
-                                                        additional_details=row['Additional Details'],
-                                                        exception=exception))
+            if 'Date and Time' in row:
+                timestamp = row['Date and Time']
+            if 'Message' in row:
+                message_data = __extract_message_info(message_data=row['Message'])
+            if 'Additional Details':
+                additional_details = __extract_additional_details(additional_details=row['Additional Details'],
+                                                                  exception=exception)
+            content.append(__merge_data(dbms=db_name, table=table, timestamp=timestamp, message_data=message_data,
+                                        additional_details=additional_details))
 
     return content
 
+
+if __name__ == '__main__':
+    nvidia_helm_data(db_name='test', exception=True)

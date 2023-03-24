@@ -1,6 +1,7 @@
 import json
 import requests
 import support
+import time
 
 NETWORK_ERRORS_GENERIC = {
     1: "Informational",
@@ -76,17 +77,25 @@ def __convert_data(payloads:list)->dict:
     :args:
         payloads:list - content to PUT
     :params:
-        content:dict - formmatted payloads
+        content:dict - formatted payloads
     """
     content = {}
 
-    for payload in payloads:
-        name = payload['dbms'] + "." + payload['table']
-        del payload['dbms']
-        del payload['table']
+    if isinstance(payloads, list):
+        for payload in payloads:
+            name = payload['dbms'] + "." + payload['table']
+            del payload['dbms']
+            del payload['table']
+            if name not in content:
+                content[name] = []
+            content[name].append(payload)
+    else:
+        name = payloads['dbms'] + "." + payloads['table']
+        del payloads['dbms']
+        del payloads['table']
         if name not in content:
             content[name] = []
-        content[name].append(payload)
+        content[name].append(payloads)
 
     return content
 
@@ -142,6 +151,7 @@ def put_data(payloads:list, conn:str, auth:tuple=(), timeout:int=30, exception:b
                         error_msg.replace(" %s)", ")")
                     print(error_msg)
 
+    time.sleep(10)
     return status
 
 

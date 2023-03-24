@@ -284,10 +284,15 @@ def main():
         import data_generators.nvidia_read_logs as nvidia_read_logs
         nvidia_logs = nvidia_read_logs.nvidia_helm_data(db_name=args.db_name, table=args.table_name,
                                                         exception=args.exception)
+        payloads = []
+        random.shuffle(nvidia_logs)
         for row in nvidia_logs:
-            publish_data.publish_data(payload=row, insert_process=args.insert_process, conns=conns,
-                                      topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
-                                      qos=args.qos, dir_name=args.dir_name, exception=args.exception)
+            payloads.append(row)
+            if len(payloads) == args.batch_size:
+                publish_data.publish_data(payload=payloads, insert_process=args.insert_process, conns=conns,
+                                        topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
+                                        qos=args.qos, dir_name=args.dir_name, exception=args.exception)
+                payloads = []
 
     elif total_rows > 0:
         for row in range(total_rows):

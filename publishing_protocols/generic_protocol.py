@@ -2,7 +2,7 @@ import datetime
 import json
 import gzip
 import os
-
+import time
 import support
 
 
@@ -27,7 +27,10 @@ def __timestamp_to_file_name(orig_timestamp:str)->int:
     elif ' ' in orig_timestamp:
         timestamp = int(datetime.datetime.strptime(orig_timestamp, '%Y-%m-%d %H:%M:%S.%f').timestamp())
     else:
-        timestamp = int(datetime.datetime.strptime(orig_timestamp, '%Y-%m-%dT%H:%M:%S.%fZ').timestamp())
+        try:
+            timestamp = int(datetime.datetime.strptime(orig_timestamp, '%Y-%m-%dT%H:%M:%S.%fZ').timestamp())
+        except Exception as error:
+            timestamp = str(time.time()).split('.')[0]
 
     return timestamp
 
