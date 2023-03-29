@@ -77,7 +77,8 @@ def __extract_message_info(message_data:str)->dict:
             key = value.split("=")[0].strip()
             if MESSAGE_INFO_KEYS[key] is not None:
                 key = MESSAGE_INFO_KEYS[key]
-            message_values[key] = value.split("=")[-1].strip()
+            if value.split("=")[-1].strip() != "":
+                message_values[key] = value.split("=")[-1].strip()
     if 'info' in message_data:
         message_values['info'] = re.sub(r"\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}", "",
                                         message_data.split('info="')[-1].split('"')[0].strip())

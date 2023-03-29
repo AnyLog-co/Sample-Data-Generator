@@ -83,12 +83,15 @@ def __convert_data(payloads:list)->dict:
 
     if isinstance(payloads, list):
         for payload in payloads:
-            name = payload['dbms'] + "." + payload['table']
-            del payload['dbms']
-            del payload['table']
-            if name not in content:
-                content[name] = []
-            content[name].append(payload)
+            if isinstance(payload, list):
+                content = __convert_data(payloads=payload)
+            else:
+                name = payload['dbms'] + "." + payload['table']
+                del payload['dbms']
+                del payload['table']
+                if name not in content:
+                    content[name] = []
+                content[name].append(payload)
     else:
         name = payloads['dbms'] + "." + payloads['table']
         del payloads['dbms']
