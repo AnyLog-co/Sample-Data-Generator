@@ -21,6 +21,7 @@ import os
 import random
 import sys
 import time
+import json
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
@@ -37,6 +38,7 @@ import data_generators.performance_testing as performance_testing
 import data_generators.power_company as power_company
 import data_generators.timestamp_generator as timestamp_generator
 import data_generators.trig as trig
+import data_generators.transit_data as transit_data
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data')
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
@@ -116,7 +118,8 @@ def __rows_summary(db_name:str)->str:
         print('\n')
 
 
-def row_generator(data_type:str, db_name:str, array_counter:int=None)->(dict, int):
+def row_generator(data_type:str, db_name:str=None, agency:str="SC", bus_line:int=22, array_counter:int=None,
+                  exception:bool=False)->(dict, int):
     """
     Generate data to be inserted
     :args:
@@ -144,10 +147,67 @@ def row_generator(data_type:str, db_name:str, array_counter:int=None)->(dict, in
         payload = lsl_data.percentagecpu_sensor(db_name=db_name)
     elif data_type == 'ping':
         payload = lsl_data.ping_sensor(db_name=db_name)
+    elif data_type == "transit":
+        payload = transit_data.get_vehicle_position(agency=agency, bus_line=bus_line, exception=exception)
     elif data_type == 'power':
         payload = power_company.data_generator(db_name=db_name)
 
     return payload, array_counter
+
+
+def nvidia_data_generator(conns:list, db_name:str, table_name:str, insert_process:str, topic:str=None,
+                          compress:bool=False, rest_timeout:int=30, qos:int=0, dir_name:str=None, exception:bool=False):
+    """
+    NVIDIA data generator
+    :args:
+        conn:list - AnyLog connection list
+        db_name:str - logical database name
+        insert_process:str - insert process
+        topic:str - MQTT / REST POST topic
+        compreses:bool - whether to compress file
+        rest_timeout:str - REST timeout
+        qos:int - QTT Quality of Service
+        diir_name:str - for file, where to save
+        exception:bool - whether to print exceptions
+    :params:
+        nvidia_logs:list - NVIDIA log from file
+        payloads:list - NVIDA logs to be storedd
+    """
+    import data_generators.nvidia_read_logs as nvidia_read_logs
+
+    nvidia_logs = nvidia_read_logs.nvidia_helm_data(db_name=db_name, table=table_name,
+                                                    exception=exception)
+    payloads = []
+    random.shuffle(nvidia_logs)
+    for row in nvidia_logs:
+        payloads.append(row)
+        if len(payloads) == args.batch_size:
+            publish_data.publish_data(payload=payloads, insert_process=insert_process, conns=conns,
+                                      topic=topic, compress=compress, rest_timeout=rest_timeout,
+                                      qos=qos, dir_name=dir_name, exception=exception)
+            payloads = []
+
+
+def transit_data_generator(conns:list, db_name:str, table_name:str, insert_process:str, topic:str=None,
+                          compress:bool=False, rest_timeout:int=30, qos:int=0, dir_name:str=None, exception:bool=False):
+    bus_lines = {
+        "SC": [22],
+        "SM": [117]
+    }
+    payloads = []
+    for agency in bus_lines:
+        for bus in bus_lines[agency]:
+            content, _ = row_generator(data_type="transit", db_name=db_name, agency=agency,
+                                       bus_line=bus, array_counter=0, exception=exception)
+            for row in content:
+                row["dbms"] = db_name
+                row["table"] = table_name
+                payloads.append(row)
+
+    publish_data.publish_data(payload=payloads, insert_process=insert_process, conns=conns,
+                              topic=topic, compress=compress, rest_timeout=rest_timeout,
+                              qos=qos, dir_name=dir_name, exception=exception)
+
 
 
 def include_timestamp(payload:dict, timezone:str='utc', enable_timezone_range:bool=False,
@@ -224,7 +284,7 @@ def main():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('data_type', type=str, choices=['trig', 'performance', 'ping', 'percentagecpu', 'opcua', 'power',
-                                                       'nvidia', 'examples'], default='trig',
+                                                       'nvidia', 'transit', 'examples'], default='trig',
                        help='type of data to insert into AnyLog')
     parser.add_argument('insert_process', type=str, choices=['print', 'file', 'put', 'post', 'mqtt'],
                        default='print', help='format to store generated data')
@@ -281,18 +341,17 @@ def main():
         second_increments = 0 * (SECOND_INCREMENTS / args.total_rows)
 
     if args.data_type == "nvidia":
-        import data_generators.nvidia_read_logs as nvidia_read_logs
-        nvidia_logs = nvidia_read_logs.nvidia_helm_data(db_name=args.db_name, table=args.table_name,
-                                                        exception=args.exception)
-        payloads = []
-        random.shuffle(nvidia_logs)
-        for row in nvidia_logs:
-            payloads.append(row)
-            if len(payloads) == args.batch_size:
-                publish_data.publish_data(payload=payloads, insert_process=args.insert_process, conns=conns,
-                                        topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
-                                        qos=args.qos, dir_name=args.dir_name, exception=args.exception)
-                payloads = []
+        nvidia_data_generator(conns=conns, db_name=args.db_name, table_name=args.table_name,
+                              insert_process=args.insert_process, topic=args.topic, compress=args.compress,
+                              rest_timeout=args.rest_timeout, qos=args.qos, dir_name=args.dir_name,
+                              exception=args.exception)
+    elif args.data_type == "transit":
+        while True:
+            transit_data_generator(conns=conns, db_name=args.db_name, table_name=args.table_name,
+                                   insert_process=args.insert_process, topic=args.topic, compress=args.compress,
+                                  rest_timeout=args.rest_timeout, qos=args.qos, dir_name=args.dir_name,
+                                  exception=args.exception)
+            time.sleep(args.sleep)
 
     elif total_rows > 0:
         for row in range(total_rows):
