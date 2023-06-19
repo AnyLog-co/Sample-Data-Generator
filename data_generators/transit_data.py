@@ -41,7 +41,7 @@ TRANSIT_AGENCIES = {
     "SA": "Sonoma Marin Area Rail Transit",
     "SB": "San Francisco Bay Ferry",
     "SC": "VTA",
-    "SF": "San Francisco Municipal Transportation Agency",
+    "SF": "SFMTA", # San Francisco Municipal Transportation Agency
     "SI": "San Francisco International Airport",
     "SM": "SamTrans",
     "SO": "Sonoma County Transit",
@@ -151,10 +151,11 @@ def get_vehicle_position(agency:str, bus_line:int=22, exception:bool=False):
         if line_ref == bus_line:
             new_row = {
                 "operator": TRANSIT_AGENCIES[agency],
-                "timestamp": datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%s.%fZ'),
+                "timestamp": datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                 "line": line_ref
             }
-
+            if "RecordedAtTime" in row:
+                new_row["timestamp"] = row["RecordedAtTime"]
             if "PublishedLineName" in row["MonitoredVehicleJourney"]:
                 new_row["name"] = row['MonitoredVehicleJourney']["PublishedLineName"]
             if "VehicleRef" in row["MonitoredVehicleJourney"]:

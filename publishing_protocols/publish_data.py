@@ -73,10 +73,11 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
     conn = None
     auth = None
     mqtt_conn = None
-    if conns:
-        conn = random.choice(list(conns.keys()))
-    if insert_process in ['put', 'post']:
-        auth = conns[conn]
+    if insert_process in ['mqtt', 'post', 'put']:
+        if conns:
+            conn = random.choice(list(conns.keys()))
+        if insert_process in ['put', 'post']:
+            auth = conns[conn]
 
     if conversion_type == 'bytesio' and blob_data_type == 'image' and insert_process != "file":
         payload['file_content'] = payload['file_content'].__str__()

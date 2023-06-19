@@ -192,7 +192,8 @@ def transit_data_generator(conns:list, db_name:str, table_name:str, insert_proce
                           compress:bool=False, rest_timeout:int=30, qos:int=0, dir_name:str=None, exception:bool=False):
     bus_lines = {
         "SC": [22],
-        "SM": [117]
+        "SM": [130],
+        "SF": ["F"]
     }
     payloads = []
     for agency in bus_lines:
