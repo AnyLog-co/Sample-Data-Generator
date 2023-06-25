@@ -15,7 +15,7 @@ from data_generators.file_processing import check_conversion_type
 DATA_DIR = os.path.join(ROOT_PATH, 'data')
 
 
-def __validate_conn_pattern(conn: str) -> str:
+def validate_conn_pattern(conn:str)->str:
     """
     Validate connection information format is connect
     :valid formats:

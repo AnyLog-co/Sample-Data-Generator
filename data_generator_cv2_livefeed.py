@@ -41,17 +41,7 @@ def __validate_conn_pattern(conn:str)->str:
 
 
 def __row_size(arg):
-    try:
-        value = int(arg)
-    except Exception as error:
-        output = argparse.ArgumentTypeError(f"User input value {arg} is not of type integer (Error: {error})")
-    else:
-        if value < 0:
-            output = argparse.ArgumentTypeError(f"User input value must be greater or equal to 0")
-        else:
-            output = value
 
-    return output
 
 
 def __take_photo(camera_id:int, exception:bool=False)->(numpy.ndarray):
