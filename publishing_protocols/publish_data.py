@@ -84,8 +84,7 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
         payload["readings"]["binaryValue"] = payload['file_content'].__str__()
 
     if insert_process == "print":
-        generic_protocol.print_content(payloads=payload, conversion_type=conversion_type)
-
+        generic_protocol.print_content(payloads=payload)
     elif insert_process == "file" and blob_data_type == "":
         status = generic_protocol.write_to_file(payloads=payload, data_dir=dir_name, compress=compress,
                                                 exception=exception)

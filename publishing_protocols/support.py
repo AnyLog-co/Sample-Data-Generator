@@ -2,6 +2,7 @@ import argparse
 import gzip
 import hashlib
 import io
+import importlib
 import json
 import os
 import re
@@ -54,7 +55,28 @@ def validate_row_size(row_size)->int:
     return output
 
 
-def json_dumps(payloads:dict)->str:
+def validate_conversion_type(conversion_type:str)->str:
+    """
+    Check whether the user inputted a valid conversion type and whether the proper packages are imported
+    :args:
+        conversion_type:str - user input
+    :raise:
+        raise an error if invalid arg or package is not installed
+    :return:
+        conversion_type
+    """
+    if conversion_type not in ['base64', 'bytesio', 'opencv']:
+        raise argparse.ArgumentTypeError(f"Invalid option {conversion_type}. Supported types: base64, bytesio, cv2")
+    elif conversion_type == 'base64' and  importlib.util.find_spec("base64") is None:
+        raise argparse.ArgumentTypeError(f"Unable to locate package base64 for conversion type {conversion_type}")
+    elif conversion_type == 'bytesio' and importlib.util.find_spec('io') is None:
+        raise argparse.ArgumentTypeError(f"Unable to locate package io for conversion type {conversion_type}")
+    elif conversion_type == 'opencv' and importlib.util.find_spec('cv2') is None:
+        raise argparse.ArgumentTypeError(f"Unable to locate package opencv2-python for conversion type {conversion_type}")
+
+    return conversion_type
+
+def json_dumps(payloads:dict, print_output:bool=False)->str:
     """
     Convert dictionary to string
     :args:
@@ -62,8 +84,11 @@ def json_dumps(payloads:dict)->str:
     :return:
         converted data, if fails return original data
     """
+    indent = 0
+    if print_output is True:
+        indent = 4
     try:
-        return json.dumps(payloads)
+        return json.dumps(payloads, indent=indent)
     except Exception as error:
         return payloads
 

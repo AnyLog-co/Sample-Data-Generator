@@ -45,20 +45,6 @@ MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for time
 SECOND_INCREMENTS = 86400  # second increments (0.864) for 100000 rows
 
 
-def __row_size(arg):
-    try:
-        value = int(arg)
-    except Exception as error:
-        output = argparse.ArgumentTypeError(f"User input value {arg} is not of type integer (Error: {error})")
-    else:
-        if value < 0:
-            output = argparse.ArgumentTypeError(f"User input value must be greater or equal to 0")
-        else:
-            output = value
-
-    return output
-
-
 def __rows_summary(db_name:str)->str:
     """
     The following provides an example for each of the data types, printing them to screen
@@ -118,130 +104,6 @@ def __rows_summary(db_name:str)->str:
         print('\n')
 
 
-def row_generator(data_type:str, db_name:str=None, agency:str="SC", bus_line:int=22, array_counter:int=None,
-                  exception:bool=False)->(dict, int):
-    """
-    Generate data to be inserted
-    :args:
-        data_type:str - type of data to insert into AnyLog
-        db_name:str - logical database name
-        array_counter:int - counter used in certain generators
-    :params:
-        payload:dict - content to storwe
-    :return:
-        payload + array_counter
-    """
-    if data_type == 'trig': # {"timestamp", "sin", "cos", "trig"}
-        payload = trig.trig_value(db_name=db_name, array_counter=array_counter)
-        array_counter += 1
-        if array_counter == len(trig.VALUE_ARRAY):
-            array_counter = 0
-    elif data_type == 'performance': # {"timestamp", "value"}
-        payload = performance_testing.generate_row(db_name=db_name, array_counter=array_counter)
-        array_counter += 1
-        if array_counter == len(performance_testing.VALUE_ARRAY):
-            array_counter = 0
-    elif data_type == 'opcua':
-        payload = opcua_data.get_opcua_data(db_name=db_name)
-    elif data_type == 'percentagecpu':
-        payload = lsl_data.percentagecpu_sensor(db_name=db_name)
-    elif data_type == 'ping':
-        payload = lsl_data.ping_sensor(db_name=db_name)
-    elif data_type == "transit":
-        payload = transit_data.get_vehicle_position(agency=agency, bus_line=bus_line, exception=exception)
-    elif data_type == 'power':
-        payload = power_company.data_generator(db_name=db_name)
-
-    return payload, array_counter
-
-
-def nvidia_data_generator(conns:list, db_name:str, table_name:str, insert_process:str, topic:str=None,
-                          compress:bool=False, rest_timeout:int=30, qos:int=0, dir_name:str=None, exception:bool=False):
-    """
-    NVIDIA data generator
-    :args:
-        conn:list - AnyLog connection list
-        db_name:str - logical database name
-        insert_process:str - insert process
-        topic:str - MQTT / REST POST topic
-        compreses:bool - whether to compress file
-        rest_timeout:str - REST timeout
-        qos:int - QTT Quality of Service
-        diir_name:str - for file, where to save
-        exception:bool - whether to print exceptions
-    :params:
-        nvidia_logs:list - NVIDIA log from file
-        payloads:list - NVIDA logs to be storedd
-    """
-    import data_generators.nvidia_read_logs as nvidia_read_logs
-
-    nvidia_logs = nvidia_read_logs.nvidia_helm_data(db_name=db_name, table=table_name,
-                                                    exception=exception)
-    payloads = []
-    random.shuffle(nvidia_logs)
-    for row in nvidia_logs:
-        payloads.append(row)
-        if len(payloads) == args.batch_size:
-            publish_data.publish_data(payload=payloads, insert_process=insert_process, conns=conns,
-                                      topic=topic, compress=compress, rest_timeout=rest_timeout,
-                                      qos=qos, dir_name=dir_name, exception=exception)
-            payloads = []
-
-
-def transit_data_generator(conns:list, db_name:str, table_name:str, insert_process:str, topic:str=None,
-                          compress:bool=False, rest_timeout:int=30, qos:int=0, dir_name:str=None, exception:bool=False):
-    bus_lines = {
-        "SC": [22],
-        "SM": [130],
-        "SF": ["F"]
-    }
-    payloads = []
-    for agency in bus_lines:
-        for bus in bus_lines[agency]:
-            content, _ = row_generator(data_type="transit", db_name=db_name, agency=agency,
-                                       bus_line=bus, array_counter=0, exception=exception)
-            for row in content:
-                row["dbms"] = db_name
-                row["table"] = table_name
-                payloads.append(row)
-
-    publish_data.publish_data(payload=payloads, insert_process=insert_process, conns=conns,
-                              topic=topic, compress=compress, rest_timeout=rest_timeout,
-                              qos=qos, dir_name=dir_name, exception=exception)
-
-
-
-def include_timestamp(payload:dict, timezone:str='utc', enable_timezone_range:bool=False,
-                      performance_testing:bool=False, microseconds:int=MICROSECONDS, second_increments:float=0):
-    """
-    Generate timestamp for row - if performance testing is enabled, timestamps within will be within a 24 hour period.
-    :args:
-       payload:dict - row(s) to add timestamp for
-       timezone:str - timezone for generated timestamp(s)
-       enable_timezone_range:bool - whether or not to set timestamp within a "range"
-       performance_testing:bool - insert all rows within a 24 hour period (if enabled, timezone params are ignored)
-       base_timestamp:datetime.datetime - initial timestamp for performance testing
-       base_row_time:float - timestamp incremental value for performance testing
-       row_counter:int - current row -- ueed in calculating timestamp for performance
-    :params:
-        timestamp:str - calculated timestamp (as string)
-    :return:
-        updated payload
-    """
-    timestamp = timestamp_generator.generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range)
-    if performance_testing is True:
-        timestamp = timestamp_generator.performance_timestamp(microseconds=microseconds, second_increments=second_increments)
-
-    if isinstance(payload, dict):
-        payload['timestamp'] = timestamp
-    else:
-        for i in range(len(payload)):
-            payload[i]['timestamp'] = timestamp
-
-    return payload
-
-
-
 def main():
     """
     :positional arguments::
@@ -292,9 +154,9 @@ def main():
     parser.add_argument('db_name', type=str, default='test', help='logical database name')
     parser.add_argument('--table-name', type=str, default=None,
                        help='Change default table name (valid for data_types except power)')
-    parser.add_argument('--total-rows', type=__row_size, default=1000000,
+    parser.add_argument('--total-rows', type=support.validate_row_size, default=1000000,
                        help='number of rows to insert. If set to 0, will run continuously')
-    parser.add_argument('--batch-size', type=__row_size, default=10, help='number of rows to insert per iteration')
+    parser.add_argument('--batch-size', type=support.validate_row_size, default=10, help='number of rows to insert per iteration')
     parser.add_argument('--sleep', type=float, default=0.5, help='wait time between each row')
     parser.add_argument('--timezone', type=str, choices=['local', 'utc', 'et', 'br', 'jp', 'ws', 'au', 'it'],
                        default='local', help='timezone for generated timestamp(s)')
@@ -302,7 +164,7 @@ def main():
                        help='set timestamp within a range of +/- 1 month')
     parser.add_argument('--performance-testing', type=bool, nargs='?', const=True, default=False,
                        help='insert all rows within a 24 hour period')
-    parser.add_argument('--conn', type=str, default=None,
+    parser.add_argument('--conn', type=support.validate_conn_pattern, default=None,
                        help='{user}:{password}@{ip}:{port} for sending data either via REST or MQTT')
     parser.add_argument('--topic', type=str, default=None, help='topic for publishing data via REST POST or MQTT')
     parser.add_argument('--rest-timeout', type=float, default=30, help='how long to wait before stopping REST')
@@ -313,21 +175,20 @@ def main():
     args = parser.parse_args()
 
     args.dir_name = os.path.expanduser(os.path.expandvars(args.dir_name))
-
-    row_counter = 0
-    if args.batch_size <= 0:
-        args.batch_size = 1
-    array_counter = 0
-    data = []
-
     if args.data_type == 'examples':
         __rows_summary(db_name=args.db_name)
         exit(1)
 
+    total_rows = 0
+    data_type_counter = 0
+    second_increments = 0
+    data = []
+    if args.batch_size <= 0:
+        args.batch_size = 1
+
     conns = None
     if args.conn is not None:
         conns = args.conn.split(',')
-
     if args.insert_process == "mqtt":
         conns = publish_data.connect_mqtt(conns, exception=args.exception)
         if not conns:
@@ -337,16 +198,53 @@ def main():
         conns = publish_data.setup_put_post_conn(conns=conns)
 
     if args.performance_testing is True:
-        if args.total_rows == 0:
+        if total_rows == 0:
             total_rows = 1000000
         second_increments = 0 * (SECOND_INCREMENTS / args.total_rows)
 
+
+
     while True:
-        row_counter += 1
-        if args.total_rows == row_counter:
-            exit(1)
+        if args.data_type == 'trig':  # {"timestamp", "sin", "cos", "trig"}
+            payload = trig.trig_value(db_name=args.db_name, array_counter=data_type_counter)
+            data_type_counter += 1
+            if data_type_counter == len(trig.VALUE_ARRAY):
+                data_type_counter = 0
+        elif args.data_type == 'performance': # {"timestamp", "value"}
+            payload = performance_testing.generate_row(db_name=args.db_name, array_counter=data_type_counter)
+            data_type_counter += 1
+            if data_type_counter == len(performance_testing.VALUE_ARRAY):
+                data_type_counter = 0
+        elif args.data_type == 'opcua':
+            payload = opcua_data.get_opcua_data(db_name=args.db_name)
+        elif args.data_type == 'percentagecpu':
+            payload = lsl_data.percentagecpu_sensor(db_name=args.db_name)
+        elif args.data_type == 'ping':
+            payload = lsl_data.ping_sensor(db_name=args.db_name)
+        elif args.data_type == 'power':
+            payload = power_company.data_generator(db_name=args.db_name)
+
+        payload = timestamp_generator.include_timestamp(payload=payload, timezone=args.timezone,
+                                                        enable_timezone_range=args.enable_timezone_range,
+                                                        performance_testing=args.performance_testing,
+                                                        microseconds=MICROSECONDS, second_increments=second_increments)
+        second_increments = (total_rows + 1) * (SECOND_INCREMENTS / args.total_rows)
+        data.append(payload)
+
+        if len(data) % args.batch_size == 0:
+            publish_data.publish_data(payload=data, insert_process=args.insert_process, conns=conns,
+                                      topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
+                                      qos=args.qos, dir_name=args.dir_name, exception=args.exception)
+            data = []
+        if total_rows == args.total_rows:
+                if len(data) != 0:
+                    publish_data.publish_data(payload=data, insert_process=args.insert_process, conns=conns,
+                                              topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
+                                              qos=args.qos, dir_name=args.dir_name, exception=args.exception)
+                exit(1)
+
+        time.sleep(args.sleep)
 
 
 if __name__ == '__main__':
     main()
-

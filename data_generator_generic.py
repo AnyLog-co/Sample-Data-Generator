@@ -211,35 +211,6 @@ def transit_data_generator(conns:list, db_name:str, table_name:str, insert_proce
 
 
 
-def include_timestamp(payload:dict, timezone:str='utc', enable_timezone_range:bool=False,
-                      performance_testing:bool=False, microseconds:int=MICROSECONDS, second_increments:float=0):
-    """
-    Generate timestamp for row - if performance testing is enabled, timestamps within will be within a 24 hour period.
-    :args:
-       payload:dict - row(s) to add timestamp for
-       timezone:str - timezone for generated timestamp(s)
-       enable_timezone_range:bool - whether or not to set timestamp within a "range"
-       performance_testing:bool - insert all rows within a 24 hour period (if enabled, timezone params are ignored)
-       base_timestamp:datetime.datetime - initial timestamp for performance testing
-       base_row_time:float - timestamp incremental value for performance testing
-       row_counter:int - current row -- ueed in calculating timestamp for performance
-    :params:
-        timestamp:str - calculated timestamp (as string)
-    :return:
-        updated payload
-    """
-    timestamp = timestamp_generator.generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range)
-    if performance_testing is True:
-        timestamp = timestamp_generator.performance_timestamp(microseconds=microseconds, second_increments=second_increments)
-
-    if isinstance(payload, dict):
-        payload['timestamp'] = timestamp
-    else:
-        for i in range(len(payload)):
-            payload[i]['timestamp'] = timestamp
-
-    return payload
-
 
 
 def main():

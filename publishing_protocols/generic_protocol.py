@@ -122,7 +122,7 @@ def __zip_file(file_name:str, exception:bool)->bool:
     return status
 
 
-def print_content(payloads:list, conversion_type:str):
+def print_content(payloads:list):
     """
     Print data to screen
     :args:
@@ -132,9 +132,9 @@ def print_content(payloads:list, conversion_type:str):
     """
     if isinstance(payloads, list):
         for payload in payloads:
-            print(support.json_dumps(payload))
+            print(support.json_dumps(payload, print_output=True))
     else:
-        print(support.json_dumps(payloads))
+        print(support.json_dumps(payloads, print_output=True))
 
 
 def write_to_file(payloads:list, data_dir:str=os.path.join(ROOT_PATH, 'data'), compress:bool=False,

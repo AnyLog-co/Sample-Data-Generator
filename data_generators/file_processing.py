@@ -36,28 +36,6 @@ def __read_file(file_name:str, exception:bool=False)->bytes:
     return content
 
 
-def check_conversion_type(arg):
-    """
-    Check whether the user inputted a valid conversion type and whether the proper packages are imported
-    :args:
-        arg - user input
-    :raise:
-        raise an error if invalid arg or package is not installed
-    :return:
-        arg
-    """
-    if arg not in ['base64', 'bytesio', 'opencv']:
-        raise argparse.ArgumentTypeError(f"Invalid option {arg}. Supported types: base64, bytesio, cv2")
-    elif arg == 'base64' and  importlib.util.find_spec("base64") is None:
-        raise argparse.ArgumentTypeError(f"Unable to locate package base64 for conversion type {arg}")
-    elif arg == 'bytesio' and importlib.util.find_spec('io') is None:
-        raise argparse.ArgumentTypeError(f"Unable to locate package io for conversion type {arg}")
-    elif arg == 'opencv' and importlib.util.find_spec('cv2') is None:
-        raise argparse.ArgumentTypeError(f"Unable to locate package opencv2-python for conversion type {arg}")
-
-    return arg
-
-
 def convert_base64(file_name:str, exception:bool=False)->(bool, str):
     """
     Convert file to base64
