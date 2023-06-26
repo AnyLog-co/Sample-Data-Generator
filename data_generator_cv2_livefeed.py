@@ -175,7 +175,7 @@ def main():
                                       qos=args.qos, rest_timeout=args.timeout, dir_name=None, compress=False,
                                       exception=args.exception)
         counter += 1
-        if counter == args.repeat == counter:
+        if counter == args.repeat:
             exit(1)
         time.sleep(args.sleep)
 

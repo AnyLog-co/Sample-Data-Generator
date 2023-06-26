@@ -7,7 +7,7 @@ python3 -m pip install -r $HOME/Sample-Data-Generator/requirements.txt
 ```
 
 ## Generic Data Generator 
-[data_generator_generic.py](data_generator_generic.py) provides users different sets of dummy data, and send it into 
+[data_generator_generic.py](data_generator_generic_old.py) provides users different sets of dummy data, and send it into 
 AnyLog via _MQTT_, _PUT_ or _POST_.
 
 ### Deployment
