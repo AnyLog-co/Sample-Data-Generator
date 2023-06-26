@@ -1,0 +1,35 @@
+{
+  "data":{
+    "Classes":[{
+      "BoundingBoxes":[
+        {"x":277.9639587402,"y":166.1559143066},
+        {"x":277.9639587402,"y":576.0},
+        {"x":715.4815673828,"y":166.1559143066},
+        {"x":715.4815673828,"y":576.0}
+      ],
+      "Confidence":0.3205474913,
+      "EventType":"train"
+    }],
+    "EventName":"ObjectDetection",
+    "EveryTime":1682709142097,
+    "Information":"Test message",
+    "OriginModule":"Ai inference detection",
+    "SourceId":"video_1",
+    "UrlVideoEncoded":"1.0",
+    "time_trace":[
+      {"stepEnd":1682709142102,"stepName":"frameSplitter","stepStart":1682709141963},
+      {"stepEnd":1682709142745,"stepName":"ai_inferencer","stepStart":1682709142155}
+    ]
+  },
+  "datacontenttype":"application/json",
+  "id":"bc3470e8-d613-472d-b75d-d1044cd93915",
+  "pubsubname":"pubsub",
+  "source":"invoke-sender-frames",
+  "specversion":"1.0",
+  "time":"2023-04-28T19:12:22Z",
+  "topic":"newDetection",
+  "traceid":"00-00000000000000000000000000000000-0000000000000000-00",
+  "traceparent":"00-00000000000000000000000000000000-0000000000000000-00",
+  "tracestate":"",
+  "type":"com.dapr.event.sent"
+}
