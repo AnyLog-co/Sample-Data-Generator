@@ -7,7 +7,7 @@ import uuid
 import requests
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-JSON_FILE = os.path.join(ROOT_PATH, '', 'factory_data.json')
+JSON_FILE = os.path.join(ROOT_PATH, '', '../data/ntt_factory_data.json')
 
 DATA_GENERATORS = os.path.join(ROOT_PATH, "")
 PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, "../publishing_protocols")

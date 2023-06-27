@@ -114,7 +114,6 @@ def main():
             * percentagecpu
             * opcua
             * power
-            * nvidia
             * examples - sample row(s) for each datta type
         insert_process      INSERT_PROCESS      format to store generated data              [default: print]
             * print
@@ -147,7 +146,7 @@ def main():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('data_type', type=str, choices=['trig', 'performance', 'ping', 'percentagecpu', 'opcua', 'power',
-                                                       'nvidia', 'transit', 'examples'], default='trig',
+                                                       'nvidia', 'examples'], default='trig',
                        help='type of data to insert into AnyLog')
     parser.add_argument('insert_process', type=str, choices=['print', 'file', 'put', 'post', 'mqtt'],
                        default='print', help='format to store generated data')
