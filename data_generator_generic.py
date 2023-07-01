@@ -228,12 +228,17 @@ def main():
                                                         performance_testing=args.performance_testing,
                                                         microseconds=MICROSECONDS, second_increments=second_increments)
         second_increments = (total_rows + 1) * (SECOND_INCREMENTS / args.total_rows)
-        data.append(payload)
+        if isinstance(payload, list):
+            for pyld in payload:
+                data.append(pyld)
+        else:
+            data.append(payload)
 
         if len(data) % args.batch_size == 0:
-            publish_data.publish_data(payload=data, insert_process=args.insert_process, conns=conns,
-                                      topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
-                                      qos=args.qos, dir_name=args.dir_name, exception=args.exception)
+            if args.insert_process == "mqtt":
+                publish_data.publish_data(payload=data, insert_process=process, conns=conns,
+                                          topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
+                                          qos=args.qos, dir_name=args.dir_name, exception=args.exception)
             data = []
         total_rows += 1
         if total_rows == args.total_rows:

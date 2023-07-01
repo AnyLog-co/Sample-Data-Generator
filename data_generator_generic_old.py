@@ -171,7 +171,7 @@ def nvidia_data_generator(conns:list, db_name:str, table_name:str, insert_proces
         exception:bool - whether to print exceptions
     :params:
         nvidia_logs:list - NVIDIA log from file
-        payloads:list - NVIDA logs to be storedd
+        payloads:list - NVIDA logs to be stored
     """
     import data_generators.nvidia_read_logs as nvidia_read_logs
 

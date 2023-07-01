@@ -57,32 +57,34 @@ TRANSIT_AGENCIES = {
 
 LICENSE_KEY = "efe23758-318f-4e2c-b147-ab63cde78549"
 
-
-
-def create_base_transit_map(license_key:str, transit_agency:str, bus_line:str, exception:bool=False):
-    create_table_stmt = """
-            CREATE TABLE IF NOT EXISTS transit_map(
-                id SERIAL NOT NULL PRIMARY KEY,
-                operator VARCHAR, 
-                line INT,
-                stop VARCHAR,
-                location GEOMETRY(Point, 4326)
-            );
-        """
-    insert_stmt = "INSERT INTO transit_map(operator, line, stop, location) VALUES "
-
-    line_stops = transit_data.list_stops(license_key=license_key, operator_id=transit_agency,
-                                         line=bus_line, exception=exception)
-    for stop in line_stops:
-        insert_stmt += f"\n\t('{TRANSIT_AGENCIES[stop['operator']]}', '{bus_line}', '{stop['stop']}', ST_SetSRID(ST_MakePoint({stop['location']}), 4326)),"
-    insert_stmt = insert_stmt.rsplit(",", 1)[0] + ";"
-    print(insert_stmt)
-
-
-
-
-
 def main():
+    """
+    :positional arguments:
+        transit_agency:str - transit agency to get insight from
+        insert_process:str - format to store generated data
+            * print
+            * PUT
+            * POST
+            * MQTT
+    :optional arguments:
+        -h, --help                      show this help message and exit
+        --db-name       DB_NAME         logical database name
+        --table-name    TABLE_NAME      Change default table name
+        --total-rows    TOTAL_ROWS      number of rows to insert. If set to 0, will run continuously
+        --batch-size    BATCH_SIZE      number of rows to insert per iteration
+        --sleep         SLEEP           wait time between each row
+        --conn          CONN            {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
+        --topic         TOPIC           topic for publishing data via REST POST or MQTT
+        --rest-timeout  REST_TIMEOUT    how long to wait before stopping REST
+        --qos           QOS             MQTT Quality of Service (range 0-2)
+        --license-key   LICENSE_KEY     license key for 511.org
+        --exception     [EXCEPTION]     Print exception
+    :params:
+        transit_agencies:list - list of transit agencies
+        total_rows:int - count of rows
+        conns:dict - connection information
+        transit_agency:str - randomly selected transit agency
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('transit_agency', type=str, choices=list(TRANSIT_AGENCIES.keys()), default="SM",
                         help="transit agency to get insight from")
@@ -104,6 +106,7 @@ def main():
     parser.add_argument("--license-key", type=str, default=LICENSE_KEY, help="license key for 511.org")
     parser.add_argument("--exception", type=bool, nargs='?', const=True, default=False, help="Print exception")
     args = parser.parse_args()
+
     transit_agencies = args.transit_agency.split(",")
     total_rows = 0
     if args.batch_size <= 0:
@@ -129,8 +132,8 @@ def main():
                                                  exception=args.exception)
 
         publish_data.publish_data(payload=payloads, insert_process=args.insert_process, conns=conns,
-                                  topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
-                                  qos=args.qos, dir_name=args.dir_name, exception=args.exception)
+                                  topic=args.topic, compress=False, rest_timeout=args.rest_timeout,
+                                  qos=args.qos, dir_name=None, exception=args.exception)
 
         total_rows += len(payloads)
         if total_rows >= args.total_rows:

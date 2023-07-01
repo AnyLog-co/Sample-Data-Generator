@@ -10,7 +10,7 @@ sys.path.insert(0, DATA_GENERATORS)
 
 import data_generators.edgex_data as edgex_data
 import publishing_protocols.publish_data as publish_data
-from data_generators.file_processing import check_conversion_type
+import publishing_protocols.support as support
 
 
 def __validate_conn_pattern(conns: str) -> str:
@@ -49,7 +49,7 @@ def main():
     parser.add_argument('--topic', type=str, default='edgex-video', help='topic to send data against')
     parser.add_argument('--db-name', type=str, default='edgex', help='Logical database to store data in')
     parser.add_argument('--table', type=str, default='videos', help='Logical database to store data in')
-    parser.add_argument('--conversion-type', type=check_conversion_type, default='base64',
+    parser.add_argument('--conversion-type', type=support.validate_conversion_type, default='base64',
                         choices=['base64', 'bytesio', 'opencv'],
                         help='Format to convert file to - cv2 can be used for live camera feed')
     parser.add_argument('--qos', type=int, choices=list(range(0, 3)), default=0, help='MQTT Quality of Service')

@@ -45,19 +45,37 @@ def __generate_number(expected_value)->(int, float):
     else:
         if confidence < 0:
             confidence = abs(confidence)
-
+        elif confidence == 1:
+            confidence = random.random()
     return expected_value, confidence
 
 
 def get_data(dir_path:str, conversion_type:str="base64", exception:bool=False)->dict:
-    data = {}
+    """
+    Generate payload for EdgeX demo
+    :args:
+        dir_path:str - directory where videos are located
+        conversion_type:str - conversion type
+        exception:bool - whether to print exceptions
+    :global:
+        DATA:dict - video + number of people in the video
+    :params:
+        payload:dict - generated payload
+        video:str - randomly selected video from DATA
+        start_ts / end_ts:str - UTC current timestamp
+        full_file_path:str - full file path
+    :return:
+        payload
+    """
+    payload = {}
     video = random.choice(list(DATA))
     count, confidence = __generate_number(expected_value=DATA[video])
     start_ts = datetime.datetime.utcnow()
     end_ts = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
+
     full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(dir_path, video)))
     if os.path.isfile(full_file_path):
-        data = {
+        payload = {
             "start_ts": start_ts.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "end_ts": end_ts.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "file_content": file_processing.main(conversion_type=conversion_type, file_name=full_file_path, exception=exception),
@@ -65,5 +83,5 @@ def get_data(dir_path:str, conversion_type:str="base64", exception:bool=False)->
             "confidence": confidence
         }
 
-    return data
+    return payload
 
