@@ -25,7 +25,7 @@ VALUE_ARRAY = [
 ]
 
 
-def trig_value(db_name:str, array_counter:int)->dict:
+def trig_value(db_name:str, array_counter:int)->(dict, int):
    """
    Calculate sin, cosin and tangent value for VALUE_ARRAY[array_counter]
    :args:
@@ -33,6 +33,7 @@ def trig_value(db_name:str, array_counter:int)->dict:
    :return:
       dict object sin, cosin and tangent for VALUE_ARRAY[array_counter]
    """
+
    return {
       'dbms': db_name,
       'table': 'trig_data',
@@ -41,4 +42,3 @@ def trig_value(db_name:str, array_counter:int)->dict:
       'cos': math.cos(VALUE_ARRAY[array_counter]),
       'tan': math.tan(VALUE_ARRAY[array_counter])
    }
-

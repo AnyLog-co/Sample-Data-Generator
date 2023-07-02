@@ -84,8 +84,7 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
         payload["readings"]["binaryValue"] = payload['file_content'].__str__()
 
     if insert_process == "print":
-        generic_protocol.print_content(payloads=payload, conversion_type=conversion_type)
-
+        generic_protocol.print_content(payloads=payload)
     elif insert_process == "file" and blob_data_type == "":
         status = generic_protocol.write_to_file(payloads=payload, data_dir=dir_name, compress=compress,
                                                 exception=exception)
@@ -110,10 +109,9 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
                                                         exception=exception)
         # start loop
         mqtt_client.loop_start()
-
         # insert data
         status = mqtt_protocol.mqtt_process(mqtt_client=mqtt_client, payloads=payload, topic=topic, qos=qos, exception=exception)
-        if status is False and exception is False:
+        if status is False and exception is True:
             print(f'Failed to send MQTT message against connection {conn}')
         # stop loop
         mqtt_client.loop_stop()

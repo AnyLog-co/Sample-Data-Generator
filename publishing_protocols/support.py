@@ -1,18 +1,82 @@
-import datetime
+import argparse
 import gzip
 import hashlib
 import io
+import importlib
 import json
 import os
+import re
 import uuid
-try:
-    import pytz
-except:
-    pass
-import random
 
 
-def json_dumps(payloads:dict)->str:
+def validate_conn_pattern(conns:str)->str:
+    """
+    Validate connection information format is connect
+    :valid formats:
+        127.0.0.1:32049
+        user:passwd@127.0.0.1:32049
+    :args:
+        conn:str - REST connection information
+    :params:
+        pattern1:str - compiled pattern 1 (127.0.0.1:32049)
+        pattern2:str - compiled pattern 2 (user:passwd@127.0.0.1:32049)
+    :return:
+        if fails raises Error
+        if success returns conn
+    """
+    pattern1 = re.compile(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$')
+    pattern2 = re.compile(r'^\w+:\w+@\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$')
+
+    for conn in conns.split(","):
+        if not pattern1.match(conn) and not pattern2.match(conn):
+            raise argparse.ArgumentTypeError(f'Invalid REST connection format: {conn}')
+
+    return conns
+
+
+def validate_row_size(row_size)->int:
+    """
+    Validate row user inputted row size 
+    :args: 
+        row_size - user inputted row size 
+    :return: 
+        row size (if correct) as prints error
+    """
+    try:
+        value = int(row_size)
+    except Exception as error:
+        output = argparse.ArgumentTypeError(f"User input value {row_size} is not of type integer (Error: {error})")
+    else:
+        if value < 0:
+            output = argparse.ArgumentTypeError(f"User input value must be greater or equal to 0")
+        else:
+            output = value
+
+    return output
+
+
+def validate_conversion_type(conversion_type:str)->str:
+    """
+    Check whether the user inputted a valid conversion type and whether the proper packages are imported
+    :args:
+        conversion_type:str - user input
+    :raise:
+        raise an error if invalid arg or package is not installed
+    :return:
+        conversion_type
+    """
+    if conversion_type not in ['base64', 'bytesio', 'opencv']:
+        raise argparse.ArgumentTypeError(f"Invalid option {conversion_type}. Supported types: base64, bytesio, cv2")
+    elif conversion_type == 'base64' and  importlib.util.find_spec("base64") is None:
+        raise argparse.ArgumentTypeError(f"Unable to locate package base64 for conversion type {conversion_type}")
+    elif conversion_type == 'bytesio' and importlib.util.find_spec('io') is None:
+        raise argparse.ArgumentTypeError(f"Unable to locate package io for conversion type {conversion_type}")
+    elif conversion_type == 'opencv' and importlib.util.find_spec('cv2') is None:
+        raise argparse.ArgumentTypeError(f"Unable to locate package opencv2-python for conversion type {conversion_type}")
+
+    return conversion_type
+
+def json_dumps(payloads:dict, print_output:bool=False)->str:
     """
     Convert dictionary to string
     :args:
@@ -20,8 +84,11 @@ def json_dumps(payloads:dict)->str:
     :return:
         converted data, if fails return original data
     """
+    indent = 0
+    if print_output is True:
+        indent = 4
     try:
-        return json.dumps(payloads)
+        return json.dumps(payloads, indent=indent)
     except Exception as error:
         return payloads
 
@@ -184,3 +251,4 @@ def media_type(file_suffix:str)->str:
         suffix_value = 'video/mp4'
 
     return suffix_value
+

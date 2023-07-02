@@ -1,7 +1,8 @@
 import datetime
+import json
 import gzip
 import os
-
+import time
 import support
 
 
@@ -26,7 +27,10 @@ def __timestamp_to_file_name(orig_timestamp:str)->int:
     elif ' ' in orig_timestamp:
         timestamp = int(datetime.datetime.strptime(orig_timestamp, '%Y-%m-%d %H:%M:%S.%f').timestamp())
     else:
-        timestamp = int(datetime.datetime.strptime(orig_timestamp, '%Y-%m-%dT%H:%M:%S.%fZ').timestamp())
+        try:
+            timestamp = int(datetime.datetime.strptime(orig_timestamp, '%Y-%m-%dT%H:%M:%S.%fZ').timestamp())
+        except Exception as error:
+            timestamp = str(time.time()).split('.')[0]
 
     return timestamp
 
@@ -118,7 +122,7 @@ def __zip_file(file_name:str, exception:bool)->bool:
     return status
 
 
-def print_content(payloads:list, conversion_type:str):
+def print_content(payloads:list):
     """
     Print data to screen
     :args:
@@ -128,9 +132,9 @@ def print_content(payloads:list, conversion_type:str):
     """
     if isinstance(payloads, list):
         for payload in payloads:
-            print(support.json_dumps(payload))
+            print(support.json_dumps(payload, print_output=True))
     else:
-        print(support.json_dumps(payloads))
+        print(support.json_dumps(payloads, print_output=True))
 
 
 def write_to_file(payloads:list, data_dir:str=os.path.join(ROOT_PATH, 'data'), compress:bool=False,
@@ -174,12 +178,26 @@ def write_to_file(payloads:list, data_dir:str=os.path.join(ROOT_PATH, 'data'), c
             status = __write_to_file(file_path=file_path, payload=payload, append=append, compress=compress,
                                      exception=exception)
     else:
-        file_name = f"{payloads['dbms']}.{payloads['table']}"
-        del payloads['dbms']
-        del payloads['table']
+        if 'dbName' in payloads:
+            dbms = payloads['dbName']
+            del payloads['dbName']
+        else:
+            dbms = payloads['dbms']
+            del payloads['dbms']
+        if 'deviceName' in payloads:
+            table = payloads['deviceName']
+            del payloads['deviceName']
+        else:
+            table = payloads['table']
+            del payloads['table']
+
+        file_name = f"{dbms}.{table}"
 
         if file_name not in file_list:
-            file_list[file_name] = __timestamp_to_file_name(payloads['timestamp'])
+            if 'timestamp' in payloads:
+                file_list[file_name] = __timestamp_to_file_name(payloads['timestamp'])
+            else:
+                file_list[file_name] = __timestamp_to_file_name(datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
             file_name += f".{file_list[file_name]}.json"
             file_path = os.path.join(data_dir, file_name)
             append = False

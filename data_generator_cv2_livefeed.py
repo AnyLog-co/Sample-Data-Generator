@@ -4,29 +4,17 @@ import datetime
 import numpy
 import os
 import random
+import re
 import time
 import sys
+
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'publishing_protocols')
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
 import publishing_protocols.publish_data as publish_data
-
-
-def __row_size(arg):
-    try:
-        value = int(arg)
-    except Exception as error:
-        output = argparse.ArgumentTypeError(f"User input value {arg} is not of type integer (Error: {error})")
-    else:
-        if value < 0:
-            output = argparse.ArgumentTypeError(f"User input value must be greater or equal to 0")
-        else:
-            output = value
-
-    return output
-
+import support
 
 def __take_photo(camera_id:int, exception:bool=False)->(numpy.ndarray):
     """
@@ -152,7 +140,7 @@ def main():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('camera_id', type=int, default=0, help='Camera ID to be used by cv2')
-    parser.add_argument('conn', type=str, default='127.0.0.1:32149',
+    parser.add_argument('conn', type=support.validate_conn_pattern, default='127.0.0.1:32149',
                         help='{user}:{password}@{ip}:{port} for sending data either via REST or MQTT')
     parser.add_argument('protocol', type=str, choices=['post', 'mqtt', 'print'], default='post',
                         help='format to save data')
@@ -161,7 +149,7 @@ def main():
     parser.add_argument('--db-name', type=str, default='edgex', help='Logical database to store data in')
     parser.add_argument('--table', type=str, default='image', help='Logical database to store data in')
     parser.add_argument('--sleep', type=float, default=5, help='Wait time between each file to insert')
-    parser.add_argument('--repeat', type=__row_size, default=10, help='Number of times to repeat. If Set to 0, repeat indefinitly')
+    parser.add_argument('--repeat', type=support.validate_row_size, default=10, help='Number of times to repeat. If Set to 0, repeat indefinitly')
     parser.add_argument('--timeout', type=float, default=30, help='REST timeout (in seconds)')
     parser.add_argument('--exception', type=bool, nargs='?', const=True, default=False,
                         help='whether to print exceptions to screen')
@@ -170,32 +158,26 @@ def main():
     conns = None
     if args.conn is not None:
         conns = args.conn.split(',')
-    if args.protocol == "mqtt":
-        conns = publish_data.connect_mqtt(conns, exception=args.exception)
-        if not conns:
-            print("Failed to set connection for MQTT publisher")
-            exit(1)
-    elif args.protocol in ["post", "put"]:
-        conns = publish_data.setup_put_post_conn(conns=conns)
+        if args.protocol == "mqtt":
+            conns = publish_data.connect_mqtt(conns, exception=args.exception)
+            if not conns:
+                print("Failed to set connection for MQTT publisher")
+                exit(1)
+        elif args.protocol in ["post", "put"]:
+            conns = publish_data.setup_put_post_conn(conns=conns)
+    counter = 0
 
-    if args.repeat > 0:
-        for i in range(args.repeat):
-            frame = __take_photo(camera_id=args.camera_id, exception=args.exception)
-            if frame is not None:
-                payload = __create_payload(camera_id=args.camera_id, db_name=args.db_name, table=args.table, frame=frame)
-                publish_data.publish_data(payload=payload, insert_process=args.protocol, conns=conns, topic=args.topic,
-                                          qos=args.qos, rest_timeout=args.timeout, dir_name=None, compress= False,
-                                          exception=args.exception)
-            time.sleep(args.sleep)
-    else:
-        while True:
-            frame = __take_photo(camera_id=args.camera_id, exception=args.exception)
-            if frame is not None:
-                payload = __create_payload(camera_id=args.camera_id, db_name=args.db_name, table=args.table, frame=frame)
-                publish_data.publish_data(payload=[payload], insert_process=args.protocol, conns=conns, topic=args.topic,
-                                          qos=args.qos, rest_timeout=args.timeout, dir_name=None, compress=False,
-                                          exception=args.exception)
-            time.sleep(args.sleep)
+    while True:
+        frame = __take_photo(camera_id=args.camera_id, exception=args.exception)
+        if frame is not None:
+            payload = __create_payload(camera_id=args.camera_id, db_name=args.db_name, table=args.table, frame=frame)
+            publish_data.publish_data(payload=payload, insert_process=args.protocol, conns=conns, topic=args.topic,
+                                      qos=args.qos, rest_timeout=args.timeout, dir_name=None, compress=False,
+                                      exception=args.exception)
+        counter += 1
+        if counter == args.repeat:
+            exit(1)
+        time.sleep(args.sleep)
 
 
 if __name__ == '__main__':
