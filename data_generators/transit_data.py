@@ -1,7 +1,9 @@
-import ast
 import random
+try:
+    import geopy
+except:
+    pass
 
-import geopy
 import json
 import os
 import sys

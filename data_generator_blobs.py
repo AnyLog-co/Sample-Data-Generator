@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-import re
+
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
@@ -134,4 +134,6 @@ def main():
 
 
 if __name__ == '__main__':
+    support.validate_packages(is_blobs=True)
+    exit(1)
     main()

@@ -1,12 +1,16 @@
 import argparse
 import gzip
 import hashlib
-import io
+try:
+    import io
+except:
+    pass
 import importlib
 import json
 import os
 import re
 import uuid
+
 
 
 def validate_conn_pattern(conns:str)->str:
@@ -54,6 +58,28 @@ def validate_row_size(row_size)->int:
 
     return output
 
+def validate_packages(is_blobs:bool=False, is_traffic:bool=False):
+    """
+    Validate Packages
+    """
+    try:
+        import paho.mqtt
+    except ImportError as error:
+        raise argparse.ArgumentTypeError(f"Missing package: paho.mqtt (Error: {error}). cannot continue")
+    try:
+        import pytz
+    except ImportError as error:
+        raise argparse.ArgumentTypeError(f"Missing package: pytz (Error: {error}). cannot continue")
+
+    if is_traffic is True:
+        if not importlib.import_module("geopy"):
+            raise argparse.ArgumentTypeError(f"Missing package: geopy. cannot continue")
+    if is_blobs is True:
+        for package in ['base64', 'io', 'cv2', 'numpy']:
+            if not importlib.import_module(package):
+                raise argparse.ArgumentTypeError(f"Missing package: {package}. cannot continue")
+
+
 
 def validate_conversion_type(conversion_type:str)->str:
     """
@@ -67,11 +93,11 @@ def validate_conversion_type(conversion_type:str)->str:
     """
     if conversion_type not in ['base64', 'bytesio', 'opencv']:
         raise argparse.ArgumentTypeError(f"Invalid option {conversion_type}. Supported types: base64, bytesio, cv2")
-    elif conversion_type == 'base64' and  importlib.util.find_spec("base64") is None:
+    elif conversion_type == 'base64' and  importlib.import_module("base64") is None:
         raise argparse.ArgumentTypeError(f"Unable to locate package base64 for conversion type {conversion_type}")
-    elif conversion_type == 'bytesio' and importlib.util.find_spec('io') is None:
+    elif conversion_type == 'bytesio' and importlib.import_module('io') is None:
         raise argparse.ArgumentTypeError(f"Unable to locate package io for conversion type {conversion_type}")
-    elif conversion_type == 'opencv' and importlib.util.find_spec('cv2') is None:
+    elif conversion_type == 'opencv' and importlib.import_module('cv2') is None:
         raise argparse.ArgumentTypeError(f"Unable to locate package opencv2-python for conversion type {conversion_type}")
 
     return conversion_type

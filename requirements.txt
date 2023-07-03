@@ -1,5 +1,6 @@
 argparse>=0.0
 datetime>=0.0
+geopy>=0.0
 gzip>=0.0
 io>=0.0
 json>=0.0
