@@ -252,4 +252,5 @@ def main():
 
 
 if __name__ == '__main__':
+    support.validate_packages()
     main()

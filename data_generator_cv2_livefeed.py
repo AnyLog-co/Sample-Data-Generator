@@ -181,4 +181,5 @@ def main():
 
 
 if __name__ == '__main__':
+    support.validate_packages(is_blobs=True)
     main()
