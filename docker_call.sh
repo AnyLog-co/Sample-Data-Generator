@@ -19,7 +19,7 @@ fi
 
 if [[ -n ${TABLE_NAME} ]] ; then CMD+=" --table-name ${TABLE_NAME}" ; fi
 if [[ -n ${TOTAL_ROWS} ]] ; then CMD+=" --total-rows ${TOTAL_ROWS}" ; fi
-if [[ -n ${BATCH_SIZE} ]] ; then CMD+=" --batch-size ${TOTAL_ROWS}" ; fi
+if [[ -n ${BATCH_SIZE} ]] ; then CMD+=" --batch-size ${BATCH_SIZE}" ; fi
 if [[ -n ${SLEEP} ]] ; then CMD+=" --sleep ${SLEEP}" ; fi
 if [[ -n ${CONN} ]] ; then CMD+=" --conn ${CONN}" ; fi
 if [[ -n ${TOPIC} ]] ; then CMD+=" --topic ${TOPIC}"; fi

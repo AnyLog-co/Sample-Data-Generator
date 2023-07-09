@@ -16,10 +16,12 @@ The following provides the ability to insert data into AnyLog
     -- to file
 """
 import argparse
+import datetime
 import os
 import random
 import sys
 import time
+import json
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
@@ -36,14 +38,12 @@ import data_generators.performance_testing as performance_testing
 import data_generators.power_company as power_company
 import data_generators.timestamp_generator as timestamp_generator
 import data_generators.trig as trig
+import data_generators.transit_data as transit_data
 
-DATA_DIR = os.path.join(ROOT_PATH, 'data', 'new-data')
-if not os.path.isdir(DATA_DIR):
-    os.makedirs(DATA_DIR)
+DATA_DIR = os.path.join(ROOT_PATH, 'data')
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
 SECOND_INCREMENTS = 86400  # second increments (0.864) for 100000 rows
 
-DATA_TYPES = ['trig', 'performance', 'ping', 'percentagecpu', 'opcua', 'power', 'examples']
 
 def __rows_summary(db_name:str)->str:
     """
@@ -103,16 +103,6 @@ def __rows_summary(db_name:str)->str:
             print(f'\t{support.json_dumps(payloads[table])}')
         print('\n')
 
-def __check_data_types(data_types:str)->str:
-    for data_type in data_types.split(','):
-        if data_type not in DATA_TYPES:
-            argparse.ArgumentError(f"Invalid data type: {data_type}. Options: trig, performance, ping, percentagecpu, opcua, power, examples")
-    return data_types
-
-def __insert_process(insert_process:str)->str:
-    if insert_process not in ['print', 'file', 'put', 'post', 'mqtt']:
-        argparse.ArgumentError(f"Invalid insert process {insert_process}. Options: print, file, put, post, mqtt")
-    return insert_process
 
 def main():
     """
@@ -155,10 +145,11 @@ def main():
         conn_id:int - location along the
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('data_type', type=__check_data_types, default='trig',
-                        help=f'type(s) of data to insert into AnyLog. Supported types: trig, performance, ping, percentagecpu, opcua, power, examples')
-    parser.add_argument('insert_process', type=__insert_process, default='print',
-                        help=f"format to store generated data. Supported formats: print, file, put, post, mqtt")
+    parser.add_argument('data_type', type=str, choices=['trig', 'performance', 'ping', 'percentagecpu', 'opcua', 'power',
+                                                       'nvidia', 'examples'], default='trig',
+                       help='type of data to insert into AnyLog')
+    parser.add_argument('insert_process', type=str, choices=['print', 'file', 'put', 'post', 'mqtt'],
+                       default='print', help='format to store generated data')
     parser.add_argument('db_name', type=str, default='test', help='logical database name')
     parser.add_argument('--table-name', type=str, default=None,
                        help='Change default table name (valid for data_types except power)')
@@ -187,17 +178,6 @@ def main():
         __rows_summary(db_name=args.db_name)
         exit(1)
 
-    if args.insert_process == "file" and not os.path.isdir(args.dir_name):
-        try:
-            os.makedirs(args.dir_name)
-        except Exception as error:
-            print(f"failed to create {args.dir_name} or directory does not exist. Cannot continue...")
-            exit(1)
-
-    data_types = args.data_type.split(",")
-    if len(data_types) > 1:
-        args.table_name = None
-
     total_rows = 0
     data_type_counter = 0
     second_increments = 0
@@ -222,25 +202,25 @@ def main():
         second_increments = 0 * (SECOND_INCREMENTS / args.total_rows)
 
     last_conn = None
+
     while True:
-        data_type = random.choice(data_types)
-        if data_type == 'trig':  # {"timestamp", "sin", "cos", "trig"}
+        if args.data_type == 'trig':  # {"timestamp", "sin", "cos", "trig"}
             payload = trig.trig_value(db_name=args.db_name, array_counter=data_type_counter)
             data_type_counter += 1
             if data_type_counter == len(trig.VALUE_ARRAY):
                 data_type_counter = 0
-        elif data_type == 'performance': # {"timestamp", "value"}
+        elif args.data_type == 'performance': # {"timestamp", "value"}
             payload = performance_testing.generate_row(db_name=args.db_name, array_counter=data_type_counter)
             data_type_counter += 1
             if data_type_counter == len(performance_testing.VALUE_ARRAY):
                 data_type_counter = 0
-        elif data_type == 'opcua':
+        elif args.data_type == 'opcua':
             payload = opcua_data.get_opcua_data(db_name=args.db_name)
-        elif data_type == 'percentagecpu':
+        elif args.data_type == 'percentagecpu':
             payload = lsl_data.percentagecpu_sensor(db_name=args.db_name)
-        elif data_type == 'ping':
+        elif args.data_type == 'ping':
             payload = lsl_data.ping_sensor(db_name=args.db_name)
-        elif data_type == 'power':
+        elif args.data_type == 'power':
             payload = power_company.data_generator(db_name=args.db_name)
 
         payload = timestamp_generator.include_timestamp(payload=payload, timezone=args.timezone,
@@ -256,17 +236,17 @@ def main():
 
         if len(data) % args.batch_size == 0:
             last_conn = publish_data.publish_data(payload=data, insert_process=args.insert_process, conns=conns,
-                                      topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
-                                      qos=args.qos, dir_name=args.dir_name, last_conn=last_conn, exception=args.exception)
+                                                  topic=args.topic, compress=args.compress,
+                                                  rest_timeout=args.rest_timeout, qos=args.qos, dir_name=args.dir_name,
+                                                  last_conn=last_conn, exception=args.exception)
             data = []
         total_rows += 1
         if total_rows == args.total_rows:
                 if len(data) != 0:
-                    last_conn = publish_data.publish_data(payload=data, insert_process=args.insert_process, conns=conns,
-                                                          topic=args.topic, compress=args.compress,
-                                                          rest_timeout=args.rest_timeout,
-                                                          qos=args.qos, dir_name=args.dir_name, last_conn=last_conn,
-                                                          exception=args.exception)
+                    publish_data.publish_data(payload=data, insert_process=args.insert_process, conns=conns,
+                                              topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
+                                              qos=args.qos, dir_name=args.dir_name, last_conn=last_conn,
+                                              exception=args.exception)
                 exit(1)
 
         time.sleep(args.sleep)
