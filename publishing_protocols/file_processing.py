@@ -1,7 +1,17 @@
 import ast
-import base64
-import cv2
-import numpy
+try:
+    import base64
+except:
+    pass
+try:
+    import cv2
+except:
+    pass
+try:
+    import numpy
+except:
+    pass
+
 
 
 def __write_file(file_path:str, content:bytes, exception:bool=False)->bool:
