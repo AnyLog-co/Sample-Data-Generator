@@ -1,12 +1,5 @@
 #!/bin/bash
 
-rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generator_blobs.py
-rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generator_cv2_livefeed.py
-rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generator_traffic_data.py
-rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/Dockerfile
-rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/edgex_demo.py
-rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/README.md
-rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/requirements.txt
 
 CMD="python3 $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME}"
 
