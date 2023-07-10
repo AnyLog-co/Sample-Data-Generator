@@ -1,9 +1,8 @@
 #!/bin/bash
 
-
 CMD="python3 $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME}"
 
-if [[ ${HELP} == true ]] ;
+if [[ ${HELP} == true ]] || [[ -z ${DATA_TYPE}  ]] || [[ -z ${INSERT_PROCESS} ]] || [[ -z ${DB_NAME} ]];
 then
   CMD+=" --help"
   bash -c "${CMD}"
@@ -26,4 +25,5 @@ if [[ ${COMPRESS} == true ]] ; then CMD+=" --compress"; fi
 if [[ ${EXCEPTION} == true ]] ; then CMD+=" --exception" ; fi
 
 
+echo ${CMD}
 bash -c "${CMD}"

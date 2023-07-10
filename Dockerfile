@@ -12,10 +12,14 @@ RUN apk add bash
 
 # move to WORKDIR + COPY codebase
 WORKDIR $ANYLOG_ROOT_DIR
-COPY . Sample-Data-Generator
+RUN mkdir -p $ANYLOG_ROOT_DIR/Sample-Data-Generator
+COPY data_generators Sample-Data-Generator/data_generators
+COPY publishing_protocols Sample-Data-Generator/publishing_protocols
+COPY data_generator_generic.py Sample-Data-Generator/data_generator_generic.py
+COPY docker_call.sh Sample-Data-Generator/docker_call.sh
 
 # configure usr
-RUN chmod -R 777 $ANYLOG_ROOT_DIR
+RUN chmod 777 $ANYLOG_ROOT_DIR
 RUN chmod -R 755 $ANYLOG_ROOT_DIR/Sample-Data-Generator
 
 # install requirements via pip
@@ -38,7 +42,5 @@ RUN pip install --upgrade uuid>=0.0 || true
 RUN pip install --upgrade base64>=0.0 || true
 RUN pip install --upgrade opencv-python>=0 || true
 RUN pip install --upgrade numpy>=0.0 || true
-
-#RUN python3 -m pip install --no-cache-dir -r $ANYLOG_ROOT_DIR/Sample-Data-Generator/requirements.txt || true
 
 ENTRYPOINT bash $ANYLOG_ROOT_DIR/Sample-Data-Generator/docker_call.sh
