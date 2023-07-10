@@ -24,6 +24,4 @@ if [[ ${PERFORMANCE_TESTING} == true ]] ; then CMD+=" --performance-testing"; fi
 if [[ ${COMPRESS} == true ]] ; then CMD+=" --compress"; fi
 if [[ ${EXCEPTION} == true ]] ; then CMD+=" --exception" ; fi
 
-
-echo ${CMD}
 bash -c "${CMD}"
