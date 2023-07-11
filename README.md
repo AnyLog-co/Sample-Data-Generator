@@ -75,7 +75,7 @@ docker run -it --detach-keys=ctrl-d --name data-generator --network host \
    -v data-generator:/app/Sample-Data-Generator/data/new-data \
 --rm anylogco/sample-data-generator:latest
 ```
-s
+
 ## Local Install
 1. Clone Sample Data Generator
 ```shell
@@ -128,8 +128,8 @@ python3 Sample-Data-Generator/data_generator_generic.py
 # generic help with detailed information such as sample call and aviloble data.
 python3 Sample-Data-Generator/data_generator_generic.py --extended-help
 ```
-    * Using print or file _INSERT_PROCESS_
-* Sample calls to send data into AnyLog 
+
+  * Sample calls to send data into AnyLog 
 ```shell
 # send ping data via REST PUT to multiple operator nodes
 python3 Sample-Data-Generator/data_generator_generic.py ping put test \
@@ -148,7 +148,7 @@ python3 Sample-Data-Generator/data_generator_generic.py ping,percentagecpu put t
   --timezone utc
 ```
 
-* Using print or file _INSERT_PROCESS_. Directions to access files stored in docker volume can be found [here](https://github.com/AnyLog-co/documentation/blob/master/deployments/Support/cheatsheet.md).   
+  * Using print or file _INSERT_PROCESS_
 ```shell
 # print OPCUA to screen 
 python3 Sample-Data-Generator/data_generator_generic.py opcua print test \
