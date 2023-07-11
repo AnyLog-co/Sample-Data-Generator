@@ -72,13 +72,16 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
     """
     conn = None
     auth = None
-    mqtt_conn = None
 
-    if insert_process in ['put', 'post', 'mqtt']:
-        while (conn == last_conn or conn is None) and conns is not None :
-            conn = random.choice(list(conns.keys()))
-            if insert_process in ['put', 'post']:
-                auth = conns[conn]
+    if conns is not None:
+        if len(conns) == 1:
+            conn = list(conns)[0]
+        else:
+            # randomly select a connection to AnyLog, that has not been used the last time
+            while conn == last_conn or conn is None:
+                conn = random.choice(list(conns.keys()))
+        if isinstance(conns, dict):
+            auth = conns[conn]
 
 
     if conversion_type == 'bytesio' and blob_data_type == 'image' and insert_process != "file":

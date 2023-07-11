@@ -2,11 +2,15 @@
 
 CMD="python3 $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generator_generic.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME}"
 
-if [[ ${HELP} == true ]] || [[ -z ${DATA_TYPE}  ]] || [[ -z ${INSERT_PROCESS} ]] || [[ -z ${DB_NAME} ]];
-then
+if [[ ${EXTENDED_HELP} == true ]]; then
+  CMD+=" --extended-help"
+  bash -c "${CMD}"
+  exit 1
+elif [[ ${HELP} == true ]] || [[ -z ${DATA_TYPE}  ]] || [[ -z ${INSERT_PROCESS} ]] || [[ -z ${DB_NAME} ]]; then
   CMD+=" --help"
   bash -c "${CMD}"
   exit 1
+
 fi
 
 if [[ -n ${TABLE_NAME} ]] ; then CMD+=" --table-name ${TABLE_NAME}" ; fi

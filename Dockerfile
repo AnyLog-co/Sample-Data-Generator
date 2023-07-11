@@ -13,10 +13,19 @@ RUN apk add bash
 # move to WORKDIR + COPY codebase
 WORKDIR $ANYLOG_ROOT_DIR
 RUN mkdir -p $ANYLOG_ROOT_DIR/Sample-Data-Generator
-COPY data_generators Sample-Data-Generator/data_generators
-COPY publishing_protocols Sample-Data-Generator/publishing_protocols
-COPY data_generator_generic.py Sample-Data-Generator/data_generator_generic.py
-COPY docker_call.sh Sample-Data-Generator/docker_call.sh
+COPY data_generators $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators
+RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/car_insight.py
+RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/data_generator_images.py
+RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/data_generator_videos.py
+RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/edgex_data.py
+RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/file_processing.py
+RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/live_feed.py
+RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/nvidia_read_logs.py
+RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/transit_data.py
+
+COPY publishing_protocols $ANYLOG_ROOT_DIR/Sample-Data-Generator/publishing_protocols
+COPY data_generator_generic.py $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generator_generic.py
+COPY docker_call.sh $ANYLOG_ROOT_DIR/Sample-Data-Generator/docker_call.sh
 
 # configure usr
 RUN chmod 777 $ANYLOG_ROOT_DIR
@@ -43,4 +52,5 @@ RUN pip install --upgrade base64>=0.0 || true
 RUN pip install --upgrade opencv-python>=0 || true
 RUN pip install --upgrade numpy>=0.0 || true
 
+#ENTRYPOINT /bin/bash
 ENTRYPOINT bash $ANYLOG_ROOT_DIR/Sample-Data-Generator/docker_call.sh
