@@ -131,7 +131,6 @@ def put_data(payloads:list, conn:str, auth:tuple=(), timeout:int=30, exception:b
     }
 
     formatted_payloads = __convert_data(payloads=payloads)
-
     for table in formatted_payloads:
         headers['dbms'], headers['table'] = table.split('.')
         payload = support.json_dumps(payloads=formatted_payloads[table])
