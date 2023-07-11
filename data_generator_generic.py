@@ -39,7 +39,7 @@ import data_generators.power_company as power_company
 import data_generators.timestamp_generator as timestamp_generator
 import data_generators.trig as trig
 
-DATA_DIR = os.path.join(ROOT_PATH, 'data')
+DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
 SECOND_INCREMENTS = 86400  # second increments (0.864) for 100000 rows
 

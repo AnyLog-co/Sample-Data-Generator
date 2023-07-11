@@ -1,5 +1,13 @@
 # Sample Data Generator
-Sample data generators used to insert demo data into AnyLog.  
+Sample data generators used to insert demo data into AnyLog. 
+
+When using _MQTT_ or REST _POST_to insert data, users need to configure a [MQTT client](https://github.com/AnyLog-co/documentation/blob/master/message%20broker.md#example) 
+* [Ping or PercentageCPU](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_ping_percentage_demo.al)
+* [Power](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_power.al)
+* [Performance](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_performance.al)
+* [Trig](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_trig.al)
+* [OPCUA](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_opcua.al)
+
 
 ## Docker Deployment 
 * Help 
@@ -32,7 +40,7 @@ docker run -it --detach-keys=ctrl-d --name data-generator --network host \
 # send ping and percentagecpu data via REST POST to an operator nodes
 docker run -it --detach-keys=ctrl-d --name data-generator --network host \
    -e DATA_TYPE=ping,percentagecpu \
-   -e INSERT_PROCESS=postt \
+   -e INSERT_PROCESS=post \
    -e DB_NAME=test \
    -e TOTAL_ROWS=100 \
    -e BATCH_SIZE=10 \
@@ -42,6 +50,32 @@ docker run -it --detach-keys=ctrl-d --name data-generator --network host \
 --rm anylogco/sample-data-generator:latest
 ```
 
+* Using print or file _INSERT_PROCESS_. Directions to access files stored in docker volume can be found [here](https://github.com/AnyLog-co/documentation/blob/master/deployments/Support/cheatsheet.md).   
+```shell
+# print OPCUA to screen 
+docker run -it --detach-keys=ctrl-d --name data-generator --network host \
+   -e DATA_TYPE=opcua \
+   -e INSERT_PROCESS=print \
+   -e DB_NAME=test \
+   -e TOTAL_ROWS=100 \
+   -e BATCH_SIZE=10 \
+   -e SLEEP=0.5 \
+   -e TIMEZONE=local \
+--rm anylogco/sample-data-generator:latest
+
+# store POWER data into file(s) with performance enabled  
+docker run -it --detach-keys=ctrl-d --name data-generator --network host \
+   -e DATA_TYPE=power \
+   -e INSERT_PROCESS=file \
+   -e DB_NAME=test \
+   -e TOTAL_ROWS=1000 \
+   -e BATCH_SIZE=10 \
+   -e SLEEP=0.5 \
+   -e TIMEZONE=local \
+   -v data-generator:/app/Sample-Data-Generator/data/new-data \
+--rm anylogco/sample-data-generator:latest
+```
+s
 ## Local Install
 1. Clone Sample Data Generator
 ```shell
@@ -94,7 +128,42 @@ python3 Sample-Data-Generator/data_generator_generic.py
 # generic help with detailed information such as sample call and aviloble data.
 python3 Sample-Data-Generator/data_generator_generic.py --extended-help
 ```
-    * 
+    * Using print or file _INSERT_PROCESS_
+* Sample calls to send data into AnyLog 
+```shell
+# send ping data via REST PUT to multiple operator nodes
+python3 Sample-Data-Generator/data_generator_generic.py ping put test \
+  --total-rows 100 \
+  --batch-size 10 \
+  --sleep 0.5 \
+  --conn 198.74.50.131:32149,178.79.143.174:32149 \
+  --timezone utc
+
+# send ping and percentagecpu data via REST POST to an operator nodes
+python3 Sample-Data-Generator/data_generator_generic.py ping,percentagecpu put test \
+  --total-rows 100 \
+  --batch-size 10 \
+  --sleep 0.5 \
+  --conn 198.74.50.131:32149 \
+  --timezone utc
+```
+
+* Using print or file _INSERT_PROCESS_. Directions to access files stored in docker volume can be found [here](https://github.com/AnyLog-co/documentation/blob/master/deployments/Support/cheatsheet.md).   
+```shell
+# print OPCUA to screen 
+python3 Sample-Data-Generator/data_generator_generic.py opcua print test \
+  --total-rows 100
+  --batch-size 10
+  --sleep 0.5
+  --timezone local
+
+python3 Sample-Data-Generator/data_generator_generic.py power print test
+  --total-rows 1000 \
+  ---batch-size 10 \
+  --sleep 0.5 \
+  --timezone local \
+  --data-dir Sample-Data-Generator/data/new-data # <-- this is the default directory 
+```
 
 ## Sample JSON
 ```json
