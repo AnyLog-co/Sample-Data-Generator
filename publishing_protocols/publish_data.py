@@ -55,7 +55,7 @@ def connect_mqtt(conns:list, exception:bool=False)->dict:
 
 
 def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, rest_timeout:int=30, qos:int=0, blob_data_type:str='',
-                 conversion_type:str="base64", dir_name:str=None, compress:bool=False, exception:bool=False):
+                 conversion_type:str="base64", dir_name:str=None, compress:bool=False, last_conn:str=None, exception:bool=False):
     """
     Publish data based on the insert_process
     :args:
@@ -72,11 +72,17 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
     """
     conn = None
     auth = None
-    mqtt_conn = None
-    if conns:
-        conn = random.choice(list(conns.keys()))
-    if insert_process in ['put', 'post']:
-        auth = conns[conn]
+
+    if conns is not None:
+        if len(conns) == 1:
+            conn = list(conns)[0]
+        else:
+            # randomly select a connection to AnyLog, that has not been used the last time
+            while conn == last_conn or conn is None:
+                conn = random.choice(list(conns.keys()))
+        if isinstance(conns, dict):
+            auth = conns[conn]
+
 
     if conversion_type == 'bytesio' and blob_data_type == 'image' and insert_process != "file":
         payload['file_content'] = payload['file_content'].__str__()
@@ -118,3 +124,5 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
 
         # disconnect from node
         mqtt_protocol.disconnect_mqtt(conn_info=conn, mqtt_conn=mqtt_client, exception=exception)
+
+    return conn

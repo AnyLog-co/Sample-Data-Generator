@@ -1,5 +1,9 @@
 import random
-from paho.mqtt import client
+try:
+    from paho.mqtt import client
+except:
+    pass
+
 import time
 import support
 import sys

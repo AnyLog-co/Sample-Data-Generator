@@ -1,72 +1,171 @@
 # Sample Data Generator
-Sample data generators used to demonstrate and test AnyLog 
+Sample data generators used to insert demo data into AnyLog. 
 
-## Requirements 
+When using _MQTT_ or REST _POST_to insert data, users need to configure a [MQTT client](https://github.com/AnyLog-co/documentation/blob/master/message%20broker.md#example) 
+* [Ping or PercentageCPU](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_ping_percentage_demo.al)
+* [Power](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_power.al)
+* [Performance](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_performance.al)
+* [Trig](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_trig.al)
+* [OPCUA](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_opcua.al)
+
+
+## Docker Deployment 
+* Help 
+```shell
+# generic
+docker run -it --detach-keys=ctrl-d --name data-generator --network host \
+  -e HELP=true \
+  --rm anylogco/sample-data-generator:latest
+     
+# generic help with detailed information such as sample call and aviloble data. 
+docker run -it --detach-keys=ctrl-d --name data-generator --network host \
+  -e EXTENDED_HELP=true \
+  --rm anylogco/sample-data-generator:latest
+```
+
+* Sample calls to send data into AnyLog 
+```shell
+# send ping data via REST PUT to multiple operator nodes
+docker run -it --detach-keys=ctrl-d --name data-generator --network host \
+   -e DATA_TYPE=ping \
+   -e INSERT_PROCESS=put \
+   -e DB_NAME=test \
+   -e TOTAL_ROWS=100 \
+   -e BATCH_SIZE=10 \
+   -e SLEEP=0.5 \
+   -e CONN=198.74.50.131:32149,178.79.143.174:32149 \
+   -e TIMEZONE=utc \
+--rm anylogco/sample-data-generator:latest
+
+# send ping and percentagecpu data via REST POST to an operator nodes
+docker run -it --detach-keys=ctrl-d --name data-generator --network host \
+   -e DATA_TYPE=ping,percentagecpu \
+   -e INSERT_PROCESS=post \
+   -e DB_NAME=test \
+   -e TOTAL_ROWS=100 \
+   -e BATCH_SIZE=10 \
+   -e SLEEP=0.5 \
+   -e CONN=198.74.50.131:32149 \
+   -e TIMEZONE=utc \
+--rm anylogco/sample-data-generator:latest
+```
+
+* Using print or file _INSERT_PROCESS_. Directions to access files stored in docker volume can be found [here](https://github.com/AnyLog-co/documentation/blob/master/deployments/Support/cheatsheet.md).   
+```shell
+# print OPCUA to screen 
+docker run -it --detach-keys=ctrl-d --name data-generator --network host \
+   -e DATA_TYPE=opcua \
+   -e INSERT_PROCESS=print \
+   -e DB_NAME=test \
+   -e TOTAL_ROWS=100 \
+   -e BATCH_SIZE=10 \
+   -e SLEEP=0.5 \
+   -e TIMEZONE=local \
+--rm anylogco/sample-data-generator:latest
+
+# store POWER data into file(s) with performance enabled  
+docker run -it --detach-keys=ctrl-d --name data-generator --network host \
+   -e DATA_TYPE=power \
+   -e INSERT_PROCESS=file \
+   -e DB_NAME=test \
+   -e TOTAL_ROWS=1000 \
+   -e BATCH_SIZE=10 \
+   -e SLEEP=0.5 \
+   -e TIMEZONE=local \
+   -v data-generator:/app/Sample-Data-Generator/data/new-data \
+--rm anylogco/sample-data-generator:latest
+```
+s
+## Local Install
+1. Clone Sample Data Generator
+```shell
+git clone https://github.com/AnyLog-co/Sample-Data-Generator
+```
+
+2. Install requirements - make sure python3 and python3-pip are installed   
 ```shell
 python3 -m pip install -r $HOME/Sample-Data-Generator/requirements.txt
 ```
 
-## Generic Data Generator 
-[data_generator_generic.py](data_generator_generic_old.py) provides users different sets of dummy data, and send it into 
-AnyLog via _MQTT_, _PUT_ or _POST_.
-
-### Deployment
+3. Run Data Generator 
+   * Help 
 ```shell
-localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py --help
-positional arguments:
-  data_type   DATA_TYPE   type of data to insert into AnyLog  [default: trig]
-      * trig
-      * performance
-      * ping
-      * percentagecpu
-      * opcua
-      * power
-      * examples - sample row(s) for each datta type
-  insert_process    INSERT_PROCESS    format to store generated data    [default: print]
-    * print
-    * file
-    * put
-    * post
-    * mqtt
-  db_name   DB_NAME   logical database name     [default: test]
-optional arguments:
+# generic
+python3 Sample-Data-Generator/data_generator_generic.py
+<< COMMENT
+:positional arguments:
+  data_type             type of data to insert into AnyLog. Choices: trig, performance, ping, percentagecpu, opcua, power
+  insert_process        format to store generated data. Choices: print, file, put, post, mqtt
+  db_name               logical database name
+:options:
   -h, --help            show this help message and exit
-  --total-rows    TOTAL_ROWS      number of rows to insert. If set to 0, will run continuously    [default: 1000000]
-  --batch-size    BATCH_SIZE      number of rows to insert per iteration                          [default: 1000]
-  --sleep         SLEEP           wait time between each row                                      [default: 0.5]
-  --timezone      TIMEZONE        timezone for generated timestamp(s)                             [default: utc | options: local,UTC,ET,BR,JP,WS,AU,IT]
-  --enable-timezone-range     [ENABLE_TIMEZONE_RANGE]       set timestamp within a range of +/- 1 month
-  --performance-testing       [PERFORMANCE_TESTING]         insert all rows within a 24 hour period
-  --conn          CONN            {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
-  --topic         TOPIC           topic for publishing data via REST POST or MQTT
-  --rest-timeout  REST_TIMEOUT    how long to wait before stopping REST       [default: 30]
-  --dir-name      DIR_NAME        directory when storing to file
-  --compress      [COMPRESS]      whether to zip data dir
-  --exception     [EXCEPTION]     whether to print exceptions
-
-
-localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py trig post test \
-  --total-rows 1000000 \
-  --batch-size 1000 \
+  --extended-help [EXTENDED_HELP]
+                        Generates help, but extends to include a sample row per data type
+  --table-name TABLE_NAME
+                        Change default table name (valid for data_types except power)
+  --total-rows TOTAL_ROWS
+                        number of rows to insert. If set to 0, will run continuously
+  --batch-size BATCH_SIZE
+                        number of rows to insert per iteration
+  --sleep SLEEP         wait time between each row
+  --timezone {local,utc,et,br,jp,ws,au,it}
+                        timezone for generated timestamp(s)
+  --enable-timezone-range [ENABLE_TIMEZONE_RANGE]
+                        set timestamp within a range of +/- 1 month
+  --performance-testing [PERFORMANCE_TESTING]
+                        insert all rows within a 24 hour period
+  --conn CONN           {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
+  --topic TOPIC         topic for publishing data via REST POST or MQTT
+  --rest-timeout REST_TIMEOUT
+                        how long to wait before stopping REST
+  --qos {0,1,2}         MQTT Quality of Service
+  --dir-name DIR_NAME   directory when storing to file
+  --compress [COMPRESS]
+                        whether to zip data dir
+  --exception [EXCEPTION]
+                        whether to print exceptions
+<<
+# generic help with detailed information such as sample call and aviloble data.
+python3 Sample-Data-Generator/data_generator_generic.py --extended-help
+```
+    * Using print or file _INSERT_PROCESS_
+* Sample calls to send data into AnyLog 
+```shell
+# send ping data via REST PUT to multiple operator nodes
+python3 Sample-Data-Generator/data_generator_generic.py ping put test \
+  --total-rows 100 \
+  --batch-size 10 \
   --sleep 0.5 \
-  --timezone local \
-  --enable-timezone-range \
-  --conn 10.0.0.226:32149 \
-  --topic trig_data \
-  --exception  
+  --conn 198.74.50.131:32149,178.79.143.174:32149 \
+  --timezone utc
 
-localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py performance mqtt test \
-  --total-rows 1000000 \
-  --batch-size 1000 \
+# send ping and percentagecpu data via REST POST to an operator nodes
+python3 Sample-Data-Generator/data_generator_generic.py ping,percentagecpu put test \
+  --total-rows 100 \
+  --batch-size 10 \
   --sleep 0.5 \
-  --timezone local \
-  --performance-testing \ 
-  --conn 10.0.0.226:32150 \
-  --topic performance_data \
-  --exception  
+  --conn 198.74.50.131:32149 \
+  --timezone utc
 ```
 
-### Sample JSON
+* Using print or file _INSERT_PROCESS_. Directions to access files stored in docker volume can be found [here](https://github.com/AnyLog-co/documentation/blob/master/deployments/Support/cheatsheet.md).   
+```shell
+# print OPCUA to screen 
+python3 Sample-Data-Generator/data_generator_generic.py opcua print test \
+  --total-rows 100
+  --batch-size 10
+  --sleep 0.5
+  --timezone local
+
+python3 Sample-Data-Generator/data_generator_generic.py power print test
+  --total-rows 1000 \
+  ---batch-size 10 \
+  --sleep 0.5 \
+  --timezone local \
+  --data-dir Sample-Data-Generator/data/new-data # <-- this is the default directory 
+```
+
+## Sample JSON
 ```json
 # Data Type: trig
   {"dbms": "test", "table": "trig_data", "value": -3.141592653589793, "sin": -1.2246467991473532e-16, "cos": -1.0, "tan": 1.2246467991473532e-16, "timestamp": "2022-08-27T15:50:12.001399Z"}
@@ -90,108 +189,4 @@ localhost:~/$ python3 Sample-Data-Generator/data_generator_generic.py performanc
   {"dbms": "test", "table": "eswitch", "location": "38.89773, -77.03653", "value": 9.530111494215165, "timestamp": "2022-08-27T15:50:12.205323Z"}
   {"dbms": "test", "table": "pmu", "location": "38.89773, -77.03653", "value": 30.51712172789563, "timestamp": "2022-08-27T15:50:12.205323Z"}
   {"dbms": "test", "table": "synchrophasor", "location": "38.89773, -77.03653", "phasor": "bXlvzdYc", "frequency": 1216.6996978149687, "dfreq": 2326.468559576384, "analog": 4.591088473171304, "timestamp": "2022-08-27T15:50:12.205323Z"}
-```
-## Video & Image Processing
-[sample_data_generator_blobs.py](data_generator_blobs.py) stores images or videos into MongoDB, and associates them with
-correlating data. The code requires using the images / videos found in our [Google Docs](https://drive.google.com/drive/folders/1sOYcH8Ie8tL4Cvt2xXEfLjlEz1yoYZMM?usp=sharing), 
-which is open to the public. 
-
-
-### AnyLog Requirements
-Blobs data require: 
-* [MongoDB](https://github.com/AnyLog-co/documentation/blob/mastaer/deployments/database_configuration.md#mongodb) to be 
-running on the node - in order to accept blobs coming in
-* `run mqtt client` active associated with the data coming 
-
-
-### Deployment Options
-```shell
-localhost:~/$ python3 Sample-Data-Generator/data_generator_blobs.py --help 
-positional arguments:
-  dir_name              directory where files are stored - data is generated based on the file
-  conn                  {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
-  protocol              format to save data
-    * post
-    * mqtt
-    * print      
-optional arguments:
-  -h, --help                show this help message and exit
-  --topic       TOPIC       topic to send data agaisnt
-  --db-name     DB_NAME     Logical database to store data in
-  --table       TABLE       Logical database to store data in
-  --sleep       SLEEP       Wait time between each file to insert
-  --timeout     TIMEOUT     REST timeout (in seconds)
-  --timezone    TIMEZONE    timezone for generated timestamp(s)
-    * local 
-    * utc 
-    * et 
-    * br
-    * jp
-    * ws
-    * au
-    * it
-  --enable-timezone-range  [ENABLE_TIMEZONE_RANGE]   set timestamp within a range of +/- 1 month
-  --reverse                [REVERSE]                 whether to store data in reversed (file) order
-  --exception              [EXCEPTION]               whether to print exceptions to screen
-
-localhost:~/$ python3 Sample-Data-Generator/data_generator_blobs.py $HOME/Downloads/sample_data/images 10.0.0.183:32149 post \
-  --db-name test \
-  --table factory_data \
-  --topic image_mapping \
-  --exception 
- 
- localhost:~/$ python3 Sample-Data-Generator/data_generator_blobs.py $HOME/Downloads/sample_data/videos 10.0.0.183:32149 post \
-  --db-name test \
-  --table factory_data \
-  --topic video-mapping \
-  --sleep 10 \
-  --reverse \
-  --exception 
-```
-
-### Sample JSON
-The first JSON object provides an example for video data. The video is associated with values, such as: 
-* start / end timestamp 
-* number of cars 
-* speed 
-While the second JSON provides an example of image data. The data is associated with information regarding the image,
-such as:  
-* whether it's _Ok_ or _Nok_ - `status`
-* "coordinates" on the image that have a detected value - `detection`
-```json
-{
-    "apiVersion": "v2",
-    "id": "6b055b44-6eae-4f5d-b2fc-f9df19bf42cf",
-    "deviceName": "anylog-data-generator",
-    "origin": 1660163909,
-    "profileName": "anylog-video-generator",
-    "readings": [{
-        "start_ts": "2022-01-01 00:00:00",
-        "end_ts": "2022-01-01 00:00:05",
-        "binaryValue": "AAAAHGZ0eXBtcDQyAAAAAWlzb21tcDQxbXA0MgADWChtb292AAAAbG12aGQAAAAA3xnEUt8ZxFMAAHUwAANvyQABAA",
-        "mediaType": "video/mp4",
-        "origin": 1660163909,
-        "profileName": "traffic_data",
-        "resourceName": "OnvifSnapshot",
-        "valueType": "Binary",
-        "num_cars": 5,
-        "speed": 65.3
-    }],
-    "sourceName": "OnvifSnapshot"
-}, 
-{
-    "id": "f85b2ddc-761d-88da-c524-12283fbb0f21",
-    "dbms": "ntt",
-    "table": "images",
-    "file_name": "20200306202533614.jpeg",
-    "file_type": "image/jpeg",
-    "file_content": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD",
-    "detection": [
-            {"class": "kizu", "bbox": [666, 275, 682, 291], "score": 0.83249},
-            {"class": "kizu", "bbox": [669, 262, 684, 277], "score": 0.83249},
-            {"class": "kizu", "bbox": [688, 261, 706,276], "score": 0.72732},
-            {"class": "kizu", "bbox": [698, 277, 713, 292], "score": 0.72659},
-    ],
-    "status": "ok"
-}
 ```

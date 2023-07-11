@@ -1,5 +1,8 @@
 import datetime
-import pytz
+try:
+    import pytz
+except:
+    pass
 import random
 
 
