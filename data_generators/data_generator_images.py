@@ -13,6 +13,7 @@ sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
 import data_generators.file_processing as file_processing
+import data_generators.timestamp_generator as timestamp_generator
 import publishing_protocols.support as support
 
 JSON_FILE = os.path.join(ROOT_PATH, 'data', 'ntt_factory_data.json')
@@ -132,7 +133,8 @@ def __get_data(file_name:str, exception:bool)->(list, str):
     return detection, status
 
 
-def __create_data(db_name:str, table:str, file_name:str, file_content:str, detections:list, status:str)->dict:
+def __create_data(db_name:str, table:str, file_name:str, file_content:str, detections:list, status:str,
+                  timezone:str="local", enable_timezone_range:bool=False)->dict:
     """
     :args:
         dbms:str - logical database name
@@ -158,10 +160,12 @@ def __create_data(db_name:str, table:str, file_name:str, file_content:str, detec
         "status": "ok"
     }
     """
+    timestamp = timestamp_generator.generate_timestamps_range(timezone=timezone, enable_timezone_range=enable_timezone_range)
     payload = {
-        'id': str(uuid.uuid4()),
         'dbms': db_name,
         'table': table,
+        'id': str(uuid.uuid4()),
+        'timestamp': timestamp,
         'file_name': file_name,
         'file_type': support.media_type(file_suffix=file_name.rsplit('.', 1)[-1]),
         'file_content': file_content,
@@ -172,10 +176,10 @@ def __create_data(db_name:str, table:str, file_name:str, file_content:str, detec
     return payload
 
 
-def image_data(db_name:str, table:str, conversion_type:str='base64',
+def image_data(db_name:str, table:str, conversion_type:str='base64', timezone:str="local",
                url:str="http://10.31.1.197/v3/predict/e99aefb2-abfc-4ab0-88fb-59e3e8f2b47f",
                api_key:str="8KK7aDH5fttoV.Dd", authentication:str="b3JpOnRlc3Q=", last_blob:str=None,
-               remote_data:bool=False, exception:bool=False)->(dict, str):
+               enable_timezone_range:bool=False, remote_data:bool=False, exception:bool=False)->(dict, str):
     """
     Based on either live feed data or ntt_factory_data.json file generate payload for an image
     :args:
@@ -195,6 +199,10 @@ def image_data(db_name:str, table:str, conversion_type:str='base64',
         detection:list - detection value(s) based on file_namedetection
         status:str - status value based on file_name
     """
+    if not os.path.isdir(DATA_DIR):
+        print(f"Failed to locate directory with images/videos ({DATA_DIR}), cannot continue...")
+        exit(1)
+
     image = None
     while image == last_blob or image is None:
         image = random.choice(os.listdir(DATA_DIR))
@@ -208,7 +216,7 @@ def image_data(db_name:str, table:str, conversion_type:str='base64',
         detection, status = __get_data(file_name=image, exception=exception)
 
     payload = __create_data(db_name=db_name, table=table, file_name=image, file_content=file_content,
-                            detections=detection, status=status)
+                            detections=detection, status=status, timezone=timezone, enable_timezone_range=enable_timezone_range)
 
     return payload, image
 

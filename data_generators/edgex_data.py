@@ -11,6 +11,7 @@ sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
 import data_generators.file_processing as file_processing
+import data_generators.timestamp_generator as timestamp_generator
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data', "edgex-demo")
 
@@ -62,7 +63,8 @@ def __generate_number(expected_value:int)->(int, float):
     return expected_value, confidence
 
 
-def get_data(db_name:str, table:str, conversion_type:str="base64", last_blob:str=None, exception:bool=False)->dict:
+def get_data(db_name:str, table:str, conversion_type:str="base64", last_blob:str=None,
+             timezone:str="local", enable_timezone_range:bool=False, exception:bool=False)->dict:
     """
     Generate payload for EdgeX demo
     :args:
@@ -82,13 +84,12 @@ def get_data(db_name:str, table:str, conversion_type:str="base64", last_blob:str
     :return:
         payload
     """
-    payload = {}
-    video = None
-
     if not os.path.isdir(DATA_DIR):
-        print(f"Failed to locate dirctory with images/videos ({DATA_DIR}), cannot continue...")
+        print(f"Failed to locate directory with images/videos ({DATA_DIR}), cannot continue...")
         exit(1)
 
+    payload = {}
+    video = None
 
     while video == last_blob or video is None:
         video = random.choice(list(DATA))
@@ -97,14 +98,15 @@ def get_data(db_name:str, table:str, conversion_type:str="base64", last_blob:str
 
     if os.path.isfile(full_file_path):
         count, confidence = __generate_number(expected_value=DATA[video])
-        start_ts = datetime.datetime.utcnow()
-        end_ts = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
+        start_ts, end_ts = timestamp_generator.generate_timestamps_range(timezone=timezone,
+                                                                         enable_timezone_range=enable_timezone_range,
+                                                                         period=5)
 
         payload = {
             "dbms": db_name,
             "table": table,
-            "start_ts": start_ts.strftime("%Y-%m-%dT%H:%M:%S.%f"),
-            "end_ts": end_ts.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "start_ts": start_ts,
+            "end_ts": end_ts,
             "file_content": file_processing.main(conversion_type=conversion_type, file_name=full_file_path, exception=exception),
             "count": count,
             "confidence": confidence

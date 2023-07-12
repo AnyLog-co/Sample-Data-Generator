@@ -202,6 +202,8 @@ def main():
                 args.table_name = "people_video"
             payload, last_blob = edgex_data.get_data(db_name=args.db_name, table=args.table_name,
                                                      conversion_type=args.conversion_type, last_blob=last_blob,
+                                                     timezone=args.timezone,
+                                                     enable_timezone_range=args.enable_timezone_range,
                                                      exception=args.exception)
             if args.insert_process == "print":
                 payload["file_content"] = payload["file_content"][:20] + "..."
@@ -209,6 +211,9 @@ def main():
             if args.table_name is None:
                 args.table_name = "videos"
             payload, last_blob = data_generator_videos.video_data(db_name=args.db_name, table=args.table_name,
+                                                                  conversion_type=args.conversion_type,
+                                                                  last_blob=last_blob, timezone=args.timezone,
+                                                                  enable_timezone_range=args.enable_timezone_range,
                                                                   exception=args.exception)
 
             if args.insert_process == "print":
@@ -229,7 +234,7 @@ def main():
 
         data.append(payload)
         if len(data) % args.batch_size == 0:
-            publish_data.publish_data(payload=data, insert_process=args.insert_process, conns=conns,
+            last_conn = publish_data.publish_data(payload=data, insert_process=args.insert_process, conns=conns,
                                       topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
                                       qos=args.qos, dir_name=None, last_conn=last_conn,
                                       exception=args.exception)

@@ -104,17 +104,20 @@ def generate_timestamp(timezone:str='utc', enable_timezone_range:bool=True)->str
     return __timestamp_string(timestamp=timestamp)
 
 
-def cars_timestamps(timezone:str, enable_timezone_range:bool=False)->(datetime.datetime, datetime.datetime):
+def generate_timestamps_range(timezone:str, enable_timezone_range:bool=False, period:float=None)->(datetime.datetime, datetime.datetime):
     """
     Generate 2 timestamps that are 5 to 90 seconds apart - used in car_images data generator
     :params:
         timestamp:datetime.datetime - current timestamp
-        timestamp2:datetime.datetime - current timestamp + 5 to 90 seconds into the future 
+        timestamp2:datetime.datetime - current timestamp + 5 to 90 seconds into the future
+        period:float - seconds to increase by
     :return: 
         timestamp, timestamp2
     """
     timestamp = __generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range)
     timestamp2 = timestamp + datetime.timedelta(seconds=random.choice(range(5, 90)))
+    if period is not None:
+        timestamp2 = timestamp + datetime.timedelta(seconds=period)
     
     return timestamp, timestamp2
 

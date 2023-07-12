@@ -13,7 +13,6 @@ sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
 import data_generators.file_processing as file_processing
 import data_generators.timestamp_generator as timestamp_generator
-import publishing_protocols.publish_data as publish_data
 import publishing_protocols.support as support
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data', 'videos')
@@ -94,7 +93,7 @@ def __create_data(process_id:str, file_name:str, binary_file:str, db_name:str="t
 
 
 
-def __car_counter(timezone:str, enable_timezone_range:bool=False) -> dict:
+def __car_counter(timezone:str, enable_timezone_range:bool=False)->dict:
     """
     Generate car insight information
     :params:
@@ -110,7 +109,7 @@ def __car_counter(timezone:str, enable_timezone_range:bool=False) -> dict:
             - cars
             - speed
     """
-    start_ts, end_ts = timestamp_generator.cars_timestamps(timezone=timezone, enable_timezone_range=enable_timezone_range)
+    start_ts, end_ts = timestamp_generator.generate_timestamps_range(timezone=timezone, enable_timezone_range=enable_timezone_range)
     hours = start_ts.hour
 
     if 5 <= hours < 7:
@@ -143,6 +142,11 @@ def __car_counter(timezone:str, enable_timezone_range:bool=False) -> dict:
 
 def video_data(db_name:str, table:str, conversion_type:str='base64', last_blob:str=None,
                timezone:str="local", enable_timezone_range:bool=False, exception:bool=False)->(dict, str):
+
+    if not os.path.isdir(DATA_DIR):
+        print(f"Failed to locate directory with images/videos ({DATA_DIR}), cannot continue...")
+        exit(1)
+
     video = None
     while video == last_blob or video is None:
         video = random.choice(os.listdir(DATA_DIR))
