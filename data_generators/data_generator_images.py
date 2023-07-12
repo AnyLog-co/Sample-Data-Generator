@@ -1,26 +1,23 @@
 import json
 import os
+import random
 import sys
-import time
 import uuid
 
 import requests
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-JSON_FILE = os.path.join(ROOT_PATH, '', '../data/ntt_factory_data.json')
-
-DATA_GENERATORS = os.path.join(ROOT_PATH, "")
-PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, "../publishing_protocols")
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("data_generators")[0]
+DATA_GENERATORS = os.path.join(ROOT_PATH, "data_generators")
+PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, "publishing_protocols")
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
 import data_generators.file_processing as file_processing
-import publishing_protocols.publish_data as publish_data
 import publishing_protocols.support as support
 
-URL="http://10.31.1.197/v3/predict/e99aefb2-abfc-4ab0-88fb-59e3e8f2b47f"
-API_KEY="8KK7aDH5fttoV.Dd"
-BASIC_AUTHORIZATION="b3JpOnRlc3Q="
+JSON_FILE = os.path.join(ROOT_PATH, 'data', 'ntt_factory_data.json')
+DATA_DIR = os.path.join(ROOT_PATH, 'data', 'images')
+
 
 def __get_data_remote(url:str, file_path:str, api_key:str,  basic_authorization:str, exception:bool)->(list, str):
     """
@@ -175,58 +172,44 @@ def __create_data(db_name:str, table:str, file_name:str, file_content:str, detec
     return payload
 
 
-def main(dir_name:str="$HOME/Downloads/sample_data/images", conns:dict={}, protocol:str="post",
-         topic:str="image-data", qos:int=0, db_name:str="test", table:str="image", sleep:float=5, timeout:int=30,
-         reverse:bool=False, conversion_type:str='base64', results_dir:str=None, compress:bool=False,
-         exception:bool=False):
+def image_data(db_name:str, table:str, conversion_type:str='base64',
+               url:str="http://10.31.1.197/v3/predict/e99aefb2-abfc-4ab0-88fb-59e3e8f2b47f",
+               api_key:str="8KK7aDH5fttoV.Dd", authentication:str="b3JpOnRlc3Q=", last_blob:str=None,
+               remote_data:bool=False, exception:bool=False)->(dict, str):
     """
-    Data generator for image  - must use images in https://drive.google.com/drive/folders/1EuArx1VepoLj3CXGrCRcxzWZyurgUO3u?usp=share_link
+    Based on either live feed data or ntt_factory_data.json file generate payload for an image
     :args:
-        dir_name:str - directory containing videos
-        conns:str - connection information for either REST or MQTT
-        protocol:str - protocol to store data with
-            * print
-            * post
-            * mqtt
-        topic:str - REST / MQTT topic
-        db_name:str - logical database name
-        table:str - table name
-        sleep:float - wait time between each insert
-        timeout:int - REST timeout
-        reverse:bool - whether to store data in reversed (file) order
-        conversion_type:str - Format to convert file to - cv2 can be used for live camera feed
+        db_name:str - database to store content int
+        table:str - table associated with database
+        conversion_type:str - conversion type
+        last_blob:str - last blob used
+        remote_data:bool - whether to use remote data
+            url:str - URL path (with http) to get data from
+            api_key:str - Access API key
+            basic_authorization:str - base64  authorization passw
         exception:bool - whether to print exceptions
     :params:
-        dir_full_path:str - full path of dir_name
-        list_dir:str - list of files in dir_name
-        full_file_path:str - dir_name + file_name
-        detection:list - list of key/values for a given image
-        status:str - whether image is ok or Nok
-        file_content:str - string-bytes of read file
-        payload:dict - merged car_info + file_content
+        image:str - current image to use
+        full_path:str - full path to read image
+        file_content:str - image in some kind of binary format
+        detection:list - detection value(s) based on file_namedetection
+        status:str - status value based on file_name
     """
-    dir_full_path = os.path.expandvars(os.path.expanduser(dir_name))
-    list_dir = os.listdir(dir_full_path)
-    if reverse is True:
-        list_dir = list(reversed(list_dir))
+    image = None
+    while image == last_blob or image is None:
+        image = random.choice(os.listdir(DATA_DIR))
+    full_path = os.path.join(DATA_DIR, image)
+    file_content = file_processing.main(conversion_type=conversion_type, file_name=full_path, exception=exception)
 
-    for file_name in list_dir:
-        full_file_path = os.path.join(dir_full_path, file_name)
-        file_content = file_processing.main(conversion_type=conversion_type, file_name=full_file_path, exception=exception)
+    if remote_data is True:
+        detection, status = __get_data_remote(url=url, file_path=full_path, api_key=api_key,
+                                              basic_authorization=authentication, exception=exception)
+    else:
+        detection, status = __get_data(file_name=image, exception=exception)
 
-        """
-        # data from remote machine (NTTDocomo Deeptector)  
-        detection, status = __get_data_remote(url=URL, file_path=full_file_path, api_key=API_KEY,
-                                    basic_authorization=BASIC_AUTHORIZATION, exception=exception)
-        """
-        detection, status = __get_data(file_name=file_name, exception=exception)
+    payload = __create_data(db_name=db_name, table=table, file_name=image, file_content=file_content,
+                            detections=detection, status=status)
 
-        if file_content is not None:
-            payload = __create_data(db_name=db_name, table=table, file_name=file_name, file_content=file_content,
-                                    detections=detection, status=status)
+    return payload, image
 
-            publish_data.publish_data(payload=payload, insert_process=protocol, conns=conns, topic=topic, qos=qos,
-                                      rest_timeout=timeout, dir_name=results_dir, blob_data_type='image',
-                                      conversion_type=conversion_type, compress=compress, exception=exception)
-        time.sleep(sleep)
 
