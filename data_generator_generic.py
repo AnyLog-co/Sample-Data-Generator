@@ -43,10 +43,6 @@ DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
 SECOND_INCREMENTS = 86400  # second increments (0.864) for 100000 rows
 
-
-
-
-
 def __data_types(value:str)->str:
     """
     Validate data types
@@ -61,9 +57,21 @@ def __data_types(value:str)->str:
             argparse.ArgumentError(f"Unsupported data type: {val}. Supported data types: trig, performance, ping, percentagecpu, opcua, power")
     return value
 
+def __insert_process(value:str)->str:
+    """
+    Validate insert process
+    :args:
+        value:str - user inputted process type
+    :return:
+        value
+        if fails error
+    """
+    if value not in ['print', 'file', 'put','post', 'mqtt']:
+        argparse.ArgumentError(f"Unsupported process type: {value}. Supported process types: print, file, put, post, mqtt")
+    return value
+
 
 class ExtendedHelpAction(argparse.Action):
-    @staticmethod
     def __rows_summary(self, db_name:str='test')->str:
         """
         The following provides an example for each of the data types, printing them to screen
@@ -138,6 +146,7 @@ class ExtendedHelpAction(argparse.Action):
                     \t-e CONN=198.74.50.131:32149,178.79.143.174:32149 \\
                     \t-e TIMEZONE=utc \\
                     \t--rm anylogco/sample-data-generator:latest\n""")
+        exit(1)
 
 
 
@@ -215,9 +224,11 @@ def main():
     """
     parser = argparse.ArgumentParser(add_help=True,
         description="Sample Data Generator for AnyLog. When using a Docker based deployment, all arguments can be used as upper case environment variables.")
+    parser = argparse.ArgumentParser(add_help=True,
+                                     description="Sample Data Generator for AnyLog. When using a Docker based deployment, all arguments can be used as upper case environment variables.")
     parser.add_argument('data_type', type=__data_types, default='trig',
                         help='type of data to insert into AnyLog. Choices: trig, performance, ping, percentagecpu, opcua, power')
-    parser.add_argument('insert_process', type=support.insert_process,  default='print',
+    parser.add_argument('insert_process', type=support.insert_process, default='print',
                         help='format to store generated data. Choices: print, file, put, post, mqtt')
     parser.add_argument('db_name', type=str, default='test', help='logical database name')
     parser.add_argument('--extended-help', type=bool, nargs='?', const=True, action=ExtendedHelpAction, default=False,

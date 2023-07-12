@@ -21,9 +21,7 @@ DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
 SECOND_INCREMENTS = 86400  # second increments (0.864) for 100000 rows
 
-
 class ExtendedHelpAction(argparse.Action):
-    @staticmethod
     def __rows_summary(self, db_name:str='test')->str:
         """
         The following provides an example for each of the data types, printing them to screen
@@ -34,7 +32,7 @@ class ExtendedHelpAction(argparse.Action):
         """
         payloads = {
             'edgex': {
-                "dbms": "test",
+                "dbms": db_name,
                 "table": "people_video",
                 "start_ts": "2023-07-11T23:36:31.428555",
                 "end_ts": "2023-07-11T23:36:36.428569",
@@ -44,7 +42,7 @@ class ExtendedHelpAction(argparse.Action):
             },
             'image': {
                 "id": "57195181-21b1-4a1b-b21e-293783a267e4",
-                "dbms": "test",
+                "dbms": db_name,
                 "table": "images",
                 "file_name": "20200306202534601.jpeg",
                 "file_type": "image/jpeg",
@@ -58,7 +56,7 @@ class ExtendedHelpAction(argparse.Action):
             },
             'video': {
                 "apiVersion": "v2",
-                "dbName": "test",
+                "dbName": db_name,
                 "id": "856e7dd0-ea63-4a8d-9f57-ba9f578c6fd2",
                 "deviceName": "videos",
                 "origin": 1689121459,
@@ -106,6 +104,8 @@ class ExtendedHelpAction(argparse.Action):
                     \t-e CONN=198.74.50.131:32149,178.79.143.174:32149 \\
                     \t-e TIMEZONE=utc \\
                     \t--rm anylogco/blobs-data-generator:latest\n""")
+        exit(1)
+
 
 def __data_types(value:str)->str:
     """
@@ -121,7 +121,7 @@ def __data_types(value:str)->str:
     return value
 
 
-def insert_process(value:str)->str:
+def __insert_process(value:str)->str:
     """
     Validate insert process
     :args:
@@ -138,11 +138,57 @@ def insert_process(value:str)->str:
 def main():
     """
     Data generator for videos and images
+        :positional arguments:
+        data_type             type of data to insert into AnyLog.
+            * edgex
+            * images
+            * videos
+        insert_process        format to store generated data.
+            * print
+            * post
+            * mqtt
+        db_name               logical database name
+    :optional arguments:
+        -h, --help                              show this help message and exit
+        --extended-help     [EXTENDED_HELP]     Generates help, but extends to include a sample row per data type
+        --table-name        TABLE_NAME          Change default table name (valid for data_types except power)
+        --total-rows        TOTAL_ROWS          number of rows to insert. If set to 0, will run continuously
+        --batch-size        BATCH_SIZE          number of rows to insert per iteration
+        --sleep             SLEEP               wait time between each row
+        --timezone          TIMEZONE            timezone for generated timestamp(s)
+            * local
+            * utc
+            * et
+            * br
+            * jp
+            * ws
+            * au
+            * it
+        --enable-timezone-range     [ENABLE_TIMEZONE_RANGE]     set timestamp within a range of +/- 1 month
+        --performance-testing       [PERFORMANCE_TESTING]       insert all rows within a 24 hour period
+        --conn      CONN            {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
+        --topic     TOPIC           topic for publishing data via REST POST or MQTT
+        --rest-timeout      REST_TIMEOUT        how long to wait before stopping REST
+        --qos               QOS                 MQTT Quality of Service
+            * 0
+            * 1
+            * 2
+        --remote-data       [REMOTE_DATA]       for images, use data from a remote source
+        --url               URL                 URL for remote images
+        --api-key           API_KEY             API Key associated with remote images
+        --authentication    AUTHENTICATION      authentication key for URL
+        --exception         [EXCEPTION]         whether to print exceptions
+    :params:
+        total_rows:int - row counter
+        data:list - data to insert into AnyLog
+        conns:dict - list of connections with auth information
+        last_conn:list - last connection used
+        last_blob:str - last image or video used, as to not repeat 2x in a row
     """
     parser = argparse.ArgumentParser(add_help=True, description="Data generator for blobs; used for edgex demo by setting data_type set to edgex")
     parser.add_argument('data_type', type=__data_types, default='edgex',
                         help='type of data to insert into AnyLog. Choices: edgex, video, image')
-    parser.add_argument('insert_process', type=insert_process,  default='print',
+    parser.add_argument('insert_process', type=__insert_process,  default='print',
                         help='format to store generated data. Choices: print, post, mqtt')
     parser.add_argument('db_name', type=str, default='test', help='logical database name')
     parser.add_argument('--extended-help', type=bool, nargs='?', const=True, action=ExtendedHelpAction, default=False,
@@ -168,7 +214,7 @@ def main():
                         help='for images, use data from a remote source')
     parser.add_argument('--url', type=str, default="http://10.31.1.197/v3/predict/e99aefb2-abfc-4ab0-88fb-59e3e8f2b47f",
                         help='URL for remote images')
-    parser.add_argument('--api-key', type=str, default='8KK7aDH5fttoV.Dd', help='API Key associaated with remote images')
+    parser.add_argument('--api-key', type=str, default='8KK7aDH5fttoV.Dd', help='API Key associated with remote images')
     parser.add_argument('--authentication', type=str, default="b3JpOnRlc3Q", help="authentication key for URL")
     parser.add_argument('--exception', type=bool, nargs='?', const=True, default=False, help='whether to print exceptions')
     args = parser.parse_args()
@@ -177,11 +223,6 @@ def main():
     data = []
     if args.batch_size == 0:
         args.batch_size = 10
-
-    data_types = args.data_type.split(",")
-    # make sure each table a unique name
-    if len(data_types) > 1 and args.table_name is not None:
-        args.table_name = None
 
     conns = None
     if args.conn is not None:
@@ -235,7 +276,7 @@ def main():
         data.append(payload)
         if len(data) % args.batch_size == 0:
             last_conn = publish_data.publish_data(payload=data, insert_process=args.insert_process, conns=conns,
-                                      topic=args.topic, compress=args.compress, rest_timeout=args.rest_timeout,
+                                      topic=args.topic, compress=False, rest_timeout=args.rest_timeout,
                                       qos=args.qos, dir_name=None, last_conn=last_conn,
                                       exception=args.exception)
             data = []

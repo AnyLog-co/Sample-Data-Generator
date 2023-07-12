@@ -33,23 +33,10 @@ def validate_conn_pattern(conns:str)->str:
 
     for conn in conns.split(","):
         if not pattern1.match(conn) and not pattern2.match(conn):
-            raise argparse.ArgumentTypeError(f'Invalid REST connection format: {conn}')
+            raise argparse.ArgumentTypeError(f'Invalid connection format: {conn}. Supported formats: 127.0.0.1:32049 or user:passwd@127.0.0.1:32049')
 
     return conns
 
-
-def insert_process(value:str)->str:
-    """
-    Validate insert process
-    :args:
-        value:str - user inputted process type
-    :return:
-        value
-        if fails error
-    """
-    if value not in ['print', 'file', 'put', 'post', 'mqtt']:
-        argparse.ArgumentError(f"Unsupported process type: {value}. Supported process types: print, file, put, post, mqtt")
-    return value
 
 
 def validate_row_size(row_size)->int:
