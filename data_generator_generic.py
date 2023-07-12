@@ -43,8 +43,6 @@ DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
 SECOND_INCREMENTS = 86400  # second increments (0.864) for 100000 rows
 
-
-
 def __data_types(value:str)->str:
     """
     Validate data types
@@ -68,9 +66,10 @@ def __insert_process(value:str)->str:
         value
         if fails error
     """
-    if value not in ['print', 'file', 'put', 'post', 'mqtt']:
+    if value not in ['print', 'file', 'put','post', 'mqtt']:
         argparse.ArgumentError(f"Unsupported process type: {value}. Supported process types: print, file, put, post, mqtt")
     return value
+
 
 class ExtendedHelpAction(argparse.Action):
     def __rows_summary(self, db_name:str='test')->str:
@@ -134,7 +133,7 @@ class ExtendedHelpAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         # Call your function to handle extended help here
-        print("Sample Data Types Aviliable")
+        print("Sample Data Types Available")
         self.__rows_summary(db_name='test')
         setattr(namespace, self.dest, True)
         print("""Sample docker call: \ndocker run -it --detach-keys=ctrl-d --name data-generator --network host \\
@@ -147,6 +146,7 @@ class ExtendedHelpAction(argparse.Action):
                     \t-e CONN=198.74.50.131:32149,178.79.143.174:32149 \\
                     \t-e TIMEZONE=utc \\
                     \t--rm anylogco/sample-data-generator:latest\n""")
+        exit(1)
 
 
 
@@ -224,9 +224,11 @@ def main():
     """
     parser = argparse.ArgumentParser(add_help=True,
         description="Sample Data Generator for AnyLog. When using a Docker based deployment, all arguments can be used as upper case environment variables.")
+    parser = argparse.ArgumentParser(add_help=True,
+                                     description="Sample Data Generator for AnyLog. When using a Docker based deployment, all arguments can be used as upper case environment variables.")
     parser.add_argument('data_type', type=__data_types, default='trig',
                         help='type of data to insert into AnyLog. Choices: trig, performance, ping, percentagecpu, opcua, power')
-    parser.add_argument('insert_process', type=str,  default='print',
+    parser.add_argument('insert_process', type=support.insert_process, default='print',
                         help='format to store generated data. Choices: print, file, put, post, mqtt')
     parser.add_argument('db_name', type=str, default='test', help='logical database name')
     parser.add_argument('--extended-help', type=bool, nargs='?', const=True, action=ExtendedHelpAction, default=False,
@@ -259,8 +261,8 @@ def main():
     data_type_counter = 0
     second_increments = 0
     data = []
-    if args.batch_size <= 0:
-        args.batch_size = 1
+    if args.batch_size == 0:
+        args.batch_size = 10
 
     data_types = args.data_type.split(",")
     # make sure each table a unique name
@@ -309,12 +311,7 @@ def main():
                                                         enable_timezone_range=args.enable_timezone_range,
                                                         performance_testing=args.performance_testing,
                                                         microseconds=MICROSECONDS, second_increments=second_increments)
-        if args.total_rows == 0: 
-            args.performance_testing = False
-
-        if args.performance_testing is True: 
-            second_increments = (total_rows + 1) * (SECOND_INCREMENTS / args.total_rows)
-
+        second_increments = (total_rows + 1) * (SECOND_INCREMENTS / args.total_rows)
         if isinstance(payload, list):
             for pyld in payload:
                 data.append(pyld)
@@ -340,5 +337,5 @@ def main():
 
 
 if __name__ == '__main__':
-    support.validate_packages()
+    support.validate_packages(is_blobs=False, is_traffic=False)
     main()

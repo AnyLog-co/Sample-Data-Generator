@@ -1,7 +1,6 @@
 import json
 import requests
 import support
-import time
 
 NETWORK_ERRORS_GENERIC = {
     1: "Informational",
@@ -154,7 +153,6 @@ def put_data(payloads:list, conn:str, auth:tuple=(), timeout:int=30, exception:b
                         error_msg.replace(" %s)", ")")
                     print(error_msg)
 
-    time.sleep(10)
     return status
 
 

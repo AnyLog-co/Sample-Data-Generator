@@ -8,6 +8,8 @@ When using _MQTT_ or REST _POST_to insert data, users need to configure a [MQTT 
 * [Trig](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_trig.al)
 * [OPCUA](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_opcua.al)
 
+[Other Data Generators](other_generators.md)
+
 
 ## Docker Deployment 
 * Help 

@@ -1,19 +1,21 @@
 import datetime
 import os
+import random
 import sys
 import time
 import uuid
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-DATA_GENERATORS = os.path.join(ROOT_PATH, "")
-PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, "../publishing_protocols")
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("data_generators")[0]
+DATA_GENERATORS = os.path.join(ROOT_PATH, "data_generators")
+PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, "publishing_protocols")
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
 import data_generators.file_processing as file_processing
-import data_generators.car_insight as car_insight
+import data_generators.timestamp_generator as timestamp_generator
 import publishing_protocols.support as support
-import publishing_protocols.publish_data as publish_data
+
+DATA_DIR = os.path.join(ROOT_PATH, 'data', 'videos')
 
 
 PROCESS_ID = str(uuid.uuid4())
@@ -90,56 +92,72 @@ def __create_data(process_id:str, file_name:str, binary_file:str, db_name:str="t
     return data
 
 
-def main(dir_name:str="$HOME/Downloads/sample_data/videos", conns:dict={}, protocol:str="post",
-         topic:str="video-data", qos:int=0, db_name:str="test", table:str="video", sleep:float=5, timezone:str="local",
-         timeout:int=30, enable_timezone_range:bool=False, reverse:bool=False, conversion_type:str='base64',
-         results_dir:str=None, exception:bool=False):
+
+def __car_counter(timezone:str, enable_timezone_range:bool=False)->dict:
     """
-    Data generator for car traffic videos
-    :args:
-        dir_name:str - directory containing videos
-        conns:str - connection information for either REST or MQTT
-        protocol:str - protocol to store data with
-            *  print
-            * post
-            * mqtt
-        topic:str - REST / MQTT topic
-        db_name:str - logical database name
-        table:str - table name
-        sleep:float - wait time between each insert
-        timezone:str - timezone for generated timestamp(s)
-        timeout:int - REST timeout
-        enable_timezone_range:bool - set timestamp within a range of +/- 1 month
-        reverse:bool - whether to store data in reversed (file) order
-        conversion_type:str - Format to convert file to - cv2 can be used for live camera feed
-        exception:bool - whether to print exceptions
+    Generate car insight information
     :params:
-        dir_full_path:str - full path of dir_name
-        list_dir:str - list of files in dir_name
-        full_file_path:str - dir_name + file_name
-        car_info:dict - content regarding traffic
-        file_content:str - string-bytes of read file
-        payload:dict - merged car_info + file_content
+        start_ts:datetime.datetime - UTC current timestamp
+        end_ts:datetime.datetime - current timestamp + 5 to 90 seconds into the future
+        hours:int - hour based on start_ts
+        cars:int - number of cars passed at a given hour
+        speed:float - avg car speed
+    :return:
+        dictionary object of
+            - start_ts
+            - end_ts
+            - cars
+            - speed
     """
-    dir_full_path = os.path.expandvars(os.path.expanduser(dir_name))
-    list_dir = os.listdir(dir_full_path)
-    if reverse is True:
-        list_dir = list(reversed(list_dir))
+    start_ts, end_ts = timestamp_generator.generate_timestamps_range(timezone=timezone, enable_timezone_range=enable_timezone_range)
+    hours = start_ts.hour
 
-    for file_name in list_dir:
-        full_file_path = os.path.join(dir_full_path, file_name)
-        car_info = car_insight.car_counter(timezone=timezone, enable_timezone_range=enable_timezone_range)
-        file_content = file_processing.main(conversion_type=conversion_type, file_name=full_file_path, exception=exception)
+    if 5 <= hours < 7:
+        speed = round(random.choice(range(60, 80)) + random.random(), 2)
+        cars = int(random.choice(range(10, 30)))
+    elif 7 <= hours < 10:
+        speed = round(random.choice(range(45, 65)) - random.random(), 2)
+        cars = int(random.choice(range(40, 60)))
+    elif 10 <= hours < 16:
+        cars = int(random.choice(range(5, 20)))
+        speed = round(random.choice(range(60, 80)) + random.random(), 2)
+    elif 16 <= hours < 20:
+        speed = round(random.choice(range(45, 65)) - random.random(), 2)
+        cars = int(random.choice(range(40, 60)))
+    elif 20 <= hours < 23:
+        cars = int(random.choice(range(5, 20)))
+        speed = round(random.choice(range(60, 80)) + random.random(), 2)
+    else:  # 23:00 to 5:00
+        cars = int(random.choice(range(0, 15)))
+        speed = round(random.choice(range(60, 80)) + random.random(), 2)
+    if cars == 0:
+        speed = 0
 
-        if file_content is not None:
-            payload = __create_data(process_id=PROCESS_ID, binary_file=file_content, file_name=file_name,
-                                    db_name=db_name, table_name=table, profile_name="anylog-video-generator",
-                                    start_ts=car_info["start_ts"], end_ts=car_info["end_ts"], num_cars=car_info["cars"],
-                                    speed=car_info["speed"])
+    return {
+        'start_ts': timestamp_generator.__timestamp_string(timestamp=start_ts),
+        'end_ts': timestamp_generator.__timestamp_string(timestamp=end_ts),
+        'cars': cars,
+        'speed': speed
+    }
 
-            publish_data.publish_data(payload=payload, insert_process=protocol, conns=conns, topic=topic, qos=qos,
-                                      rest_timeout=timeout, dir_name=results_dir, compress=False, exception=exception)
+def video_data(db_name:str, table:str, conversion_type:str='base64', last_blob:str=None,
+               timezone:str="local", enable_timezone_range:bool=False, exception:bool=False)->(dict, str):
 
-        time.sleep(sleep)
+    if not os.path.isdir(DATA_DIR):
+        print(f"Failed to locate directory with images/videos ({DATA_DIR}), cannot continue...")
+        exit(1)
 
+    video = None
+    while video == last_blob or video is None:
+        video = random.choice(os.listdir(DATA_DIR))
+    full_path = os.path.join(DATA_DIR, video)
+    file_content = file_processing.main(conversion_type=conversion_type, file_name=full_path, exception=exception)
+    car_info = __car_counter(timezone=timezone, enable_timezone_range=enable_timezone_range)
+
+    payload = __create_data(process_id=PROCESS_ID, binary_file=file_content, file_name=video,
+                            db_name=db_name, table_name=table, profile_name="anylog-video-generator",
+                            start_ts=car_info["start_ts"], end_ts=car_info["end_ts"], num_cars=car_info["cars"],
+                            speed=car_info["speed"])
+
+    return payload, video
 
