@@ -38,6 +38,20 @@ def validate_conn_pattern(conns:str)->str:
     return conns
 
 
+def insert_process(value:str)->str:
+    """
+    Validate insert process
+    :args:
+        value:str - user inputted process type
+    :return:
+        value
+        if fails error
+    """
+    if value not in ['print', 'file', 'put', 'post', 'mqtt']:
+        argparse.ArgumentError(f"Unsupported process type: {value}. Supported process types: print, file, put, post, mqtt")
+    return value
+
+
 def validate_row_size(row_size)->int:
     """
     Validate row user inputted row size 
@@ -57,6 +71,7 @@ def validate_row_size(row_size)->int:
             output = value
 
     return output
+
 
 def validate_packages(is_blobs:bool=False, is_traffic:bool=False):
     """
@@ -91,14 +106,18 @@ def validate_conversion_type(conversion_type:str)->str:
     :return:
         conversion_type
     """
+    error = ""
     if conversion_type not in ['base64', 'bytesio', 'opencv']:
-        raise argparse.ArgumentTypeError(f"Invalid option {conversion_type}. Supported types: base64, bytesio, cv2")
+        error = f"Invalid option {conversion_type}. Choices: base64, bytesio, opencv"
     elif conversion_type == 'base64' and  importlib.import_module("base64") is None:
-        raise argparse.ArgumentTypeError(f"Unable to locate package base64 for conversion type {conversion_type}")
+        error = "Unable to locate package base64 for conversion type {conversion_type}"
     elif conversion_type == 'bytesio' and importlib.import_module('io') is None:
-        raise argparse.ArgumentTypeError(f"Unable to locate package io for conversion type {conversion_type}")
+        error = f"Unable to locate package io for conversion type {conversion_type}"
     elif conversion_type == 'opencv' and importlib.import_module('cv2') is None:
-        raise argparse.ArgumentTypeError(f"Unable to locate package opencv2-python for conversion type {conversion_type}")
+        error = f"Unable to locate package opencv2-python for conversion type {conversion_type}"
+
+    if error != "":
+        raise argparse.ArgumentError(error)
 
     return conversion_type
 

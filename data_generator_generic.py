@@ -45,6 +45,8 @@ SECOND_INCREMENTS = 86400  # second increments (0.864) for 100000 rows
 
 
 
+
+
 def __data_types(value:str)->str:
     """
     Validate data types
@@ -59,20 +61,9 @@ def __data_types(value:str)->str:
             argparse.ArgumentError(f"Unsupported data type: {val}. Supported data types: trig, performance, ping, percentagecpu, opcua, power")
     return value
 
-def __insert_process(value:str)->str:
-    """
-    Validate insert process
-    :args:
-        value:str - user inputted process type
-    :return:
-        value
-        if fails error
-    """
-    if value not in ['print', 'file', 'put', 'post', 'mqtt']:
-        argparse.ArgumentError(f"Unsupported process type: {value}. Supported process types: print, file, put, post, mqtt")
-    return value
 
 class ExtendedHelpAction(argparse.Action):
+    @staticmethod
     def __rows_summary(self, db_name:str='test')->str:
         """
         The following provides an example for each of the data types, printing them to screen
@@ -134,7 +125,7 @@ class ExtendedHelpAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         # Call your function to handle extended help here
-        print("Sample Data Types Aviliable")
+        print("Sample Data Types Available")
         self.__rows_summary(db_name='test')
         setattr(namespace, self.dest, True)
         print("""Sample docker call: \ndocker run -it --detach-keys=ctrl-d --name data-generator --network host \\
@@ -226,7 +217,7 @@ def main():
         description="Sample Data Generator for AnyLog. When using a Docker based deployment, all arguments can be used as upper case environment variables.")
     parser.add_argument('data_type', type=__data_types, default='trig',
                         help='type of data to insert into AnyLog. Choices: trig, performance, ping, percentagecpu, opcua, power')
-    parser.add_argument('insert_process', type=str,  default='print',
+    parser.add_argument('insert_process', type=support.insert_process,  default='print',
                         help='format to store generated data. Choices: print, file, put, post, mqtt')
     parser.add_argument('db_name', type=str, default='test', help='logical database name')
     parser.add_argument('--extended-help', type=bool, nargs='?', const=True, action=ExtendedHelpAction, default=False,
@@ -259,8 +250,8 @@ def main():
     data_type_counter = 0
     second_increments = 0
     data = []
-    if args.batch_size <= 0:
-        args.batch_size = 1
+    if args.batch_size == 0:
+        args.batch_size = 10
 
     data_types = args.data_type.split(",")
     # make sure each table a unique name
@@ -335,5 +326,5 @@ def main():
 
 
 if __name__ == '__main__':
-    support.validate_packages()
+    support.validate_packages(is_blobs=False, is_traffic=False)
     main()
