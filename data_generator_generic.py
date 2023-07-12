@@ -152,7 +152,7 @@ class ExtendedHelpAction(argparse.Action):
 
 def main():
     """
-    Sample data generator for AnyLog
+    Sample blobs data generator for AnyLog
     :positional arguments:
         data_type             type of data to insert into AnyLog.
             * trig
@@ -228,7 +228,7 @@ def main():
                                      description="Sample Data Generator for AnyLog. When using a Docker based deployment, all arguments can be used as upper case environment variables.")
     parser.add_argument('data_type', type=__data_types, default='trig',
                         help='type of data to insert into AnyLog. Choices: trig, performance, ping, percentagecpu, opcua, power')
-    parser.add_argument('insert_process', type=support.insert_process, default='print',
+    parser.add_argument('insert_process', type=__insert_process, default='print',
                         help='format to store generated data. Choices: print, file, put, post, mqtt')
     parser.add_argument('db_name', type=str, default='test', help='logical database name')
     parser.add_argument('--extended-help', type=bool, nargs='?', const=True, action=ExtendedHelpAction, default=False,

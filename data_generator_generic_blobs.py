@@ -138,11 +138,11 @@ def __insert_process(value:str)->str:
 def main():
     """
     Data generator for videos and images
-        :positional arguments:
+    :positional arguments:
         data_type             type of data to insert into AnyLog.
             * edgex
-            * images
-            * videos
+            * image
+            * video
         insert_process        format to store generated data.
             * print
             * post
@@ -151,7 +151,11 @@ def main():
     :optional arguments:
         -h, --help                              show this help message and exit
         --extended-help     [EXTENDED_HELP]     Generates help, but extends to include a sample row per data type
-        --table-name        TABLE_NAME          Change default table name (valid for data_types except power)
+        --conversion-type   CONVERSION_TYPE     Format to convert content to be stored in AnyLog.
+            * base64
+            * bytesio
+            * opencv
+        --table-name        TABLE_NAME          Change default table name
         --total-rows        TOTAL_ROWS          number of rows to insert. If set to 0, will run continuously
         --batch-size        BATCH_SIZE          number of rows to insert per iteration
         --sleep             SLEEP               wait time between each row
@@ -165,11 +169,10 @@ def main():
             * au
             * it
         --enable-timezone-range     [ENABLE_TIMEZONE_RANGE]     set timestamp within a range of +/- 1 month
-        --performance-testing       [PERFORMANCE_TESTING]       insert all rows within a 24 hour period
-        --conn      CONN            {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
-        --topic     TOPIC           topic for publishing data via REST POST or MQTT
-        --rest-timeout      REST_TIMEOUT        how long to wait before stopping REST
-        --qos               QOS                 MQTT Quality of Service
+        --conn      CONN        {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
+        --topic     TOPIC       topic for publishing data via REST POST or MQTT
+        --rest-timeout  REST_TIMEOUT        how long to wait before stopping REST
+        --qos           QOS                 MQTT Quality of Service
             * 0
             * 1
             * 2
@@ -196,7 +199,7 @@ def main():
     parser.add_argument('--conversion-type', type=support.validate_conversion_type, default='base64',
                         help='Format to convert content to be stored in AnyLog. Choices: base64, bytesio, opencv')
     parser.add_argument('--table-name', type=str, default=None,
-                       help='Change default table name (valid for data_types except power)')
+                       help='Change default table name')
     parser.add_argument('--total-rows', type=support.validate_row_size, default=1000000,
                        help='number of rows to insert. If set to 0, will run continuously')
     parser.add_argument('--batch-size', type=support.validate_row_size, default=10, help='number of rows to insert per iteration')
@@ -247,6 +250,8 @@ def main():
                                                      enable_timezone_range=args.enable_timezone_range,
                                                      exception=args.exception)
             if args.insert_process == "print":
+                if isinstance(payload["file_content"], bytes):
+                    payload["file_content"] = payload["file_content"].decode("utf-8", errors="ignore")
                 payload["file_content"] = payload["file_content"][:20] + "..."
         elif args.data_type == 'video':
             if args.table_name is None:
@@ -258,6 +263,8 @@ def main():
                                                                   exception=args.exception)
 
             if args.insert_process == "print":
+                if isinstance(payload["file_content"], bytes):
+                    payload['readings'][0]['binaryValue'] = payload['readings'][0]['binaryValue'].decode("utf-8", errors="ignore")
                 payload['readings'][0]['binaryValue'] = payload['readings'][0]['binaryValue'][:20] + "..."
 
         elif args.data_type == 'image':
@@ -271,6 +278,8 @@ def main():
                                                                   exception=args.exception)
 
             if args.insert_process == "print":
+                if isinstance(payload["file_content"], bytes):
+                    payload["file_content"] = payload["file_content"].decode("utf-8", errors="ignore")
                 payload["file_content"] = payload["file_content"][:20] + "..."
 
         data.append(payload)
