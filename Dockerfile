@@ -1,56 +1,38 @@
-FROM python:3.10-alpine
+FROM ubuntu:20.04
 
 # declare params
 ENV ANYLOG_ROOT_DIR=/app
+ENV DEBIAN_FRONTEND=noninteractive
 
 # update / upgrade
-RUN apk update && apk upgrade
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get -y update
 
-# install requirements via apk
-RUN apk add --no-cache postgresql-dev
-RUN apk add bash
+# install requirements via apt
+RUN apt-get -y install python3.9 python3-pip
+RUN apt-get -y install libpq-dev python3.9-dev
+RUN apt-get -y install python3-kafka
+RUN python3.9 -m pip install --upgrade pip
 
-# move to WORKDIR + COPY codebase
+# install requirements via pip 
+RUN python3.9 -m pip install requests
+RUN python3.9 -m pip install pytz
+RUN python3.9 -m pip install paho-mqtt
+RUN python3.9 -m pip install tzlocal
+RUN python3.9 -m pip install kafka-python
+RUN apt-get -y update
+
+# move to WORKDIR + COPY codebsae 
 WORKDIR $ANYLOG_ROOT_DIR
-RUN mkdir -p $ANYLOG_ROOT_DIR/Sample-Data-Generator
-COPY data_generators $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators
-RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/car_insight.py
-RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/data_generator_images.py
-RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/data_generator_videos.py
-RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/edgex_data.py
-RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/file_processing.py
-RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/live_feed.py
-RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/nvidia_read_logs.py
-RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/transit_data.py
-
-COPY publishing_protocols $ANYLOG_ROOT_DIR/Sample-Data-Generator/publishing_protocols
-COPY data_generator_generic.py $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generator_generic.py
-COPY docker_call.sh $ANYLOG_ROOT_DIR/Sample-Data-Generator/docker_call.sh
+COPY . Sample-Data-Generator
 
 # configure usr
-RUN chmod 777 $ANYLOG_ROOT_DIR
+RUN chmod -R 777 $ANYLOG_ROOT_DIR
 RUN chmod -R 755 $ANYLOG_ROOT_DIR/Sample-Data-Generator
 
-# install requirements via pip
-RUN pip install --upgrade pip
-RUN pip install --upgrade argparse>=0.0 || true
-RUN pip install --upgrade datetime>=0.0 || true
-RUN pip install --upgrade geopy>=0.0 || true
-RUN pip install --upgrade gzip>=0.0 || true
-RUN pip install --upgrade io>=0.0 || true
-RUN pip install --upgrade json>=0.0 || true
-RUN pip install --upgrade math>=0.0 || true
-RUN pip install --upgrade os>=0.0 || true
-RUN pip install --upgrade paho-mqtt>=0.0 || true
-RUN pip install --upgrade pytz>=0.0 || true
-RUN pip install --upgrade random>=0.0 || true
-RUN pip install --upgrade requests>=0.0 || true
-RUN pip install --upgrade sys>=0.0 || true
-RUN pip install --upgrade time>=0.0 || true
-RUN pip install --upgrade uuid>=0.0 || true
-RUN pip install --upgrade base64>=0.0 || true
-RUN pip install --upgrade opencv-python>=0 || true
-RUN pip install --upgrade numpy>=0.0 || true
 
-#ENTRYPOINT /bin/bash
-ENTRYPOINT bash $ANYLOG_ROOT_DIR/Sample-Data-Generator/docker_call.sh
+RUN apt-get -y update
+
+ENTRYPOINT bash /app/Sample-Data-Generator/docker_call.sh
+ 
