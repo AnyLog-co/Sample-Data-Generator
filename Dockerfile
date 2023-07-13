@@ -47,9 +47,9 @@ RUN pip install --upgrade requests>=0.0 || true
 RUN pip install --upgrade sys>=0.0 || true
 RUN pip install --upgrade time>=0.0 || true
 RUN pip install --upgrade uuid>=0.0 || true
-RUN pip install --upgrade base64>=0.0 || true
-RUN pip install --upgrade opencv-python>=0 || true
-RUN pip install --upgrade numpy>=0.0 || true
+#RUN pip install --upgrade base64>=0.0 || true
+#RUN pip install --upgrade opencv-python>=0 || true
+#RUN pip install --upgrade numpy>=0.0 || true
 
 ENTRYPOINT /bin/bash
 #ENTRYPOINT bash $ANYLOG_ROOT_DIR/Sample-Data-Generator/docker_call.sh

@@ -1,17 +1,4 @@
 import ast
-try:
-    import base64
-except:
-    pass
-try:
-    import cv2
-except:
-    pass
-try:
-    import numpy
-except:
-    pass
-
 
 
 def __write_file(file_path:str, content:bytes, exception:bool=False)->bool:
@@ -47,6 +34,13 @@ def convert_base64(content:str, file_path:str, exception:bool=False)->bool:
     status = True
     raw_content = None
     try:
+        import base64
+    except Exception as error:
+        if exception is True:
+            print(f"base64 not installed (Error: {error})")
+        return False
+
+    try:
         raw_content = base64.b64decode(content)
     except Exception as error:
         status = False
@@ -70,6 +64,14 @@ def convert_opencv(content:str, file_path:str, exception:bool=False):
     """
     status = True
     raw_content = None
+    try:
+        import cv2
+        import numpy
+    except Exception as error:
+        if exception is True:
+            print(f"cv2 and/or numpy not installed (Error: {error})")
+        return False
+
     if not isinstance(content, numpy.ndarray) or not isinstance(content, list):
         try:
             content = ast.literal_eval(content)
