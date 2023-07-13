@@ -65,7 +65,8 @@ docker run -it --detach-keys=ctrl-d --name data-generator --network host \
    -e TIMEZONE=local \ 
 --rm anylogco/sample-data-generator:latest
 
-# store POWER data into file(s) with performance enabled  
+# store POWER data into file(s) with performance enabled - notice that unnlike other examples, the ile insert process 
+# has a volume named data-generator
 docker run -it --detach-keys=ctrl-d --name data-generator --network host \ 
    -e DATA_TYPE=power \ 
    -e INSERT_PROCESS=file \ 

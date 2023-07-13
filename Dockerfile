@@ -17,7 +17,6 @@ COPY data_generators $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/data_generator_images.py
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/data_generator_videos.py
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/edgex_data.py
-RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/file_processing.py
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/live_feed.py
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/nvidia_read_logs.py
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/transit_data.py
