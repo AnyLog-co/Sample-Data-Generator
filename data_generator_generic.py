@@ -158,8 +158,9 @@ def main():
             * trig
             * performance
             * ping
-            * percentagecpu,
-            * opcua, power
+            * percentagecpu
+            * opcua
+            * power
         insert_process        format to store generated data.
             * print
             * file
