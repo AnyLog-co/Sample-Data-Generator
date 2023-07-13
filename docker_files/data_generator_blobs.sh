@@ -1,6 +1,18 @@
 #!/bin/bash
 
-CMD="python3 $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generator_blobs.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME}"
+if [[ ${DATA_TYPE} == edgex ]] ; then 
+   rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data/videos
+   rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data/images
+elif [[ ${DATA_TYPE} == video ]] ; then 
+   rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data/images
+   rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data/edgex-demo
+elif [[ ${DATA_TYPE} == image ]] ; then 
+   rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data/videos
+   rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data/edgex-demo
+fi 
+
+
+CMD="python3 $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generator_generic_blobs.py ${DATA_TYPE} ${INSERT_PROCESS} ${DB_NAME}"
 
 if [[ ${EXTENDED_HELP} == true ]]; then
   CMD+=" --extended-help"
