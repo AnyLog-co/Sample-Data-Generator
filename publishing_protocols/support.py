@@ -108,7 +108,7 @@ def validate_conversion_type(conversion_type:str)->str:
 
     return conversion_type
 
-def json_dumps(payloads:dict, print_output:bool=False)->str:
+def json_dumps(payloads:dict)->str:
     """
     Convert dictionary to string
     :args:
@@ -116,11 +116,8 @@ def json_dumps(payloads:dict, print_output:bool=False)->str:
     :return:
         converted data, if fails return original data
     """
-    indent = 0
-    if print_output is True:
-        indent = 4
     try:
-        return json.dumps(payloads, indent=indent)
+        return json.dumps(payloads, indent=None)
     except Exception as error:
         return payloads
 
