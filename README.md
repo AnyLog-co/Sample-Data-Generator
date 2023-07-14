@@ -28,27 +28,27 @@ docker run -it --detach-keys=ctrl-d --name data-generator --network host \
 * Sample calls to send data into AnyLog 
 ```shell
 # send ping data via REST PUT to multiple operator nodes
-docker run -it --detach-keys=ctrl-d --name data-generator --network host \ 
-   -e DATA_TYPE=ping \ 
+docker run -it --detach-keys=ctrl-d --name data-generator --network host \
+   -e DATA_TYPE=ping \
    -e INSERT_PROCESS=put \ 
-   -e DB_NAME=test \ 
+   -e DB_NAME=test \
    -e TOTAL_ROWS=100 \ 
-   -e BATCH_SIZE=10 \ 
-   -e SLEEP=0.5 \ 
+   -e BATCH_SIZE=10 \
+   -e SLEEP=0.5 \
    -e CONN=198.74.50.131:32149,178.79.143.174:32149 \ 
-   -e TIMEZONE=utc \ 
+   -e TIMEZONE=utc \
 --rm anylogco/sample-data-generator:latest
 
 # send ping and percentagecpu data via REST POST to an operator nodes
-docker run -it --detach-keys=ctrl-d --name data-generator --network host \ 
-   -e DATA_TYPE=ping,percentagecpu \ 
-   -e INSERT_PROCESS=post \ 
-   -e DB_NAME=test \ 
-   -e TOTAL_ROWS=100 \ 
-   -e BATCH_SIZE=10 \ 
-   -e SLEEP=0.5 \ 
-   -e CONN=198.74.50.131:32149 \ 
-   -e TIMEZONE=utc \ 
+docker run -it --detach-keys=ctrl-d --name data-generator --network host \
+   -e DATA_TYPE=ping,percentagecpu \
+   -e INSERT_PROCESS=post \
+   -e DB_NAME=test \
+   -e TOTAL_ROWS=100 \
+   -e BATCH_SIZE=10 \
+   -e SLEEP=0.5 \
+   -e CONN=198.74.50.131:32149 \
+   -e TIMEZONE=utc \
 --rm anylogco/sample-data-generator:latest
 ```
 

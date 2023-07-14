@@ -312,7 +312,7 @@ def main():
                                                         enable_timezone_range=args.enable_timezone_range,
                                                         performance_testing=args.performance_testing,
                                                         microseconds=MICROSECONDS, second_increments=second_increments)
-        second_increments = (total_rows + 1) * (SECOND_INCREMENTS / args.total_rows)
+
         if isinstance(payload, list):
             for pyld in payload:
                 data.append(pyld)
@@ -335,6 +335,8 @@ def main():
                 exit(1)
 
         time.sleep(args.sleep)
+        if args.performance_testing is True:
+            second_increments = (total_rows + 1) * (SECOND_INCREMENTS / args.total_rows)
 
 
 if __name__ == '__main__':
