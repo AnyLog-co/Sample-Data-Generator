@@ -122,7 +122,7 @@ def __zip_file(file_name:str, exception:bool)->bool:
     return status
 
 
-def print_content(payloads:list):
+def print_content(payloads:list, exception:bool=False):
     """
     Print data to screen
     :args:
@@ -130,11 +130,14 @@ def print_content(payloads:list):
         dbms:str - logical database name
         table:str - table name, if data is dict use keys as table name(s)
     """
-    if isinstance(payloads, list):
-        for payload in payloads:
-            print(support.json_dumps(payload, print_output=True))
-    else:
-        print(support.json_dumps(payloads, print_output=True))
+    try:
+        print(json.dumps(data=payloads))
+    except Exception as error:
+        if exception is True:
+            print(f"Failed to print payloads in JSON format (Error: {error})")
+        else:
+            print(payloads)
+
 
 
 def write_to_file(payloads:list, data_dir:str=os.path.join(ROOT_PATH, 'data'), compress:bool=False,
