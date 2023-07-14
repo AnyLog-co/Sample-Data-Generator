@@ -16,12 +16,10 @@ The following provides the ability to insert data into AnyLog
     -- to file
 """
 import argparse
-import datetime
 import os
 import random
 import sys
 import time
-import json
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
@@ -36,9 +34,8 @@ import data_generators.lsl_data as lsl_data
 import data_generators.opcua_data as opcua_data
 import data_generators.performance_testing as performance_testing
 import data_generators.power_company as power_company
-import data_generators.timestamp_generator as timestamp_generator
 import data_generators.trig as trig
-import data_generators.transit_data as transit_data
+import archive.transit_data as transit_data
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data')
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
@@ -173,7 +170,7 @@ def nvidia_data_generator(conns:list, db_name:str, table_name:str, insert_proces
         nvidia_logs:list - NVIDIA log from file
         payloads:list - NVIDA logs to be stored
     """
-    import data_generators.nvidia_read_logs as nvidia_read_logs
+    import archive.nvidia_demo.nvidia_read_logs as nvidia_read_logs
 
     nvidia_logs = nvidia_read_logs.nvidia_helm_data(db_name=db_name, table=table_name,
                                                     exception=exception)

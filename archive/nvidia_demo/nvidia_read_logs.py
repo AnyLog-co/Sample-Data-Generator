@@ -7,7 +7,7 @@ import re
 
 
 FILE_NAME = os.path.join(os.path.expanduser(os.path.expandvars(os.path.dirname(__file__))),
-                         '../archive/nvidia_demo/data/fclog.csv')
+                         'data/fclog.csv')
 
 MESSAGE_INFO_KEYS = {
     'Succeeded': 'succeed',

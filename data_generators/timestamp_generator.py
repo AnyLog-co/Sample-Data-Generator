@@ -3,6 +3,16 @@ try:
     import pytz
 except:
     pass
+else:
+    TIMEZONES = {
+        'et': pytz.timezone('africa/addis_ababa'),  # +03:00 (africa)
+        'br': pytz.timezone('america/fortaleza'),  # -03:00 (s. america)
+        'jp': pytz.timezone('asia/tokyo'),  # +09:00 (asia)
+        'ws': pytz.timezone('us/pacific'),  # -09:00 (n. america)
+        'au': pytz.timezone('australia/north'),  # +09:30 (australia)
+        'it': pytz.timezone('europe/rome'),  # +01:00 (europe)
+    }
+
 import random
 
 
@@ -21,17 +31,8 @@ def __generate_timestamp(timezone:str='utc', enable_timezone_range:bool=True)->d
     """
     timestamp = datetime.datetime.now(datetime.timezone.utc)
 
-    timezones = {
-        'et': pytz.timezone('africa/addis_ababa'), # +03:00 (africa)
-        'br': pytz.timezone('america/fortaleza'),  # -03:00 (s. america)
-        'jp': pytz.timezone('asia/tokyo'),         # +09:00 (asia)
-        'ws': pytz.timezone('us/pacific'),         # -09:00 (n. america)
-        'au': pytz.timezone('australia/north'),    # +09:30 (australia)
-        'it': pytz.timezone('europe/rome'),        # +01:00 (europe)
-    }
-
-    if timezone in timezones: # selected timezone
-        timezone = timezones[timezone]
+    if timezone in TIMEZONES: # selected timezone
+        timezone = TIMEZONES[timezone]
         timestamp = timestamp.astimezone(timezone)
         if enable_timezone_range is True:
             timestamp += datetime.timedelta(days=random.choice(range(-30, 31)), hours=random.choice(range(-23, 24)),
@@ -65,26 +66,6 @@ def __timestamp_string(timestamp:datetime.datetime)->str:
         pass
 
     return timestamp
-
-
-def performance_timestamp(microseconds:int, second_increments:float)->str:
-    """
-    Calculate timestamp for performance testing
-    :args:
-        microseconds:str - base microseconds (calculated as global value)
-        second_increments:str - how much to increment by
-    :params:
-       timestamp:datetime.datetime - calculated timestamp
-    :return:
-         timestamp as string
-    """
-    # calculate the base timestamp
-    timestamp = datetime.datetime(year=2022, month=8, day=27, hour=15, minute=50, second=12) + datetime.timedelta(microseconds=microseconds)
-    
-    # update based on second_increments
-    timestamp += datetime.timedelta(seconds=second_increments)
-    
-    return __timestamp_string(timestamp=timestamp)
 
 
 def generate_timestamp(timezone:str='utc', enable_timezone_range:bool=True)->str:
@@ -122,8 +103,54 @@ def generate_timestamps_range(timezone:str, enable_timezone_range:bool=False, pe
     return timestamp, timestamp2
 
 
-def include_timestamp(payload:dict, timezone:str='utc', enable_timezone_range:bool=False,
-                      performance_testing:bool=False, microseconds:int=0, second_increments:float=0):
+def performance_timestamp(payload:dict, total_rows:int, current_row:int=0, timezone:str=None, enable_timezone_range:bool=False):
+    """
+    timestamp(s) generated between 2023-06-06 00:00:00 and 2023-06-07 00:00:00
+        Option 1: enable_timezone_range is False -- based on the current_row, calculate the current timestamp
+        Option 2: enable_timezone_range is True -- generate a list of timestamps, and shuffle them
+    :args:
+        payload:dict - current row to update (used in option 1)
+        total_rows:int - total number of rows
+        current_row:int - current row [number] currently generated (used as a param in option 2)
+        timezone:str - timezone
+        enable_timezone_range:bool - whether to enable option 2 or not
+    :params:
+        tzinfo:pytz.timezone - timezone
+        strt_timestamp:datetime.datetime - start timestamp (2023-06-06 00:00:00)
+        end_timestamp:datetime.datetime - end timestamp (2023-06-07 00:00:00)
+        time_interval:float - time interval
+        timestamps:list - list of timestamps (used for option 2)
+        timestamp:datetime.datetime - generated timestamp
+    :return:
+        options 1: payload with timestamp
+        option 2: timestamps in randomized order
+    """
+    tzinfo = None
+    if TIMEZONES and timezone in TIMEZONES:
+        tzinfo = TIMEZONES[timezone]
+
+    strt_timestamp = datetime.datetime(year=2023, month=6, day=6, hour=0, minute=0, second=0, microsecond=0, tzinfo=tzinfo)
+    end_timestamp = datetime.datetime(year=2023, month=6, day=7, hour=0, minute=0, second=0, microsecond=0, tzinfo=tzinfo)
+    time_interval = (end_timestamp - strt_timestamp) / total_rows
+
+    if enable_timezone_range is True:
+        timestamps = []
+        for current_row in range(total_rows):
+            timestamp = strt_timestamp + (current_row * time_interval)
+            timestamps.append(__timestamp_string(timestamp=timestamp))
+        random.shuffle(timestamps)
+        return timestamps
+    else:
+        timestamp = strt_timestamp + (current_row * time_interval)
+        timestamp = __timestamp_string(timestamp=timestamp)
+        if isinstance(payload, list):
+            for pyld in payload:
+                pyld['timestamp'] = timestamp
+        else:
+            payload['timestamp'] = timestamp
+        return payload
+
+def include_timestamp(payload:dict, timezone:str='utc', enable_timezone_range:bool=False):
     """
     Generate timestamp for row - if performance testing is enabled, timestamps within will be within a 24 hour period.
     :args:
@@ -140,9 +167,6 @@ def include_timestamp(payload:dict, timezone:str='utc', enable_timezone_range:bo
         updated payload
     """
     timestamp = generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range)
-    if performance_testing is True:
-        timestamp = performance_timestamp(microseconds=microseconds, second_increments=second_increments)
-
     if isinstance(payload, dict):
         payload['timestamp'] = timestamp
     else:

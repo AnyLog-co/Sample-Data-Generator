@@ -10,7 +10,7 @@ PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'publishing_protocols')
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
-import data_generators.transit_data as transit_data
+import archive.transit_data as transit_data
 import publishing_protocols.support as support
 import publishing_protocols.publish_data as publish_data
 

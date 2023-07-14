@@ -178,13 +178,13 @@ def main():
         --timezone          TIMEZONE            timezone for generated timestamp(s)
             * local
             * utc
-            * et
-            * br
-            * jp
-            * ws
-            * au
-            * it
-        --enable-timezone-range     [ENABLE_TIMEZONE_RANGE]     set timestamp within a range of +/- 1 month
+            * et -- africa time
+            * br -- america
+            * jp -- japan
+            * ws -- US pacific
+            * au -- australia
+            * it -- Europe
+        --enable-timezone-range     [ENABLE_TIMEZONE_RANGE]     set timestamp within a range of +/- 1 month. For performance testing, it is used to randomize the order timestamps are inserted.
         --performance-testing       [PERFORMANCE_TESTING]       insert all rows within a 24 hour period
         --conn      CONN            {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
         --topic     TOPIC           topic for publishing data via REST POST or MQTT
@@ -243,7 +243,7 @@ def main():
     parser.add_argument('--timezone', type=str, choices=['local', 'utc', 'et', 'br', 'jp', 'ws', 'au', 'it'],
                        default='local', help='timezone for generated timestamp(s)')
     parser.add_argument('--enable-timezone-range', type=bool, nargs='?', const=True, default=False,
-                       help='set timestamp within a range of +/- 1 month')
+                       help='set timestamp within a range of +/- 1 month. For performance testing, it is used to randomize the order timestamps are inserted.')
     parser.add_argument('--performance-testing', type=bool, nargs='?', const=True, default=False,
                        help='insert all rows within a 24 hour period')
     parser.add_argument('--conn', type=support.validate_conn_pattern, default=None,
@@ -282,9 +282,12 @@ def main():
         conns = publish_data.setup_put_post_conn(conns=conns)
 
     if args.performance_testing is True:
-        if total_rows == 0:
-            total_rows = 1000000
-        second_increments = 0 * (SECOND_INCREMENTS / args.total_rows)
+        if args.total_rows == 0:
+            args.total_rows = 1000000
+        if args.enable_timezone_range is True:
+            timestamps = timestamp_generator.performance_timestamp(payload={}, total_rows=args.total_rows, current_row=0,
+                                                                   timezone=args.timezone,
+                                                                   enable_timezone_range=args.enable_timezone_range)
 
     last_conn = None
     while True:
@@ -308,10 +311,20 @@ def main():
         elif data_type == 'power':
             payload = power_company.data_generator(db_name=args.db_name)
 
-        payload = timestamp_generator.include_timestamp(payload=payload, timezone=args.timezone,
-                                                        enable_timezone_range=args.enable_timezone_range,
-                                                        performance_testing=args.performance_testing,
-                                                        microseconds=MICROSECONDS, second_increments=second_increments)
+        if args.performance_testing is True and args.enable_timezone_range is True:
+            timestamp = timestamps[total_rows]
+            if isinstance(payload, list):
+                for pyld in payload:
+                    pyld['timestamp'] = timestamp
+            else:
+                payload['timestamp'] = timestamp
+        elif args.performance_testing is True and args.enable_timezone_range is False:
+            payload = timestamp_generator.performance_timestamp(payload=payload, total_rows=args.total_rows,
+                                                                current_row=total_rows, timezone=args.timezone,
+                                                                enable_timezone_range=args.enable_timezone_range)
+        else:
+            payload = timestamp_generator.include_timestamp(payload=payload, timezone=args.timezone,
+                                                            enable_timezone_range=args.enable_timezone_range)
 
         if isinstance(payload, list):
             for pyld in payload:
@@ -335,8 +348,6 @@ def main():
                 exit(1)
 
         time.sleep(args.sleep)
-        if args.performance_testing is True:
-            second_increments = (total_rows + 1) * (SECOND_INCREMENTS / args.total_rows)
 
 
 if __name__ == '__main__':
