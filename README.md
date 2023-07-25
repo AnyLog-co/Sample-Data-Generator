@@ -8,6 +8,13 @@ When using _MQTT_ or REST _POST_to insert data, users need to configure a [MQTT 
 * [Trig](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_trig.al)
 * [OPCUA](https://github.com/AnyLog-co/deployment-scripts/blob/main/scripts/demo_scripts/data_generator_generic_opcua.al)
 
+**Other Services**:
+* [Blobs Data Generator](Blobs.md)
+* [Store locations for Power Generator in blockchain](data_generator_generic_power_blockchain_coordinates.py)
+```shell
+python3 Sample-Data-Generator/data_generator_generic_power_blockchain_coordinates.py
+```
+
 
 ## Docker Deployment 
 * Help 
@@ -28,12 +35,12 @@ docker run -it --detach-keys=ctrl-d --name data-generator --network host \
 # send ping data via REST PUT to multiple operator nodes
 docker run -it --detach-keys=ctrl-d --name data-generator --network host \
    -e DATA_TYPE=ping \
-   -e INSERT_PROCESS=put \
+   -e INSERT_PROCESS=put \ 
    -e DB_NAME=test \
-   -e TOTAL_ROWS=100 \
+   -e TOTAL_ROWS=100 \ 
    -e BATCH_SIZE=10 \
    -e SLEEP=0.5 \
-   -e CONN=198.74.50.131:32149,178.79.143.174:32149 \
+   -e CONN=198.74.50.131:32149,178.79.143.174:32149 \ 
    -e TIMEZONE=utc \
 --rm anylogco/sample-data-generator:latest
 
@@ -53,26 +60,27 @@ docker run -it --detach-keys=ctrl-d --name data-generator --network host \
 * Using print or file _INSERT_PROCESS_. Directions to access files stored in docker volume can be found [here](https://github.com/AnyLog-co/documentation/blob/master/deployments/Support/cheatsheet.md).   
 ```shell
 # print OPCUA to screen 
-docker run -it --detach-keys=ctrl-d --name data-generator --network host \
-   -e DATA_TYPE=opcua \
-   -e INSERT_PROCESS=print \
-   -e DB_NAME=test \
-   -e TOTAL_ROWS=100 \
-   -e BATCH_SIZE=10 \
-   -e SLEEP=0.5 \
-   -e TIMEZONE=local \
+docker run -it --detach-keys=ctrl-d --name data-generator --network host \ 
+   -e DATA_TYPE=opcua \ 
+   -e INSERT_PROCESS=print \ 
+   -e DB_NAME=test \ 
+   -e TOTAL_ROWS=100 \ 
+   -e BATCH_SIZE=10 \ 
+   -e SLEEP=0.5 \ 
+   -e TIMEZONE=local \ 
 --rm anylogco/sample-data-generator:latest
 
-# store POWER data into file(s) with performance enabled  
-docker run -it --detach-keys=ctrl-d --name data-generator --network host \
-   -e DATA_TYPE=power \
-   -e INSERT_PROCESS=file \
-   -e DB_NAME=test \
-   -e TOTAL_ROWS=1000 \
-   -e BATCH_SIZE=10 \
-   -e SLEEP=0.5 \
-   -e TIMEZONE=local \
-   -v data-generator:/app/Sample-Data-Generator/data/new-data \
+# store POWER data into file(s) with performance enabled - notice that unlike other examples, the file insert process 
+# has a volume named data-generator
+docker run -it --detach-keys=ctrl-d --name data-generator --network host \ 
+   -e DATA_TYPE=power \ 
+   -e INSERT_PROCESS=file \ 
+   -e DB_NAME=test \ 
+   -e TOTAL_ROWS=1000 \ 
+   -e BATCH_SIZE=10 \ 
+   -e SLEEP=0.5 \ 
+   -e TIMEZONE=local \ 
+   -v data-generator:/app/Sample-Data-Generator/data/new-data \ 
 --rm anylogco/sample-data-generator:latest
 ```
 
@@ -88,7 +96,7 @@ python3 -m pip install -r $HOME/Sample-Data-Generator/requirements.txt
 ```
 
 3. Run Data Generator 
-   * Help 
+* Help 
 ```shell
 # generic
 python3 Sample-Data-Generator/data_generator_generic.py
@@ -111,7 +119,8 @@ python3 Sample-Data-Generator/data_generator_generic.py
   --timezone {local,utc,et,br,jp,ws,au,it}
                         timezone for generated timestamp(s)
   --enable-timezone-range [ENABLE_TIMEZONE_RANGE]
-                        set timestamp within a range of +/- 1 month
+                        set timestamp within a range of +/- 1 month. For performance testing, it is 
+                        used to randomize the order timestamps are inserted.
   --performance-testing [PERFORMANCE_TESTING]
                         insert all rows within a 24 hour period
   --conn CONN           {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
@@ -129,7 +138,7 @@ python3 Sample-Data-Generator/data_generator_generic.py
 python3 Sample-Data-Generator/data_generator_generic.py --extended-help
 ```
 
-  * Sample calls to send data into AnyLog 
+* Sample calls to send data into AnyLog 
 ```shell
 # send ping data via REST PUT to multiple operator nodes
 python3 Sample-Data-Generator/data_generator_generic.py ping put test \
@@ -148,7 +157,7 @@ python3 Sample-Data-Generator/data_generator_generic.py ping,percentagecpu put t
   --timezone utc
 ```
 
-  * Using print or file _INSERT_PROCESS_
+* Using print or file _INSERT_PROCESS_
 ```shell
 # print OPCUA to screen 
 python3 Sample-Data-Generator/data_generator_generic.py opcua print test \
