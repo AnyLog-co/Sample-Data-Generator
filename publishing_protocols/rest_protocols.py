@@ -132,9 +132,9 @@ def put_data(payloads:list, conn:str, auth:tuple=(), timeout:int=30, exception:b
     formatted_payloads = __convert_data(payloads=payloads)
     for table in formatted_payloads:
         headers['dbms'], headers['table'] = table.split('.')
-        payload = support.json_dumps(payloads=formatted_payloads[table])
+        str_payloads = json.dumps(formatted_payloads[table])
         try:
-            r = requests.put(url=f'http://{conn}', headers=headers, auth=auth, timeout=timeout, data=payload)
+            r = requests.put(url=f'http://{conn}', headers=headers, auth=auth, timeout=timeout, data=str_payloads)
         except Exception as error:
             status = False
             if exception is True:

@@ -89,8 +89,10 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
     elif conversion_type == 'bytesio' and blob_data_type == 'video' and insert_process != "file":
         payload["readings"]["binaryValue"] = payload['file_content'].__str__()
 
+
     if insert_process == "print":
-        generic_protocol.print_content(payloads=payload, exception=exception)
+        str_payloads = support.json_dumps(payloads=payload)
+        print(str_payloads)
     elif insert_process == "file" and blob_data_type == "":
         status = generic_protocol.write_to_file(payloads=payload, data_dir=dir_name, compress=compress,
                                                 exception=exception)

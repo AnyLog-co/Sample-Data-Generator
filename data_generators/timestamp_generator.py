@@ -100,7 +100,7 @@ def generate_timestamps_range(timezone:str, enable_timezone_range:bool=False, pe
     if period is not None:
         timestamp2 = timestamp + datetime.timedelta(seconds=period)
     
-    return timestamp, timestamp2
+    return __timestamp_string(timestamp), __timestamp_string(timestamp2)
 
 
 def performance_timestamp(payload:dict, total_rows:int, current_row:int=0, timezone:str=None, enable_timezone_range:bool=False):

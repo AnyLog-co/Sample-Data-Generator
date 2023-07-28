@@ -108,18 +108,26 @@ def validate_conversion_type(conversion_type:str)->str:
 
     return conversion_type
 
-def json_dumps(payloads:dict)->str:
+def json_dumps(payloads, indent=None)->str:
     """
-    Convert dictionary to string
+    Convert dictionary to string, if list then keep the list but convert the content within it
     :args:
         payloads:dict - data to convert
     :return:
         converted data, if fails return original data
     """
-    try:
-        return json.dumps(payloads, indent=None)
-    except Exception as error:
-        return payloads
+    if isinstance(payloads, dict):
+        try:
+            return json.dumps(payloads, indent=indent)
+        except Exception as error:
+            return payloads
+    elif isinstance(payloads, list):
+        return [json_dumps(payload) for payload in payloads]
+
+    return payloads
+
+
+
 
 
 def json_loads(data:str)->dict:

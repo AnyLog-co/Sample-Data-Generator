@@ -110,7 +110,7 @@ def __car_counter(timezone:str, enable_timezone_range:bool=False)->dict:
             - speed
     """
     start_ts, end_ts = timestamp_generator.generate_timestamps_range(timezone=timezone, enable_timezone_range=enable_timezone_range)
-    hours = start_ts.hour
+    hours = datetime.datetime.strptime(start_ts, '%Y-%m-%dT%H:%M:%S.%fZ').hour
 
     if 5 <= hours < 7:
         speed = round(random.choice(range(60, 80)) + random.random(), 2)

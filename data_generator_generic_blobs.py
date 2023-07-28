@@ -263,9 +263,10 @@ def main():
                                                                   exception=args.exception)
 
             if args.insert_process == "print":
-                if isinstance(payload["file_content"], bytes):
-                    payload['readings'][0]['binaryValue'] = payload['readings'][0]['binaryValue'].decode("utf-8", errors="ignore")
-                payload['readings'][0]['binaryValue'] = payload['readings'][0]['binaryValue'][:20] + "..."
+                for row_id in range(len(payload['readings'])):
+                    if isinstance(payload['readings'][row_id]['binaryValue'], bytes):
+                        payload['readings'][row_id]['binaryValue'] = payload['readings'][row_id]['binaryValue'].decode("utf-8", errors="ignore")
+                    payload['readings'][row_id]['binaryValue'] = payload['readings'][row_id]['binaryValue'][:20] + "..."
 
         elif args.data_type == 'image':
             if args.table_name is None:
