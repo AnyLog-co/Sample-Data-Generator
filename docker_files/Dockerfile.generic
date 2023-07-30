@@ -17,7 +17,6 @@ COPY data_generators $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/data_generator_images.py
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/data_generator_videos.py
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/edgex_data.py
-RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/file_processing.py
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/live_feed.py
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/nvidia_read_logs.py
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/transit_data.py
@@ -47,9 +46,9 @@ RUN pip install --upgrade requests>=0.0 || true
 RUN pip install --upgrade sys>=0.0 || true
 RUN pip install --upgrade time>=0.0 || true
 RUN pip install --upgrade uuid>=0.0 || true
-RUN pip install --upgrade base64>=0.0 || true
-RUN pip install --upgrade opencv-python>=0 || true
-RUN pip install --upgrade numpy>=0.0 || true
+#RUN pip install --upgrade base64>=0.0 || true
+#RUN pip install --upgrade opencv-python>=0 || true
+#RUN pip install --upgrade numpy>=0.0 || true
 
-#ENTRYPOINT /bin/bash
-ENTRYPOINT bash $ANYLOG_ROOT_DIR/Sample-Data-Generator/docker_call.sh
+ENTRYPOINT /bin/bash
+#ENTRYPOINT bash $ANYLOG_ROOT_DIR/Sample-Data-Generator/docker_call.sh
