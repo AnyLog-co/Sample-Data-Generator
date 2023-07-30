@@ -32,6 +32,7 @@ COPY publishing_protocols $ANYLOG_ROOT_DIR/Sample-Data-Generator/publishing_prot
 COPY data_generator_generic_blobs.py $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generator_generic_blobs.py
 COPY docker_files/data_generator_blobs.sh $ANYLOG_ROOT_DIR/Sample-Data-Generator/docker_call.sh
 
+COPY data/ntt_factory_data.json $ANYLOG_ROOT_DIR/Sample-Data-Generator/data/ntt_factory_data.json
 COPY data/edgex-demo $ANYLOG_ROOT_DIR/Sample-Data-Generator/data/edgex-demo 
 COPY data/videos $ANYLOG_ROOT_DIR/Sample-Data-Generator/data/videos 
 COPY data/images $ANYLOG_ROOT_DIR/Sample-Data-Generator/data/images 
@@ -64,4 +65,4 @@ RUN pip install --upgrade opencv-python>=0 || true
 RUN pip install --upgrade numpy>=0.0 || true
 
 #ENTRYPOINT /bin/bash
-ENTRYPOINT bash $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generator_blobs.sh
+ENTRYPOINT bash $ANYLOG_ROOT_DIR/Sample-Data-Generator/docker_call.sh

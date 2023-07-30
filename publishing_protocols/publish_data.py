@@ -111,20 +111,8 @@ def publish_data(payload, insert_process:str, conns:dict={}, topic:str=None, res
         if status is False and exception is False:
             print(f'Failed to insert one or more batches of data into {conn} via POST')
     elif insert_process == 'mqtt':
-        # Connect to MQTT client
-        mqtt_client = mqtt_protocol.connect_mqtt_broker(broker=conn.split(":")[0], port=conn.split(":")[1],
-                                                        username=conns[conn]["user"], password=conns[conn]["password"],
-                                                        exception=exception)
-        # start loop
-        mqtt_client.loop_start()
-        # insert data
-        status = mqtt_protocol.mqtt_process(mqtt_client=mqtt_client, payloads=payload, topic=topic, qos=qos, exception=exception)
-        if status is False and exception is True:
-            print(f'Failed to send MQTT message against connection {conn}')
-        # stop loop
-        mqtt_client.loop_stop()
-
-        # disconnect from node
-        mqtt_protocol.disconnect_mqtt(conn_info=conn, mqtt_conn=mqtt_client, exception=exception)
+        mqtt_protocol.mqtt_main(broker=conn.split(":")[0], port=conn.split(":")[-1], payloads=payload, topic=topic,
+                                qos=qos, username=conns[conn]['user'], password=conns[conn]['password'],
+                                exception=exception)
 
     return conn

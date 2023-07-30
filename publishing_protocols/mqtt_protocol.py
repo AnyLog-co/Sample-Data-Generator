@@ -188,3 +188,40 @@ def mqtt_process(mqtt_client:client.Client, payloads:list, topic:str, qos:int=0,
 
     return status
 
+
+def mqtt_main(broker:str, port:int, payloads:list, topic:str, qos:int=0, username:str=None, password:str=None,
+              exception:bool=False):
+    """
+    Main for MQTT client
+    :args:
+        broker:str - MQTT broker IP
+        port:int - MQTT port
+        payloads:list - content to publish
+        topic:str - topic to publish against
+        qos:int - Quality of Service
+        username:str - broker user
+        password:str - broker password
+        exception:bool - whether to print exception
+    :params:
+        status:bool
+        mqtt_client:client.Client - connection to MQTT client
+    """
+    mqtt_client = connect_mqtt_broker(broker=broker, port=port, username=username, password=password, exception=exception)
+    if mqtt_client is None and exception is True:
+        print(f"Failed to configure MQTT client with broker conn: {broker}:{port}")
+        return
+
+    mqtt_client.loop_start()
+
+    status = mqtt_process(mqtt_client=mqtt_client, payloads=payloads, topic=topic, qos=qos, exception=exception)
+    if status is False and exception is True:
+        print(f'Failed to send MQTT message against connection {broker}:{port}')
+
+    # stop loop
+    mqtt_client.loop_stop()
+
+    disconnect_mqtt(conn_info=f"{broker}:{port}", mqtt_conn=mqtt_client, exception=exception)
+
+
+
+
