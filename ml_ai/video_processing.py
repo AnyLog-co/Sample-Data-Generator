@@ -90,6 +90,8 @@ class VideoProcessing:
                 print(f"Failed to declare interpreter (Error: {error})")
 
     def analyze_data(self):
+        # num_people = 0
+        # confidence = 0
         while self.cap.isOpened():
             ret, frame = self.cap.read()
             if not ret:
