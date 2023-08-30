@@ -22,7 +22,9 @@ class VideoProcessing:
         self.status = True
         self.exception = exception
         self.num_people = 0
+        self.num_vehicles = 0
         self.confidence = 0
+
         self.model_file = os.path.expanduser(os.path.expandvars(model_file))
         self.label_file = os.path.expanduser(os.path.expandvars(label_file))
         self.video_file = os.path.expanduser(os.path.expandvars(video))
@@ -89,9 +91,21 @@ class VideoProcessing:
             if self.exception is True:
                 print(f"Failed to declare interpreter (Error: {error})")
 
-    def analyze_data(self):
-        # num_people = 0
-        # confidence = 0
+    def analyze_data(self, min_confidence:float=0.5, image_type:str="person"):
+        """
+        analyze the data coming in
+        :args:
+            min_confidence:float - minimum confidence level
+            image_type:str - image to analyze
+                --> person
+                --> vehicle(s)
+        :params:
+            ret:bool - status
+            frame:ndarry - numpy frame as an arry
+            num_people:int - people counter
+            num_vehicle: - number of vehicles
+            confidence:float - confidence level
+        """
         while self.cap.isOpened():
             ret, frame = self.cap.read()
             if not ret:
@@ -108,13 +122,22 @@ class VideoProcessing:
             output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
 
             num_people = 0
+            num_vehicles = 0
 
             # Post-process detection results
             for detection in output_data[0]:
                 confidence = detection[2]
-                class_id = int(detection[1])
-                if confidence > 0.5 and self.labels[class_id].split(" ")[-1] == 'person':
-                    num_people += 1
+                if image_type == "vehicle" or image_type == "vehicles":
+                    labels = ['car', 'motorcycle', 'bus', 'truck']
+                if image_type == "person":
+                    labels = ["person"]
+                for label in labels:
+                    if confidence >= min_confidence:
+                        label = label.split(" ")[-1]
+                        if label == 'person':
+                            num_people += 1
+                        elif label == 'car':
+                            num_vehicles += 1
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 return
@@ -123,7 +146,8 @@ class VideoProcessing:
         cv2.destroyAllWindows()
 
         self.num_people = num_people
+        self.num_vehicles = num_vehicles
         self.confidence = confidence
 
-    def get_values(self)->(int, float):
-        return self.num_people, self.confidence
+    def get_values(self)->(int, int, float):
+        return self.num_people, self.num_vehicles, self.confidence
