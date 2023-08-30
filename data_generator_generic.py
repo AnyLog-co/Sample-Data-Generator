@@ -43,8 +43,6 @@ DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
 SECOND_INCREMENTS = 86400  # second increments (0.864) for 100000 rows
 
-
-
 def __data_types(value:str)->str:
     """
     Validate data types
@@ -68,9 +66,10 @@ def __insert_process(value:str)->str:
         value
         if fails error
     """
-    if value not in ['print', 'file', 'put', 'post', 'mqtt']:
+    if value not in ['print', 'file', 'put','post', 'mqtt']:
         argparse.ArgumentError(f"Unsupported process type: {value}. Supported process types: print, file, put, post, mqtt")
     return value
+
 
 class ExtendedHelpAction(argparse.Action):
     def __rows_summary(self, db_name:str='test')->str:
@@ -134,7 +133,7 @@ class ExtendedHelpAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         # Call your function to handle extended help here
-        print("Sample Data Types Aviliable")
+        print("Sample Data Types Available")
         self.__rows_summary(db_name='test')
         setattr(namespace, self.dest, True)
         print("""Sample docker call: \ndocker run -it --detach-keys=ctrl-d --name data-generator --network host \\
@@ -147,19 +146,21 @@ class ExtendedHelpAction(argparse.Action):
                     \t-e CONN=198.74.50.131:32149,178.79.143.174:32149 \\
                     \t-e TIMEZONE=utc \\
                     \t--rm anylogco/sample-data-generator:latest\n""")
+        exit(1)
 
 
 
 def main():
     """
-    Sample data generator for AnyLog
+    Sample blobs data generator for AnyLog
     :positional arguments:
         data_type             type of data to insert into AnyLog.
             * trig
             * performance
             * ping
-            * percentagecpu,
-            * opcua, power
+            * percentagecpu
+            * opcua
+            * power
         insert_process        format to store generated data.
             * print
             * file
@@ -177,13 +178,13 @@ def main():
         --timezone          TIMEZONE            timezone for generated timestamp(s)
             * local
             * utc
-            * et
-            * br
-            * jp
-            * ws
-            * au
-            * it
-        --enable-timezone-range     [ENABLE_TIMEZONE_RANGE]     set timestamp within a range of +/- 1 month
+            * et -- africa time
+            * br -- america
+            * jp -- japan
+            * ws -- US pacific
+            * au -- australia
+            * it -- Europe
+        --enable-timezone-range     [ENABLE_TIMEZONE_RANGE]     set timestamp within a range of +/- 1 month. For performance testing, it is used to randomize the order timestamps are inserted.
         --performance-testing       [PERFORMANCE_TESTING]       insert all rows within a 24 hour period
         --conn      CONN            {user}:{password}@{ip}:{port} for sending data either via REST or MQTT
         --topic     TOPIC           topic for publishing data via REST POST or MQTT
@@ -224,9 +225,11 @@ def main():
     """
     parser = argparse.ArgumentParser(add_help=True,
         description="Sample Data Generator for AnyLog. When using a Docker based deployment, all arguments can be used as upper case environment variables.")
+    parser = argparse.ArgumentParser(add_help=True,
+                                     description="Sample Data Generator for AnyLog. When using a Docker based deployment, all arguments can be used as upper case environment variables.")
     parser.add_argument('data_type', type=__data_types, default='trig',
                         help='type of data to insert into AnyLog. Choices: trig, performance, ping, percentagecpu, opcua, power')
-    parser.add_argument('insert_process', type=str,  default='print',
+    parser.add_argument('insert_process', type=__insert_process, default='print',
                         help='format to store generated data. Choices: print, file, put, post, mqtt')
     parser.add_argument('db_name', type=str, default='test', help='logical database name')
     parser.add_argument('--extended-help', type=bool, nargs='?', const=True, action=ExtendedHelpAction, default=False,
@@ -240,7 +243,7 @@ def main():
     parser.add_argument('--timezone', type=str, choices=['local', 'utc', 'et', 'br', 'jp', 'ws', 'au', 'it'],
                        default='local', help='timezone for generated timestamp(s)')
     parser.add_argument('--enable-timezone-range', type=bool, nargs='?', const=True, default=False,
-                       help='set timestamp within a range of +/- 1 month')
+                       help='set timestamp within a range of +/- 1 month. For performance testing, it is used to randomize the order timestamps are inserted.')
     parser.add_argument('--performance-testing', type=bool, nargs='?', const=True, default=False,
                        help='insert all rows within a 24 hour period')
     parser.add_argument('--conn', type=support.validate_conn_pattern, default=None,
@@ -259,8 +262,8 @@ def main():
     data_type_counter = 0
     second_increments = 0
     data = []
-    if args.batch_size <= 0:
-        args.batch_size = 1
+    if args.batch_size == 0:
+        args.batch_size = 10
 
     data_types = args.data_type.split(",")
     # make sure each table a unique name
@@ -279,9 +282,12 @@ def main():
         conns = publish_data.setup_put_post_conn(conns=conns)
 
     if args.performance_testing is True:
-        if total_rows == 0:
-            total_rows = 1000000
-        second_increments = 0 * (SECOND_INCREMENTS / args.total_rows)
+        if args.total_rows == 0:
+            args.total_rows = 1000000
+        if args.enable_timezone_range is True:
+            timestamps = timestamp_generator.performance_timestamp(payload={}, total_rows=args.total_rows, current_row=0,
+                                                                   timezone=args.timezone,
+                                                                   enable_timezone_range=args.enable_timezone_range)
 
     last_conn = None
     while True:
@@ -305,15 +311,20 @@ def main():
         elif data_type == 'power':
             payload = power_company.data_generator(db_name=args.db_name)
 
-        payload = timestamp_generator.include_timestamp(payload=payload, timezone=args.timezone,
-                                                        enable_timezone_range=args.enable_timezone_range,
-                                                        performance_testing=args.performance_testing,
-                                                        microseconds=MICROSECONDS, second_increments=second_increments)
-        if args.total_rows == 0: 
-            args.performance_testing = False
-
-        if args.performance_testing is True: 
-            second_increments = (total_rows + 1) * (SECOND_INCREMENTS / args.total_rows)
+        if args.performance_testing is True and args.enable_timezone_range is True:
+            timestamp = timestamps[total_rows]
+            if isinstance(payload, list):
+                for pyld in payload:
+                    pyld['timestamp'] = timestamp
+            else:
+                payload['timestamp'] = timestamp
+        elif args.performance_testing is True and args.enable_timezone_range is False:
+            payload = timestamp_generator.performance_timestamp(payload=payload, total_rows=args.total_rows,
+                                                                current_row=total_rows, timezone=args.timezone,
+                                                                enable_timezone_range=args.enable_timezone_range)
+        else:
+            payload = timestamp_generator.include_timestamp(payload=payload, timezone=args.timezone,
+                                                            enable_timezone_range=args.enable_timezone_range)
 
         if isinstance(payload, list):
             for pyld in payload:
@@ -340,5 +351,5 @@ def main():
 
 
 if __name__ == '__main__':
-    support.validate_packages()
+    support.validate_packages(is_blobs=False, is_traffic=False)
     main()

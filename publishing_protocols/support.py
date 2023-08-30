@@ -33,9 +33,10 @@ def validate_conn_pattern(conns:str)->str:
 
     for conn in conns.split(","):
         if not pattern1.match(conn) and not pattern2.match(conn):
-            raise argparse.ArgumentTypeError(f'Invalid REST connection format: {conn}')
+            raise argparse.ArgumentTypeError(f'Invalid connection format: {conn}. Supported formats: 127.0.0.1:32049 or user:passwd@127.0.0.1:32049')
 
     return conns
+
 
 
 def validate_row_size(row_size)->int:
@@ -57,6 +58,7 @@ def validate_row_size(row_size)->int:
             output = value
 
     return output
+
 
 def validate_packages(is_blobs:bool=False, is_traffic:bool=False):
     """
@@ -91,32 +93,41 @@ def validate_conversion_type(conversion_type:str)->str:
     :return:
         conversion_type
     """
+    error = ""
     if conversion_type not in ['base64', 'bytesio', 'opencv']:
-        raise argparse.ArgumentTypeError(f"Invalid option {conversion_type}. Supported types: base64, bytesio, cv2")
+        error = f"Invalid option {conversion_type}. Choices: base64, bytesio, opencv"
     elif conversion_type == 'base64' and  importlib.import_module("base64") is None:
-        raise argparse.ArgumentTypeError(f"Unable to locate package base64 for conversion type {conversion_type}")
+        error = "Unable to locate package base64 for conversion type {conversion_type}"
     elif conversion_type == 'bytesio' and importlib.import_module('io') is None:
-        raise argparse.ArgumentTypeError(f"Unable to locate package io for conversion type {conversion_type}")
+        error = f"Unable to locate package io for conversion type {conversion_type}"
     elif conversion_type == 'opencv' and importlib.import_module('cv2') is None:
-        raise argparse.ArgumentTypeError(f"Unable to locate package opencv2-python for conversion type {conversion_type}")
+        error = f"Unable to locate package opencv2-python for conversion type {conversion_type}"
+
+    if error != "":
+        raise argparse.ArgumentError(error)
 
     return conversion_type
 
-def json_dumps(payloads:dict, print_output:bool=False)->str:
+def json_dumps(payloads, indent=None)->str:
     """
-    Convert dictionary to string
+    Convert dictionary to string, if list then keep the list but convert the content within it
     :args:
         payloads:dict - data to convert
     :return:
         converted data, if fails return original data
     """
-    indent = 0
-    if print_output is True:
-        indent = 4
-    try:
-        return json.dumps(payloads, indent=indent)
-    except Exception as error:
-        return payloads
+    if isinstance(payloads, dict):
+        try:
+            return json.dumps(payloads, indent=indent)
+        except Exception as error:
+            return payloads
+    elif isinstance(payloads, list):
+        return [json_dumps(payload) for payload in payloads]
+
+    return payloads
+
+
+
 
 
 def json_loads(data:str)->dict:
