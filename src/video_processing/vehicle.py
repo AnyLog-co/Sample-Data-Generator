@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import os
 import tensorflow as tf
+import time
 
 
 class VideoProcessing:
@@ -99,15 +100,72 @@ class VideoProcessing:
                 print(f"Failed to declare interpreter (Error: {error})")
 
     def analyze_data(self, min_confidence:float=0.5):
+        # height = self.input_details[0]['shape'][1]
+        # width = self.input_details[0]['shape'][2]
+        inp_mean = 127.5
+        inp_std = 127.5
+        grid_rows = 2  # Number of grid rows
+        grid_cols = 2  # Number of grid columns
+
+        # Initialize a grid to keep track of car counts in each cell
+        car_count_grid = np.zeros((grid_rows, grid_cols))
+
         while self.cap.isOpened():
-            ret, frame = self.cap.read()
+            ret, img = self.cap.read()
             if not ret:
                 break
 
-        resized_frame = cv2.resize(frame, (300, 300))
-        if self.img_process == 'vehicle':
-            input_data = resized_frame.astype(np.float32)
-        else:
-            input_data = resized_frame.astype(np.uint8)
-        input_data = np.expand_dims(input_data, axis=0)
-        self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
+            resized_frame = cv2.resize(img, (300, 300))
+
+            input_data = (abs((np.array(resized_frame) - inp_mean) / inp_std) - 1).astype(np.float32)
+            input_data = np.expand_dims(input_data, axis=0)
+            self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
+            t_in = time.time()
+            self.interpreter.invoke()
+            output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
+            t_out = time.time() - t_in
+
+            predictions = np.squeeze(output_data)
+            confidence_scores = np.squeeze(self.interpreter.get_tensor(self.output_details[2]['index']))
+
+            moving_cars = []  # List to store moving cars' bounding boxes
+
+            for i, newbox in enumerate(predictions):
+                if confidence_scores[i] >= min_confidence:
+                    y_min = int(newbox[0] * resized_frame.shape[0])
+                    x_min = int(newbox[1] * resized_frame.shape[1])
+                    y_max = int(newbox[2] * resized_frame.shape[0])
+                    x_max = int(newbox[3] * resized_frame.shape[1])
+
+                    # Check if the box falls within any grid cell
+                    cell_height = resized_frame.shape[0] // grid_rows
+                    cell_width = resized_frame.shape[1] // grid_cols
+                    for row in range(grid_rows):
+                        for col in range(grid_cols):
+                            cell_x_min = col * cell_width
+                            cell_y_min = row * cell_height
+                            cell_x_max = (col + 1) * cell_width
+                            cell_y_max = (row + 1) * cell_height
+
+                        if (cell_x_min < x_max < cell_x_max) and (cell_y_min < y_max < cell_y_max):
+                            moving_cars.append((row, col))
+                            car_count_grid[row, col] += 1
+
+                for row, col in moving_cars:
+                    cell_x_min = col * cell_width
+                    cell_y_min = row * cell_height
+                    cell_x_max = (col + 1) * cell_width
+                    cell_y_max = (row + 1) * cell_height
+                    cv2.rectangle(img, (cell_x_min, cell_y_min), (cell_x_max, cell_y_max), (0, 255, 0), 2)
+
+                fps = round(cv2.getTickFrequency() / (cv2.getTickCount() - t_in), 2)
+                cv2.putText(img, 'FPS : {}'.format(fps), (280, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255),
+                            lineType=cv2.LINE_AA)
+                cv2.imshow(' ', np.asarray(img))
+                cv2.waitKey(1)
+            else:
+                break
+
+        self.cap.release()
+        cv2.destroyAllWindows()
+
