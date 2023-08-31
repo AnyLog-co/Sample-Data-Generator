@@ -18,7 +18,7 @@ def main():
             if vp.status is True:
                 vp.set_interpreter()
             if vp.status is True:
-                vp.analyze_data(min_confidence=0.5, img_process='person')
+                vp.analyze_data(min_confidence=0.5)
                 print(time.time() - start_time, video, vp.get_values())
 
 

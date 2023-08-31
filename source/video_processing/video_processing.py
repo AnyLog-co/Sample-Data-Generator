@@ -90,11 +90,7 @@ class VideoProcessing:
             if self.exception is True:
                 print(f"Failed to declare interpreter (Error: {error})")
 
-    def analyze_data(self, min_confidence:float=0.5, img_process:str='person'):
-        # class_id = 0
-        # if img_process == 'car':
-        #     class_id = 2
-
+    def analyze_data(self, min_confidence:float=0.5):
         while self.cap.isOpened():
             ret, frame = self.cap.read()
             if not ret:
@@ -102,10 +98,7 @@ class VideoProcessing:
 
             # Preprocess the frame
             resized_frame = cv2.resize(frame, (300, 300))
-            if img_process == 'person':
-                input_data = resized_frame.astype(np.uint8)  # Convert to UINT8
-            elif img_process == 'vehicle':
-                input_data = resized_frame.astype(np.float32)  # Convert to UINT8
+            input_data = resized_frame.astype(np.uint8)  # Convert to UINT8
             input_data = np.expand_dims(input_data, axis=0)
             self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
 
@@ -117,9 +110,9 @@ class VideoProcessing:
 
             for detection in output_data[0]:
                 confidence = detection[2]
-                # class_id = int(detection[1])
-                # label = self.labels[class_id].split(" ")[-1]
-                if confidence > min_confidence:
+                class_id = int(detection[1])
+                label = self.labels[class_id].split(" ")[-1]
+                if confidence > min_confidence and label == 'person':
                     obj_count += 1
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
