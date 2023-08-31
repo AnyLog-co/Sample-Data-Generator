@@ -8,7 +8,7 @@ class VideoProcessing:
     """
     Count number of people in a given video
     """
-    def __init__(self, model_file:str, label_file:str, video:str, detection:str='person', exception:bool=False):
+    def __init__(self, model_file:str, label_file:str, video:str, exception:bool=False):
         """
         Declare file params + echeck if they exist
         :params:
@@ -27,7 +27,6 @@ class VideoProcessing:
         self.model_file = os.path.expanduser(os.path.expandvars(model_file))
         self.label_file = os.path.expanduser(os.path.expandvars(label_file))
         self.video_file = os.path.expanduser(os.path.expandvars(video))
-        self.detection = detection
 
         if not os.path.isfile(self.model_file):
             self.status = False
@@ -99,11 +98,7 @@ class VideoProcessing:
 
             # Preprocess the frame
             resized_frame = cv2.resize(frame, (300, 300))
-            if self.detection == 'vehicle':
-                input_data = resized_frame.astype(np.float32)  # convert to Float32
-            else:
-                input_data = resized_frame.astype(np.uint8)  # Convert to UINT8
-
+            input_data = resized_frame.astype(np.uint8)  # Convert to UINT8
             input_data = np.expand_dims(input_data, axis=0)
             self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
 

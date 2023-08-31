@@ -22,8 +22,8 @@ path_to_video = os.path.expanduser(os.path.expandvars('$HOME/Downloads/sample_da
 
 cap = cv2.VideoCapture(path_to_video)
 
-grid_rows = 5  # Number of grid rows
-grid_cols = 5  # Number of grid columns
+grid_rows = 2  # Number of grid rows
+grid_cols = 2 # Number of grid columns
 
 # Initialize a grid to keep track of car counts in each cell
 car_count_grid = np.zeros((grid_rows, grid_cols))
