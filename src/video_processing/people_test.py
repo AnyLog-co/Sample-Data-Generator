@@ -4,7 +4,7 @@ from video_processing import VideoProcessing
 
 ROOT_PATH = os.path.dirname(os.path.expanduser(os.path.expanduser(os.path.abspath(__file__))))
 MODEL_FILE = os.path.join(ROOT_PATH, 'models', 'people.tflite')
-LABEL_FILE = os.path.join(ROOT_PATH, 'models', 'coco_labels.txt')
+LABEL_FILE = os.path.join(ROOT_PATH, 'models', 'person_coco_labels.txt')
 VIDEO_DIR = os.path.expanduser(os.path.expandvars('$HOME/Downloads/sample_data/edgex-demo'))
 
 
