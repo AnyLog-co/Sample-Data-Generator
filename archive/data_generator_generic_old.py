@@ -27,14 +27,14 @@ PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'publishing_protocols')
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
-import publishing_protocols.support as support
-import publishing_protocols.publish_data as publish_data
+import source.publishing_protocols.support as support
+import source.publishing_protocols.publish_data as publish_data
 
-import data_generators.lsl_data as lsl_data
-import data_generators.opcua_data as opcua_data
-import data_generators.performance_testing as performance_testing
-import data_generators.power_company as power_company
-import data_generators.trig as trig
+import source.data_generators.lsl_data as lsl_data
+import source.data_generators.opcua_data as opcua_data
+import source.data_generators.performance_testing as performance_testing
+import source.data_generators.power_company as power_company
+import source.data_generators.trig as trig
 import archive.transit_data as transit_data
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data')

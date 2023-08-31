@@ -18,7 +18,7 @@ RUN apt-get -y install libglib2.0
 # move to WORKDIR + COPY codebase
 WORKDIR $ANYLOG_ROOT_DIR
 RUN mkdir -p $ANYLOG_ROOT_DIR/Sample-Data-Generator
-COPY data_generators $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators
+COPY source/data_generators $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/live_feed.py
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/lsl_data.py
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/nvidia_read_logs.py
@@ -28,7 +28,7 @@ RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/power_company.
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/transit_data.py
 RUN rm -rf $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generators/trig.py
 
-COPY publishing_protocols $ANYLOG_ROOT_DIR/Sample-Data-Generator/publishing_protocols
+COPY source/publishing_protocols $ANYLOG_ROOT_DIR/Sample-Data-Generator/publishing_protocols
 COPY data_generator_generic_blobs.py $ANYLOG_ROOT_DIR/Sample-Data-Generator/data_generator_generic_blobs.py
 COPY docker_files/data_generator_blobs.sh $ANYLOG_ROOT_DIR/Sample-Data-Generator/docker_call.sh
 

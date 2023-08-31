@@ -4,7 +4,6 @@ import datetime
 import numpy
 import os
 import random
-import re
 import time
 import sys
 
@@ -13,7 +12,7 @@ ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'publishing_protocols')
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
-import publishing_protocols.publish_data as publish_data
+import source.publishing_protocols.publish_data as publish_data
 import support
 
 def __take_photo(camera_id:int, exception:bool=False)->(numpy.ndarray):

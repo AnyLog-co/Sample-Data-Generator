@@ -11,7 +11,7 @@ import requests
 
 DIR_PATH = os.path.join(os.path.expanduser(os.path.expandvars(__file__)).split("data_generators")[0], "publishing_protocols")
 sys.path.insert(0, DIR_PATH)
-from publishing_protocols.rest_protocols import NETWORK_ERRORS, NETWORK_ERRORS_GENERIC
+from source.publishing_protocols.rest_protocols import NETWORK_ERRORS, NETWORK_ERRORS_GENERIC
 
 GEOLOCATOR = geopy.Nominatim(user_agent="transit-app")
 

@@ -11,8 +11,8 @@ sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
 import archive.transit_data as transit_data
-import publishing_protocols.support as support
-import publishing_protocols.publish_data as publish_data
+import source.publishing_protocols.support as support
+import source.publishing_protocols.publish_data as publish_data
 
 
 TRANSIT_AGENCIES = {

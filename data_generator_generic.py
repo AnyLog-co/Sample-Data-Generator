@@ -16,7 +16,6 @@ The following provides the ability to insert data into AnyLog
     -- to file
 """
 import argparse
-import datetime
 import os
 import random
 import sys
@@ -24,20 +23,20 @@ import time
 import json
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-DATA_GENERATORS = os.path.join(ROOT_PATH, 'data_generators')
-PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'publishing_protocols')
+DATA_GENERATORS = os.path.join(ROOT_PATH, 'source/data_generators')
+PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'source/publishing_protocols')
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
-import publishing_protocols.support as support
-import publishing_protocols.publish_data as publish_data
+import source.publishing_protocols.support as support
+import source.publishing_protocols.publish_data as publish_data
 
-import data_generators.lsl_data as lsl_data
-import data_generators.opcua_data as opcua_data
-import data_generators.performance_testing as performance_testing
-import data_generators.power_company as power_company
-import data_generators.timestamp_generator as timestamp_generator
-import data_generators.trig as trig
+import source.data_generators.lsl_data as lsl_data
+import source.data_generators.opcua_data as opcua_data
+import source.data_generators.performance_testing as performance_testing
+import source.data_generators.power_company as power_company
+import source.data_generators.timestamp_generator as timestamp_generator
+import source.data_generators.trig as trig
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
@@ -237,7 +236,7 @@ def main():
     parser.add_argument('--table-name', type=str, default=None,
                        help='Change default table name (valid for data_types except power)')
     parser.add_argument('--total-rows', type=support.validate_row_size, default=1000000,
-                       help='number of rows to insert. If set to 0, will run continuously')
+                        help='number of rows to insert. If set to 0, will run continuously')
     parser.add_argument('--batch-size', type=support.validate_row_size, default=10, help='number of rows to insert per iteration')
     parser.add_argument('--sleep', type=float, default=0.5, help='wait time between each row')
     parser.add_argument('--timezone', type=str, choices=['local', 'utc', 'et', 'br', 'jp', 'ws', 'au', 'it'],
@@ -247,7 +246,7 @@ def main():
     parser.add_argument('--performance-testing', type=bool, nargs='?', const=True, default=False,
                        help='insert all rows within a 24 hour period')
     parser.add_argument('--conn', type=support.validate_conn_pattern, default=None,
-                       help='{user}:{password}@{ip}:{port} for sending data either via REST or MQTT')
+                        help='{user}:{password}@{ip}:{port} for sending data either via REST or MQTT')
     parser.add_argument('--topic', type=str, default=None, help='topic for publishing data via REST POST or MQTT')
     parser.add_argument('--rest-timeout', type=float, default=30, help='how long to wait before stopping REST')
     parser.add_argument('--qos', type=int, choices=list(range(0, 3)), default=0, help='MQTT Quality of Service')
