@@ -63,10 +63,9 @@ def main():
             file = random.choice(os.listdir(FILES[img_type]['content']))
 
         file_path = os.path.join(FILES[img_type]['content'], file)
-        print(file)
         if img_type == 'person':
             process_time, (num_people, accuracy) = __person_video(file_path=file_path, model_file=FILES[img_type]['model'])
-            print(process_time, num_people, accuracy)
+            print(file, process_time, num_people, accuracy)
         elif img_type == 'vehicle':
             total_time, total_cars, avg_speed = __vehicle_video(file_path=file_path, model_file=FILES[img_type]['model'])
             print(file, total_time, total_cars, avg_speed)
