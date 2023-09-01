@@ -5,14 +5,12 @@ import random
 from video_processing import VideoProcessing
 
 ROOT_PATH = os.path.dirname(os.path.expanduser(os.path.expanduser(os.path.abspath(__file__))))
-# CAR_MODEL_FILE = os.path.join(ROOT_PATH, 'models', 'model_float.tflite')
-# PERSON_MODEL_FILE =
 
 FILES = {'person': {'content': os.path.expanduser(os.path.expandvars('$HOME/Downloads/sample_data/edgex-demo')),
                     'model': os.path.join(ROOT_PATH, 'models', 'people.tflite')
                     },
          'vehicle': {'content': os.path.expanduser(os.path.expandvars('$HOME/Downloads/sample_data/videos')),
-                     'model': os.path.join(ROOT_PATH, 'models', 'model_float.tflite')
+                     'model': os.path.join(ROOT_PATH, 'models', 'vehicle.tflite')
                      },
         }
 
@@ -28,11 +26,10 @@ def __person_video(file_path:str, model_file:str):
 
 
 def __vehicle_video(file_path:str, model_file:str):
-    total_time = 0
-    confidence = 0.25
     num_cars = {}
     avg_speed = {}
-
+    total_time = 0
+    confidence = 0.25
     if 'B' in file_path:
         confidence = 0.1
     for label in ["car", "truck", "bus"]:
@@ -55,11 +52,13 @@ def __vehicle_video(file_path:str, model_file:str):
 
 
 def main():
-    for i in range(10):
+    i = 0
+    file = ""
+    file_record = []
+    while file not in file_record:
         # select img_type and file
         img_type = random.choice(list(FILES))
-        file = ""
-        while "mp4" not in file:
+        while "mp4" not in file or file in file_record:
             file = random.choice(os.listdir(FILES[img_type]['content']))
 
         file_path = os.path.join(FILES[img_type]['content'], file)
@@ -69,6 +68,8 @@ def main():
         elif img_type == 'vehicle':
             total_time, total_cars, avg_speed = __vehicle_video(file_path=file_path, model_file=FILES[img_type]['model'])
             print(file, total_time, total_cars, avg_speed)
+        file_record.append(file)
+        file = ""
 
 
 if __name__ == '__main__':
