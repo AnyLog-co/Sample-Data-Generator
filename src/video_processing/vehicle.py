@@ -24,9 +24,11 @@ class VideoProcessing:
         """
         self.status = True
         self.obj_count = 0
-        self.confidence = 0
+        self.confidence = 0 # used for speed when dealing with vehicles
         self.grid_rows = 2
         self.grid_cols = 2
+        self.inp_mean = 127.5
+        self.inp_std = 127.5
 
         self.exception = exception
         self.img_process = img_process
@@ -81,14 +83,19 @@ class VideoProcessing:
             if self.exception is True:
                 print(f"Failed to read content in {self.video_file} (Error: {error})")
 
+    def __set_grid_size(self):
+        """
+        Based on the rows and columns break video into grids
+        :re
+        """
+        try:
+            return np.zeros((int(self.grid_rows), int(self.grid_cols)))
+        except Exception as error:
+            self.status = False
+            if self.exception is True:
+                print(f"Failed to set grid size (Error: {error}")
+
     def set_interpreter(self):
-        """
-        Set interpreter configs
-        :args:
-            self.interpreter: - interpreter
-            self.input_details - input details
-            self.output_details - output details
-        """
         try:
             self.interpreter = tf.lite.Interpreter(model_path=self.model_file)
             self.interpreter.allocate_tensors()
@@ -99,73 +106,77 @@ class VideoProcessing:
             if self.exception is True:
                 print(f"Failed to declare interpreter (Error: {error})")
 
-    def analyze_data(self, min_confidence:float=0.5):
-        # height = self.input_details[0]['shape'][1]
-        # width = self.input_details[0]['shape'][2]
-        inp_mean = 127.5
-        inp_std = 127.5
-        grid_rows = 2  # Number of grid rows
-        grid_cols = 2  # Number of grid columns
+    def process_video(self, min_confidence: float = 0.1):
+        cell_height = 0  # Initialize cell_height
+        cell_width = 0  # Initialize cell_width
+        car_count_grid = self.__set_grid_size()
+        if car_count_grid is None or self.status is False:
+            return
+        while True:
+            ret, img2 = self.cap.read()
+            if ret:
+                img = cv2.resize(img2, (300, 300))
 
-        # Initialize a grid to keep track of car counts in each cell
-        car_count_grid = np.zeros((grid_rows, grid_cols))
+                input_data = (abs((np.array(img) - self.inp_mean) / self.inp_std) - 1).astype(np.float32)
+                input_data = np.expand_dims(input_data, axis=0)
 
-        while self.cap.isOpened():
-            ret, img = self.cap.read()
-            if not ret:
-                break
+                self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
+                t_in = time.time()
+                self.interpreter.invoke()
+                output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
 
-            resized_frame = cv2.resize(img, (300, 300))
+                predictions = np.squeeze(output_data)
+                confidence_scores = np.squeeze(self.interpreter.get_tensor(self.output_details[2]['index']))
 
-            input_data = (abs((np.array(resized_frame) - inp_mean) / inp_std) - 1).astype(np.float32)
-            input_data = np.expand_dims(input_data, axis=0)
-            self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
-            t_in = time.time()
-            self.interpreter.invoke()
-            output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
-            t_out = time.time() - t_in
+                moving_cars = []
 
-            predictions = np.squeeze(output_data)
-            confidence_scores = np.squeeze(self.interpreter.get_tensor(self.output_details[2]['index']))
+                for i, newbox in enumerate(predictions):
+                    if confidence_scores[i] > min_confidence:
+                        y_min = int(newbox[0] * img.shape[0])
+                        x_min = int(newbox[1] * img.shape[1])
+                        y_max = int(newbox[2] * img.shape[0])
+                        x_max = int(newbox[3] * img.shape[1])
 
-            moving_cars = []  # List to store moving cars' bounding boxes
+                        if cell_height == 0:
+                            cell_height = img.shape[0] // self.grid_rows
+                            cell_width = img.shape[1] // self.grid_cols
 
-            for i, newbox in enumerate(predictions):
-                if confidence_scores[i] >= min_confidence:
-                    y_min = int(newbox[0] * resized_frame.shape[0])
-                    x_min = int(newbox[1] * resized_frame.shape[1])
-                    y_max = int(newbox[2] * resized_frame.shape[0])
-                    x_max = int(newbox[3] * resized_frame.shape[1])
+                        for row in range(self.grid_rows):
+                            for col in range(self.grid_cols):
+                                cell_x_min = col * cell_width
+                                cell_y_min = row * cell_height
+                                cell_x_max = (col + 1) * cell_width
+                                cell_y_max = (row + 1) * cell_height
 
-                    # Check if the box falls within any grid cell
-                    cell_height = resized_frame.shape[0] // grid_rows
-                    cell_width = resized_frame.shape[1] // grid_cols
-                    for row in range(grid_rows):
-                        for col in range(grid_cols):
-                            cell_x_min = col * cell_width
-                            cell_y_min = row * cell_height
-                            cell_x_max = (col + 1) * cell_width
-                            cell_y_max = (row + 1) * cell_height
-
-                        if (cell_x_min < x_max < cell_x_max) and (cell_y_min < y_max < cell_y_max):
-                            moving_cars.append((row, col))
-                            car_count_grid[row, col] += 1
+                                if (cell_x_min < x_max < cell_x_max) and (cell_y_min < y_max < cell_y_max):
+                                    moving_cars.append((row, col))
+                                    car_count_grid[row, col] += 1
 
                 for row, col in moving_cars:
                     cell_x_min = col * cell_width
                     cell_y_min = row * cell_height
                     cell_x_max = (col + 1) * cell_width
                     cell_y_max = (row + 1) * cell_height
-                    cv2.rectangle(img, (cell_x_min, cell_y_min), (cell_x_max, cell_y_max), (0, 255, 0), 2)
+                    cv2.rectangle(img2, (cell_x_min, cell_y_min), (cell_x_max, cell_y_max), (0, 255, 0), 2)
 
                 fps = round(cv2.getTickFrequency() / (cv2.getTickCount() - t_in), 2)
-                cv2.putText(img, 'FPS : {}'.format(fps), (280, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255),
+                cv2.putText(img2, 'FPS : {}'.format(fps), (280, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255),
                             lineType=cv2.LINE_AA)
-                cv2.imshow(' ', np.asarray(img))
+                cv2.imshow(' ', np.asarray(img2))
                 cv2.waitKey(1)
             else:
                 break
 
         self.cap.release()
         cv2.destroyAllWindows()
+
+        total_cars = np.sum(car_count_grid)
+        average_speed = np.mean(car_count_grid)
+        print("Total cars detected:", total_cars)
+        if average_speed < 1:
+            average_speed = average_speed * 100
+        print("Average of moving cars:", average_speed)
+
+    def get_values(self):
+        return self.obj_count, self.confidence
 
