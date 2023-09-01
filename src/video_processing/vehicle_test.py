@@ -14,7 +14,11 @@ def main():
     for file in os.listdir(VIDEO_DIR):
         num_cars={}
         avg_speed={}
-        if 'B.mp4' in file:
+        if 'mp4' in file:
+            confidence = 0.25
+            if 'B' in file:
+                confidence = 0.1
+
             video_file = os.path.join(VIDEO_DIR, file)
             total_time = 0
             start_time = time.time()
@@ -23,7 +27,7 @@ def main():
                 if vp.status is True:
                     vp.set_interpreter()
                 if vp.status is True:
-                    vp.process_video(min_confidence=0.1)
+                    vp.process_video(min_confidence=confidence)
                     total_time += time.time() - start_time
                     cars, speed = vp.get_values()
                     num_cars[label] = cars

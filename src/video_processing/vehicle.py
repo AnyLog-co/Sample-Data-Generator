@@ -149,7 +149,7 @@ class VideoProcessing:
             if self.exception is True:
                 print(f"Failed to declare interpreter (Error: {error})")
 
-    def process_video(self, min_confidence:float=0.5):
+    def process_video(self, min_confidence: float = 0.1):
         car_speed = []
         ret, img2 = self.cap.read()
         if not ret:
@@ -219,8 +219,10 @@ class VideoProcessing:
             fps = round(cv2.getTickFrequency() / (cv2.getTickCount() - t_in), 2)
             cv2.putText(img2, 'FPS : {}'.format(fps), (280, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255),
                         lineType=cv2.LINE_AA)
-            cv2.imshow(' ', np.asarray(img2))
-            cv2.waitKey(1)
+
+            # Comment the following two lines to remove video display
+            # cv2.imshow(' ', np.asarray(img2))
+            # cv2.waitKey(1)
 
             if prev_frame_time is not None:
                 elapsed_time = time.time() - prev_frame_time
@@ -232,12 +234,12 @@ class VideoProcessing:
             prev_frame_time = time.time()
 
         self.cap.release()
-        cv2.destroyAllWindows()
+        cv2.destroyAllWindows()  # Close the video window if it was opened
 
         self.obj_count = np.sum(car_count_grid)
         if len(car_speed) > 0:
-            self.confidence = (sum(car_speed)/len(car_speed)) * 10
+            self.confidence = (sum(car_speed) / len(car_speed)) * 10
 
-    def get_values(self):
+    def get_values(self)->(int, float):
         return self.obj_count, self.confidence
 
