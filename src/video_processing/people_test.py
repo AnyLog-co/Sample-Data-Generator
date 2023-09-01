@@ -1,6 +1,6 @@
 import time
 import os
-from video_processing import VideoProcessing
+from people_processing import VideoProcessing
 
 ROOT_PATH = os.path.dirname(os.path.expanduser(os.path.expanduser(os.path.abspath(__file__))))
 MODEL_FILE = os.path.join(ROOT_PATH, 'models', 'people.tflite')
