@@ -102,6 +102,26 @@ class VideoProcessing:
             if self.exception is True:
                 print(f"Failed to read content in {self.video_file} (Error: {error})")
 
+    def __calculate_grid_size(self, video_height, video_width):
+        """
+        Calculate the grid size based on video dimensions.
+        :param video_height: Height of the video frame.
+        :param video_width: Width of the video frame.
+        :return: Grid rows, grid cols
+        """
+        # You can implement a dynamic grid size strategy based on your needs.
+        # Here, we use a simple example of adjusting grid size based on video width.
+        if self.img_process == 'vehicle':
+            if video_width > 1920:
+                grid_rows, grid_cols = 10, 10  # Use a larger grid for high-resolution videos
+            else:
+                grid_rows, grid_cols = 5, 5    # Use a smaller grid for lower-resolution videos
+        else:
+            # For 'person' processing, keep a fixed grid size
+            grid_rows, grid_cols = 10, 10
+
+        return grid_rows, grid_cols
+
     def __set_grid_size(self, video_height, video_width):
         """
         Calculate the grid size based on video dimensions
@@ -135,7 +155,9 @@ class VideoProcessing:
         if not ret:
             return
         video_height, video_width, _ = img2.shape
+        self.grid_rows, self.grid_cols = self.__calculate_grid_size(video_height, video_width)
         car_count_grid, cell_height, cell_width = self.__set_grid_size(video_height, video_width)
+
         if car_count_grid is None or self.status is False:
             return
 
