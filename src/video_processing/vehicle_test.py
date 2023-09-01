@@ -1,6 +1,6 @@
 import time
 import os
-from vehicle_new import VideoProcessing
+from vehicle import VideoProcessing
 
 ROOT_PATH = os.path.dirname(os.path.expanduser(os.path.expanduser(os.path.abspath(__file__))))
 # MODEL_FILE = os.path.join(ROOT_PATH, 'models', 'vehicle.tflite')

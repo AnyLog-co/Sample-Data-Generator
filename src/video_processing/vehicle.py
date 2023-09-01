@@ -214,7 +214,7 @@ class VideoProcessing:
 
         self.obj_count = np.sum(car_count_grid)
         if len(car_speed) > 0:
-            self.confidence = (sum(car_speed)/len(car_speed))
+            self.confidence = (sum(car_speed)/len(car_speed)) * 10
 
     def get_values(self):
         return self.obj_count, self.confidence
