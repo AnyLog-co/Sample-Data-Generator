@@ -149,7 +149,7 @@ class VideoProcessing:
             if self.exception is True:
                 print(f"Failed to declare interpreter (Error: {error})")
 
-    def process_video(self, min_confidence: float = 0.1):
+    def process_video(self, min_confidence:float=0.5):
         car_speed = []
         ret, img2 = self.cap.read()
         if not ret:

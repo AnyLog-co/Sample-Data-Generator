@@ -9,11 +9,12 @@ MODEL_FILE = os.path.join(ROOT_PATH, 'models', 'model_float.tflite')
 LABEL_FILE = os.path.join(ROOT_PATH, 'models', 'vehicle_coco_labels.txt')
 VIDEO_DIR = os.path.expanduser(os.path.expandvars('$HOME/Downloads/sample_data/videos'))
 
+
 def main():
     for file in os.listdir(VIDEO_DIR):
         num_cars={}
         avg_speed={}
-        if 'mp4' in file:
+        if 'B.mp4' in file:
             video_file = os.path.join(VIDEO_DIR, file)
             total_time = 0
             start_time = time.time()
@@ -22,7 +23,7 @@ def main():
                 if vp.status is True:
                     vp.set_interpreter()
                 if vp.status is True:
-                    vp.process_video(min_confidence=0.25)
+                    vp.process_video(min_confidence=0.1)
                     total_time += time.time() - start_time
                     cars, speed = vp.get_values()
                     num_cars[label] = cars
