@@ -1,9 +1,9 @@
 import random
 
-import generic_protocol
-import mqtt_protocol
-import rest_protocols
-import support
+import src.publishing_protocols.generic_protocol as generic_protocol
+import src.publishing_protocols.mqtt_protocol as mqtt_protocol
+import src.publishing_protocols.rest_protocols  as rest_protocols
+import src.publishing_protocols.support as support
 
 def setup_put_post_conn(conns:list)->dict:
     """

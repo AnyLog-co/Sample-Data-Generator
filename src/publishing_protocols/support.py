@@ -1,17 +1,12 @@
 import argparse
 import gzip
 import hashlib
-try:
-    import io
-except:
-    pass
 import importlib
+import io
 import json
 import os
 import re
 import uuid
-
-
 
 def validate_conn_pattern(conns:str)->str:
     """

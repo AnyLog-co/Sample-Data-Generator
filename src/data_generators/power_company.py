@@ -83,6 +83,7 @@ def __synchrophasor_data():
 
     return data_set
 
+
 def data_generator(db_name:str)->dict:
     """
     Generate data for non-synchorphiser table

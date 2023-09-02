@@ -3,11 +3,9 @@ import gzip
 import os
 import time
 import support
-
+import src.publishing_protocols.file_processing as file_processing
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit('protocols', 1)[0]
-
-import file_processing
 
 def __timestamp_to_file_name(orig_timestamp:str)->int:
     """

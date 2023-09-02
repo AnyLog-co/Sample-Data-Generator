@@ -1,12 +1,5 @@
-import argparse
 import datetime
-import json
-import os
 import random
-import requests
-import sys
-import time
-
 
 # base timestamp 2022-08-27 15:50:12
 START_TIMESTAMP = datetime.datetime(year=2022, month=8, day=27, hour=15, minute=50, second=12) + datetime.timedelta(microseconds=random.choice(range(100, 300000)))

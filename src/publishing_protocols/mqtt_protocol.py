@@ -1,12 +1,14 @@
 import random
+import support
+import sys
+import time
 try:
     from paho.mqtt import client
 except:
-    pass
+    is_mqtt = False
+else:
+    is_mqtt = True
 
-import time
-import support
-import sys
 
 MQTT_ERROR_CODES = { # based on: https://www.vtscada.com/help/Content/D_Tags/D_MQTT_ErrMsg.htm + ChatGTP information
     -1: "MQTT_ERR_NO_CONN",
@@ -206,6 +208,12 @@ def mqtt_main(broker:str, port:int, payloads:list, topic:str, qos:int=0, usernam
         status:bool
         mqtt_client:client.Client - connection to MQTT client
     """
+    status = True
+    if is_mqtt is False:
+        if exception  is True:
+            print('Failed to import paho.mqtt, cannot continue')
+        return False
+
     mqtt_client = connect_mqtt_broker(broker=broker, port=port, username=username, password=password, exception=exception)
     if mqtt_client is None and exception is True:
         print(f"Failed to configure MQTT client with broker conn: {broker}:{port}")
@@ -219,8 +227,7 @@ def mqtt_main(broker:str, port:int, payloads:list, topic:str, qos:int=0, usernam
 
     # stop loop
     mqtt_client.loop_stop()
-
-    disconnect_mqtt(conn_info=f"{broker}:{port}", mqtt_conn=mqtt_client, exception=exception)
+    return disconnect_mqtt(conn_info=f"{broker}:{port}", mqtt_conn=mqtt_client, exception=exception)
 
 
 

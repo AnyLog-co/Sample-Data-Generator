@@ -1,6 +1,5 @@
 import json
 import requests
-import support
 
 NETWORK_ERRORS_GENERIC = {
     1: "Informational",
