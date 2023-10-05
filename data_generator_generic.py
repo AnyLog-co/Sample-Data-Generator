@@ -18,25 +18,24 @@ The following provides the ability to insert data into AnyLog
 import argparse
 import os
 import random
-import sys
 import time
 import json
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-DATA_GENERATORS = os.path.join(ROOT_PATH, 'source/data_generators')
-PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'source/publishing_protocols')
-sys.path.insert(0, DATA_GENERATORS)
-sys.path.insert(0, PUBLISHING_PROTOCOLS)
+# DATA_GENERATORS = os.path.join(ROOT_PATH, 'source/data_generators')
+# PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'source/publishing_protocols')
+# sys.path.insert(0, DATA_GENERATORS)
+# sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
-import source.publishing_protocols.support as support
-import source.publishing_protocols.publish_data as publish_data
+import src.publishing_protocols.support as support
+import src.publishing_protocols.publish_data as publish_data
 
-import source.data_generators.lsl_data as lsl_data
-import source.data_generators.opcua_data as opcua_data
-import source.data_generators.performance_testing as performance_testing
-import source.data_generators.power_company as power_company
-import source.data_generators.timestamp_generator as timestamp_generator
-import source.data_generators.trig as trig
+import src.data_generators.lsl_data as lsl_data
+import src.data_generators.opcua_data as opcua_data
+import src.data_generators.performance_testing as performance_testing
+import src.data_generators.power_company as power_company
+import src.data_generators.timestamp_generator as timestamp_generator
+import src.data_generators.trig as trig
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
