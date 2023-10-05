@@ -100,6 +100,43 @@ def __convert_data(payloads:list)->dict:
 
     return content
 
+def get_data(conn:str, headers:dict, auth:tuple=(), timeout:int=30, exception:bool=False):
+    """
+    Execute GET command based on headers
+    :args:
+        conn:str - REST IP + port information
+        headers:dict - REST  headers
+        auth:tuple - authentication information
+        timeout:int - REST timeout
+        exception:bool - whether to write  exceptions or not
+    """
+    output = None
+    try:
+        r = requests.get(url=f"http://{conn}", headers=headers, auth=auth, timeout=timeout)
+    except Exception as error:
+        if exception is True:
+            print(f"Failed to execute GET information for {headers['command']} against {conn} (Error: {error})")
+    else:
+        status_code = int(r.status_code)
+        if status_code != 200:
+            if exception is True:
+                error_msg = f"Failed to execute command {headers['command']} against {conn} (Network Error: {status_code} - %s)"
+                if status_code in NETWORK_ERRORS:
+                    error_msg = error_msg % NETWORK_ERRORS[status_code]
+                elif int(str(status_code)[0]) in NETWORK_ERRORS_GENERIC:
+                    error_msg = error_msg % NETWORK_ERRORS_GENERIC[int(str(status_code)[0])]
+                else:
+                    error_msg.replace(" %s)", ")")
+                print(error_msg)
+        else:
+            try:
+                output = r.json()
+            except:
+                output = r.text
+
+    return output
+
+
 
 def put_data(payloads:list, conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     """
@@ -204,8 +241,6 @@ def post_data(payloads:list, conn:str, topic:str="demo", auth:tuple=(), timeout:
                     print(error_msg)
 
     return status
-
-
 
 
 
