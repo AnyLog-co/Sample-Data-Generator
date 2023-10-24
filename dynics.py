@@ -1,3 +1,22 @@
+"""
+Sample MQTT client
+<run mqtt client where broker=rest and port=!anylog_rest_port and user-agent=anylog and log=false and topic=(
+    name=modbus and
+    dbms=!default_dbms and
+    table=modbus and
+    column.timestamp.timestamp=now() and
+    column.pt40010=(type=float and value="bring [40010]") and
+    column.pt4009=(type=float and value="bring [40009]") and
+    column.pt4008=(type=float and value="bring [40008]") and
+    column.pt4007=(type=float and value="bring [40007]") and
+    column.pt4006=(type=float and value="bring [40006]") and
+    column.pt4005=(type=float and value="bring [40005]") and
+    column.pt4004=(type=float and value="bring [40004]") and
+    column.pt4003=(type=float and value="bring [40003]") and
+    column.pt4002=(type=float and value="bring [40002]") and
+    column.pt4001=(type=float and value="bring [40001]") and
+)>
+"""
 import argparse
 import json
 import random
