@@ -1,22 +1,15 @@
 import datetime
 import os
 import random
-import sys
 import time
 import uuid
 
+import src.data_generators.file_processing as file_processing
+import src.data_generators.timestamp_generator as timestamp_generator
+import src.publishing_protocols.support as support
+
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("data_generators")[0]
-DATA_GENERATORS = os.path.join(ROOT_PATH, "data_generators")
-PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, "publishing_protocols")
-sys.path.insert(0, DATA_GENERATORS)
-sys.path.insert(0, PUBLISHING_PROTOCOLS)
-
-import source.data_generators.file_processing as file_processing
-import source.data_generators.timestamp_generator as timestamp_generator
-import source.publishing_protocols.support as support
-
 DATA_DIR = os.path.join(ROOT_PATH, 'data', 'videos')
-
 
 PROCESS_ID = str(uuid.uuid4())
 

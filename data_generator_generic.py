@@ -22,10 +22,6 @@ import time
 import json
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-# DATA_GENERATORS = os.path.join(ROOT_PATH, 'source/data_generators')
-# PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'source/publishing_protocols')
-# sys.path.insert(0, DATA_GENERATORS)
-# sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
 import src.publishing_protocols.support as support
 import src.publishing_protocols.publish_data as publish_data
