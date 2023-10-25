@@ -102,7 +102,7 @@ def main():
         row["cpu"] = int(line.replace(");", "").split(",")[5])
         row["memorytotal"] = int(line.replace(");", "").split(",")[6])
         row["memoryavailable"] = int(line.replace(");", "").split(",")[7])
-        put_data(conn=args.conn, payload=json.dumps(row))
+        put_data(conn=args.conn, db_name=args.database ,payload=json.dumps(row))
 
 if __name__ == '__main__':
     main()
