@@ -8,10 +8,12 @@ import src.data_generators.file_processing as file_processing
 import src.data_generators.timestamp_generator as timestamp_generator
 import src.publishing_protocols.support as support
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("data_generators")[0]
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("src")[0]
 DATA_DIR = os.path.join(ROOT_PATH, 'data', 'videos')
-
+MODEL_FILE = os.path.join(ROOT_PATH, 'src', 'video_processing', 'models', 'vehicle.tflite')
 PROCESS_ID = str(uuid.uuid4())
+
+from src.video_processing.video_processing import VideoProcessing
 
 
 def __create_data(process_id:str, file_name:str, binary_file:str, db_name:str="test", table_name:str="edgx_images",
@@ -66,6 +68,7 @@ def __create_data(process_id:str, file_name:str, binary_file:str, db_name:str="t
     }
 
     # file_name = file_name.
+
     data["readings"].append({
         "timestamp": start_ts,
         "start_ts": start_ts,
@@ -81,12 +84,10 @@ def __create_data(process_id:str, file_name:str, binary_file:str, db_name:str="t
         "num_cars": num_cars,
         "speed": speed
     })
-
     return data
 
 
-
-def __car_counter(timezone:str, enable_timezone_range:bool=False)->dict:
+def __car_counter(file_path:str, timezone:str, enable_timezone_range:bool=False)->dict:
     """
     Generate car insight information
     :params:
@@ -103,34 +104,31 @@ def __car_counter(timezone:str, enable_timezone_range:bool=False)->dict:
             - speed
     """
     start_ts, end_ts = timestamp_generator.generate_timestamps_range(timezone=timezone, enable_timezone_range=enable_timezone_range)
-    hours = datetime.datetime.strptime(start_ts, '%Y-%m-%dT%H:%M:%S.%fZ').hour
 
-    if 5 <= hours < 7:
-        speed = round(random.choice(range(60, 80)) + random.random(), 2)
-        cars = int(random.choice(range(10, 30)))
-    elif 7 <= hours < 10:
-        speed = round(random.choice(range(45, 65)) - random.random(), 2)
-        cars = int(random.choice(range(40, 60)))
-    elif 10 <= hours < 16:
-        cars = int(random.choice(range(5, 20)))
-        speed = round(random.choice(range(60, 80)) + random.random(), 2)
-    elif 16 <= hours < 20:
-        speed = round(random.choice(range(45, 65)) - random.random(), 2)
-        cars = int(random.choice(range(40, 60)))
-    elif 20 <= hours < 23:
-        cars = int(random.choice(range(5, 20)))
-        speed = round(random.choice(range(60, 80)) + random.random(), 2)
-    else:  # 23:00 to 5:00
-        cars = int(random.choice(range(0, 15)))
-        speed = round(random.choice(range(60, 80)) + random.random(), 2)
-    if cars == 0:
-        speed = 0
+    num_cars = {}
+    avg_speed = {}
+    total_time = 0
+    for label in ["car", "truck", "bus"]:
+        start_time = time.time()
+        vp = VideoProcessing(model_file=MODEL_FILE, labels=[f"0 {label}"], img_process='vehicle', video=file_path, exception=True)
+        if vp.status is True:
+            vp.set_interpreter()
+        if vp.status is True:
+            total_time += time.time() - start_time
+            cars, speed = vp.get_values()
+            num_cars[label] = cars
+            avg_speed[label] = speed
+    if 'A.mp4':
+        total_cars = int(sum(num_cars.values()))
+    else:
+        total_cars = int(sum(num_cars.values()) / len(num_cars))
+    avg_speed = sum(avg_speed.values())/len(avg_speed)
 
     return {
         'start_ts': timestamp_generator.__timestamp_string(timestamp=start_ts),
         'end_ts': timestamp_generator.__timestamp_string(timestamp=end_ts),
-        'cars': cars,
-        'speed': speed
+        'cars': total_cars,
+        'speed': round(avg_speed, 3)
     }
 
 def video_data(db_name:str, table:str, conversion_type:str='base64', last_blob:str=None,
@@ -145,7 +143,7 @@ def video_data(db_name:str, table:str, conversion_type:str='base64', last_blob:s
         video = random.choice(os.listdir(DATA_DIR))
     full_path = os.path.join(DATA_DIR, video)
     file_content = file_processing.main(conversion_type=conversion_type, file_name=full_path, exception=exception)
-    car_info = __car_counter(timezone=timezone, enable_timezone_range=enable_timezone_range)
+    car_info = __car_counter(file_path=full_path, timezone=timezone, enable_timezone_range=enable_timezone_range)
 
     payload = __create_data(process_id=PROCESS_ID, binary_file=file_content, file_name=video,
                             db_name=db_name, table_name=table, profile_name="anylog-video-generator",

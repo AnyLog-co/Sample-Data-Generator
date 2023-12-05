@@ -8,7 +8,7 @@ import src.data_generators.file_processing as file_processing
 import src.data_generators.timestamp_generator as timestamp_generator
 import src.publishing_protocols.support as support
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("data_generators")[0]
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("src")[0]
 JSON_FILE = os.path.join(ROOT_PATH, 'data', 'ntt_factory_data.json')
 DATA_DIR = os.path.join(ROOT_PATH, 'data', 'images')
 

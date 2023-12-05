@@ -1,8 +1,15 @@
 import os
 import random
+import time
 
 import src.data_generators.file_processing as file_processing
 import src.data_generators.timestamp_generator as timestamp_generator
+from src.video_processing.video_processing import VideoProcessing
+
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("src")[0]
+DATA_DIR = os.path.join(ROOT_PATH, 'data', 'edgex-demo')
+MODEL_FILE = os.path.join(ROOT_PATH, 'src', 'video_processing', 'models', 'people.tflite')
+
 
 DATA = {
     "edgex2.mp4": 1,
@@ -21,7 +28,7 @@ DATA = {
 }
 
 
-def __generate_number(expected_value:int)->(int, float):
+def __generate_number(file_path:str, expected_value:int)->(int, float):
     """
     Generate a number to be used as confidence level
     :args:
@@ -32,24 +39,14 @@ def __generate_number(expected_value:int)->(int, float):
     :return:
         expected_value, confidence
     """
-    if expected_value < 3:
-        count = random.choice(range(0, 3))
-    if expected_value < 5:
-        count = random.choice(range(2, 5))
-    else:
-        count = random.choice(range(3, 7))
+    vp = VideoProcessing(model_file=MODEL_FILE, video=file_path, labels=["0 person"], exception=True)
+    if vp.status is True:
+        vp.set_interpreter()
+    if vp.status is True:
+        vp.analyze_data(min_confidence=0.5)
+    count, confidence = vp.get_values()
 
-    try:
-        confidence = (1 - abs(expected_value - count) / expected_value)
-    except ZeroDivisionError:
-        confidence = 0.5
-    else:
-        if confidence < 0:
-            confidence = abs(confidence)
-        elif confidence == 1:
-            confidence = random.random()
-
-    return expected_value, confidence
+    return count, round(confidence, 3)
 
 
 def get_data(db_name:str, table:str, conversion_type:str="base64", last_blob:str=None,
@@ -86,7 +83,7 @@ def get_data(db_name:str, table:str, conversion_type:str="base64", last_blob:str
     full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(DATA_DIR, video)))
 
     if os.path.isfile(full_file_path):
-        count, confidence = __generate_number(expected_value=DATA[video])
+        count, confidence = __generate_number(file_path=full_file_path, expected_value=DATA[video])
         start_ts, end_ts = timestamp_generator.generate_timestamps_range(timezone=timezone,
                                                                          enable_timezone_range=enable_timezone_range,
                                                                          period=5)

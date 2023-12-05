@@ -6,16 +6,16 @@ import sys
 import time
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-DATA_GENERATORS = os.path.join(ROOT_PATH, 'source/data_generators')
-PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'source/publishing_protocols')
+DATA_GENERATORS = os.path.join(ROOT_PATH, 'src/data_generators')
+PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'src/publishing_protocols')
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
-import source.data_generators.data_generator_images as data_generator_images
-import source.data_generators.data_generator_videos as data_generator_videos
-import source.data_generators.edgex_data as edgex_data
-import source.publishing_protocols.publish_data as publish_data
-import source.publishing_protocols.support as support
+import src.data_generators.data_generator_images as data_generator_images
+import src.data_generators.data_generator_videos as data_generator_videos
+import src.data_generators.edgex_data as edgex_data
+import src.publishing_protocols.publish_data as publish_data
+import src.publishing_protocols.support as support
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value

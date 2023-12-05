@@ -5,7 +5,7 @@ ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('data_generators')[
 PUBLISHING_PROTOCOL = os.path.join(ROOT_PATH, 'publishing_protocol')
 sys.path.insert(0, PUBLISHING_PROTOCOL)
 
-from source.publishing_protocols.support import json_dumps
+from src.publishing_protocols.support import json_dumps
 
 
 def __read_file(file_name:str, exception:bool=False)->bytes:
