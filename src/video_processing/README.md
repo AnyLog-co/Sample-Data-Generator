@@ -2,10 +2,12 @@
 
 Following is intended to support video analysis of (counting) people or cars. The code uses pre-defined TenserFlow 
 models created by third-parties.
-* [people.tflite](models/people.tflite) - model used for analyzing number of people in a video
-* [vehicle.tflite](models/vehicle.tflite) - model used for analyzing number of cars in a video. 
+* [people.tflite](../../data/models/people.tflite) - model used for analyzing number of people in a video
+* [vehicle.tflite](../../data/models/vehicle.tflite) - model used for analyzing number of cars in a video. 
 
-Videos used for demos caan be found in [Google Drive](https://drive.google.com/drive/folders/1EuArx1VepoLj3CXGrCRcxzWZyurgUO3u?usp=drive_link)
+Videos can be found in [data dir](../../data)
+* [car videos](../../data/videos)
+* [people videos](../../data/edgex-demo)
 
 ## Requirements 
 * [TensorFlow](https://www.tensorflow.org/install/pip) 

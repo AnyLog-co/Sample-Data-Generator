@@ -8,7 +8,7 @@ from src.video_processing.video_processing import VideoProcessing
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("src")[0]
 DATA_DIR = os.path.join(ROOT_PATH, 'data', 'edgex-demo')
-MODEL_FILE = os.path.join(ROOT_PATH, 'src', 'video_processing', 'models', 'people.tflite')
+MODEL_FILE = os.path.join(ROOT_PATH, 'data', 'models', 'people.tflite')
 
 
 DATA = {

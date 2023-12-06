@@ -10,7 +10,7 @@ import src.publishing_protocols.support as support
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("src")[0]
 DATA_DIR = os.path.join(ROOT_PATH, 'data', 'videos')
-MODEL_FILE = os.path.join(ROOT_PATH, 'src', 'video_processing', 'models', 'vehicle.tflite')
+MODEL_FILE = os.path.join(ROOT_PATH, 'data', 'models', 'models', 'vehicle.tflite')
 PROCESS_ID = str(uuid.uuid4())
 
 from src.video_processing.video_processing import VideoProcessing
