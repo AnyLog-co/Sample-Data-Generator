@@ -2,8 +2,8 @@ import os
 import random
 import time
 
-import src.data_generators.file_processing as file_processing
-import src.data_generators.timestamp_generator as timestamp_generator
+from src.data_generators.__support_file__ import file_processing
+import src.data_generators.__support_timestamp__ as timestamp_generator
 from src.video_processing.video_processing import VideoProcessing
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("src")[0]
@@ -93,7 +93,7 @@ def get_data(db_name:str, table:str, conversion_type:str="base64", last_blob:str
             "table": table,
             "start_ts": start_ts,
             "end_ts": end_ts,
-            "file_content": file_processing.main(conversion_type=conversion_type, file_name=full_file_path, exception=exception),
+            "file_content": file_processing(conversion_type=conversion_type, file_name=full_file_path, exception=exception),
             "count": count,
             "confidence": confidence
         }

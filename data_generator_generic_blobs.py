@@ -11,9 +11,9 @@ PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, 'src/publishing_protocols')
 sys.path.insert(0, DATA_GENERATORS)
 sys.path.insert(0, PUBLISHING_PROTOCOLS)
 
-import src.data_generators.data_generator_images as data_generator_images
-import src.data_generators.data_generator_videos as data_generator_videos
-import src.data_generators.edgex_data as edgex_data
+import src.data_generators.blobs_image_processing as data_generator_images
+import src.data_generators.blobs_car_counter as data_generator_videos
+import src.data_generators.blobs_people_counter as edgex_data
 import src.publishing_protocols.publish_data as publish_data
 import src.publishing_protocols.support as support
 

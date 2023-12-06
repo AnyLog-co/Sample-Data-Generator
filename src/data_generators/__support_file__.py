@@ -1,12 +1,5 @@
 import os
-import sys
-
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('data_generators')[0]
-PUBLISHING_PROTOCOL = os.path.join(ROOT_PATH, 'publishing_protocol')
-sys.path.insert(0, PUBLISHING_PROTOCOL)
-
-from src.publishing_protocols.support import json_dumps
-
+import json
 
 def __read_file(file_name:str, exception:bool=False)->bytes:
     """
@@ -34,7 +27,7 @@ def __read_file(file_name:str, exception:bool=False)->bytes:
     return content
 
 
-def convert_base64(file_name:str, exception:bool=False)->(bool, str):
+def __convert_base64(file_name:str, exception:bool=False)->(bool, str):
     """
     Convert file to base64
         - read content (binary format)
@@ -77,7 +70,7 @@ def convert_base64(file_name:str, exception:bool=False)->(bool, str):
     return status, file_content
 
 
-def convert_bytesio(file_name:str, exception:bool=False)->(bool, str):
+def __convert_bytesio(file_name:str, exception:bool=False)->(bool, str):
     """
     Convert file to base64
         - read content (binary format)
@@ -125,7 +118,7 @@ def convert_bytesio(file_name:str, exception:bool=False)->(bool, str):
     return status, file_content
 
 
-def convert_opencv(file_name:str, exception:bool=False)->(bool, str):
+def __convert_opencv(file_name:str, exception:bool=False)->(bool, str):
     """
     Convert file to cv2
         - read content (binary format)
@@ -170,12 +163,12 @@ def convert_opencv(file_name:str, exception:bool=False)->(bool, str):
             if exception is True:
                 print(f"Failed to convert frame into a list (Error: {error})")
         else:
-            file_content = json_dumps(payloads=list_frame)
+            file_content = json.dumps(payloads=list_frame)
 
     return status, file_content
 
 
-def main(conversion_type:str, file_name:str, exception:bool=False)->(bool, str):
+def file_processing(conversion_type:str, file_name:str, exception:bool=False)->(bool, str):
     """
     main for file processing
     :args:
@@ -198,11 +191,11 @@ def main(conversion_type:str, file_name:str, exception:bool=False)->(bool, str):
         return status, file_content
 
     if conversion_type == "base64":
-        status, file_content = convert_base64(file_name=full_file_path, exception=exception)
+        status, file_content = __convert_base64(file_name=full_file_path, exception=exception)
     elif conversion_type == "bytesio":
-        status, file_content = convert_bytesio(file_name=full_file_path, exception=exception)
+        status, file_content = __convert_bytesio(file_name=full_file_path, exception=exception)
     elif conversion_type == "opencv":
-        status, file_content = convert_opencv(file_name=file_name, exception=exception)
+        status, file_content = __convert_opencv(file_name=file_name, exception=exception)
     else:
         print(f"Unable to convert to format {conversion_type}")
         exit(1)

@@ -4,8 +4,8 @@ import random
 import time
 import uuid
 
-import src.data_generators.file_processing as file_processing
-import src.data_generators.timestamp_generator as timestamp_generator
+from src.data_generators.__support_file__ import file_processing
+import src.data_generators.__support_timestamp__ as timestamp_generator
 import src.publishing_protocols.support as support
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("src")[0]
@@ -142,7 +142,7 @@ def video_data(db_name:str, table:str, conversion_type:str='base64', last_blob:s
     while video == last_blob or video is None:
         video = random.choice(os.listdir(DATA_DIR))
     full_path = os.path.join(DATA_DIR, video)
-    file_content = file_processing.main(conversion_type=conversion_type, file_name=full_path, exception=exception)
+    file_content = file_processing(conversion_type=conversion_type, file_name=full_path, exception=exception)
     car_info = __car_counter(file_path=full_path, timezone=timezone, enable_timezone_range=enable_timezone_range)
 
     payload = __create_data(process_id=PROCESS_ID, binary_file=file_content, file_name=video,

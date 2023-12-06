@@ -4,8 +4,8 @@ import random
 import requests
 import uuid
 
-import src.data_generators.file_processing as file_processing
-import src.data_generators.timestamp_generator as timestamp_generator
+from src.data_generators.__support_file__ import file_processing
+import src.data_generators.__support_timestamp__ as timestamp_generator
 import src.publishing_protocols.support as support
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("src")[0]
@@ -199,7 +199,7 @@ def image_data(db_name:str, table:str, conversion_type:str='base64', timezone:st
     while image == last_blob or image is None:
         image = random.choice(os.listdir(DATA_DIR))
     full_path = os.path.join(DATA_DIR, image)
-    file_content = file_processing.main(conversion_type=conversion_type, file_name=full_path, exception=exception)
+    file_content = file_processing(conversion_type=conversion_type, file_name=full_path, exception=exception)
 
     if remote_data is True:
         detection, status = __get_data_remote(url=url, file_path=full_path, api_key=api_key,
