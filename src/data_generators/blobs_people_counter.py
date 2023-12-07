@@ -1,9 +1,8 @@
 import os
 import random
-import time
 
-from src.data_generators.__support_file__ import file_processing
-import src.data_generators.__support_timestamp__ as timestamp_generator
+from src.support.file_processing import file_processing
+import src.support.timestamp_generator as timestamp_generator
 from src.video_processing.video_processing import VideoProcessing
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("src")[0]

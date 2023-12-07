@@ -15,7 +15,7 @@ import src.data_generators.blobs_image_processing as data_generator_images
 import src.data_generators.blobs_car_counter as data_generator_videos
 import src.data_generators.blobs_people_counter as edgex_data
 import src.publishing_protocols.publish_data as publish_data
-import src.publishing_protocols.support as support
+import src.support.__support__ as support
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
 MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value

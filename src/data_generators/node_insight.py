@@ -1,6 +1,8 @@
-import datetime
 import json
+import time
+
 from src.publishing_protocols.rest_protocols import get_data
+from src.support.timestamp_generator import generate_timestamp
 
 def __get_blockchain(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     """
@@ -29,7 +31,7 @@ def __get_blockchain(conn:str, auth:tuple=(), timeout:int=30, exception:bool=Fal
 
     return policies
 
-def get_node_insight(conn:str, destination_ip:str, timestamp:str, auth=(), timeout=30, exception=True):
+def node_insight(conn:str, destination_ip:str, timestamp:str, auth=(), timeout=30, exception=True):
     output = None
     headers = {
         "command": "get dictionary where format=json",
@@ -48,19 +50,19 @@ def get_node_insight(conn:str, destination_ip:str, timestamp:str, auth=(), timeo
 
     return output
 
-def node_insight(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False)->list:
+
+def get_node_insight(conn:str, auth:tuple=(), timeout:int=30, row_count:int=1, sleep:float=30, timezone:str='utc', exception:bool=False)->list:
     ips_addresses = __get_blockchain(conn=conn, auth=auth, timeout=timeout, exception=exception)
     node_insights = []
-    timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    for ip in ips_addresses:
-        print(ip)
-        output = get_node_insight(conn=conn, destination_ip=ip, timestamp=timestamp, auth=auth, timeout=timeout,
+    for i in range(row_count):
+        timestamp = generate_timestamp(timezone=timezone, enable_timezone_range=False)
+        for ip in ips_addresses:
+            output = node_insight(conn=conn, destination_ip=ip, timestamp=timestamp, auth=auth, timeout=timeout,
                                   exception=exception)
-        if output is not None:
-            node_insights.append(output)
-    return node_insights
+            if output is not None:
+                node_insights.append(output)
+        if i < row_count - 1:
+            time.sleep(sleep)
 
-#
-# if __name__ == '__main__':
-#     node_insight(conn="23.239.12.151:32349")
+    return node_insights
 

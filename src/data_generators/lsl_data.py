@@ -1,4 +1,7 @@
 import random
+import time
+
+from src.support.timestamp_generator import generate_timestamp
 
 PING_DATA = {
         'ADVA FSP3000R7': {
@@ -32,6 +35,7 @@ PING_DATA = {
             'max_value': 37
         },
 }
+
 PERCENTAGECPU_DATA = {
         'ADVA FSP3000R7': {
             'parentelement': '62e71893-92e0-11e9-b465-d4856454f4ba',
@@ -56,39 +60,7 @@ PERCENTAGECPU_DATA = {
 }
 
 
-def percentagecpu_sensor(db_name:str)->dict:
-    """
-    Generate Percentage CPU sensor information - data is based on information shared by Lit San Leandro
-    :args:
-        db_name:str - logical database name
-    :params:
-        device_name:str - device name to insert data for
-        payload:dict - dictionary object to store
-    :return:
-        payload
-    :sample-data:
-        {
-            "dbms": "test",
-            "table": "percentagecpu_sensor",
-            "device_name": "Catalyst 3500XL",
-            "parentelement": "68ae8bef-92e1-11e9-b465-d4856454f4ba",
-            "timestamp": "2020-12-08 02:20:11.024002",
-            "value": 15.2,
-            "webid": "F1AbEfLbwwL8F6EiShvDV-QH70A74uuaOGS6RG0ZdSFZFT0ug4FckGTrxdFojNpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVR"
-        }
-    """
-    device_name = random.choice(list(PERCENTAGECPU_DATA.keys()))
-    payload = {
-        'dbms': db_name,
-        'table': 'percentagecpu_sensor',
-        'device_name': device_name,
-        'parentelement': PERCENTAGECPU_DATA[device_name]['parentelement'],
-        'webid': PERCENTAGECPU_DATA[device_name]['webid'],
-        'value': round(random.random() * 100, 2)
-    }
-    return payload
-
-def ping_sensor(db_name:str)->dict:
+def __ping_sensor(db_name:str, timezone:str, timezone_range:bool=False)->dict:
     """
     Generate Ping CPU sensor information - data is based on information shared by Lit San Leandro
     :args:
@@ -122,13 +94,78 @@ def ping_sensor(db_name:str)->dict:
     else:
         value = sub_value
 
-    payload = {
+    return {
         'dbms': db_name,
         'table': 'ping_sensor',
         'device_name': device_name,
+        'timestamp': generate_timestamp(timezone=timezone, enable_timezone_range=timezone_range),
         'parentelement': PING_DATA[device_name]['parentelement'],
         'webid': PING_DATA[device_name]['webid'],
         'value': value
     }
 
-    return payload
+
+
+
+def __percentagecpu_sensor(db_name:str, timezone:str, timezone_range:bool=False)->dict:
+    """
+    Generate Percentage CPU sensor information - data is based on information shared by Lit San Leandro
+    :args:
+        db_name:str - logical database name
+    :params:
+        device_name:str - device name to insert data for
+        payload:dict - dictionary object to store
+    :return:
+        payload
+    :sample-data:
+        {
+            "dbms": "test",
+            "table": "percentagecpu_sensor",
+            "device_name": "Catalyst 3500XL",
+            "parentelement": "68ae8bef-92e1-11e9-b465-d4856454f4ba",
+            "timestamp": "2020-12-08 02:20:11.024002",
+            "value": 15.2,
+            "webid": "F1AbEfLbwwL8F6EiShvDV-QH70A74uuaOGS6RG0ZdSFZFT0ug4FckGTrxdFojNpadLPwI4gWE9NUEFTUy1MSVRTTFxMSVR"
+        }
+    """
+    device_name = random.choice(list(PERCENTAGECPU_DATA.keys()))
+    return {
+        'dbms': db_name,
+        'table': 'percentagecpu_sensor',
+        "timestamp": generate_timestamp(timezone=timezone, enable_timezone_range=timezone_range),
+        'device_name': device_name,
+        'parentelement': PERCENTAGECPU_DATA[device_name]['parentelement'],
+        'webid': PERCENTAGECPU_DATA[device_name]['webid'],
+        'value': round(random.random() * 100, 2)
+    }
+
+
+def data_generator(db_name:str, data_type:str, row_count:int, sleep:float, timezone:str,
+                   timezone_range:bool=False)->dict:
+    """
+    Generate data based on user input
+    :args:
+        db_name:str - database name
+        data_type:str - data type (either percentagecpu or ping)
+        row_count:int - number of rows in payload
+        sleep:float - wait time between each payload
+        timezone:str - timezone
+        timezone_range:bool - set timestamp within a range of +/- 1 month
+    :params:
+        payloads:list - ping / percentagecpu payloads
+    :return:
+        payloads
+    """
+    payloads = []
+    for i in range(row_count):
+        if data_type == 'percentagecpu':
+            payloads.append(__percentagecpu_sensor(db_name=db_name, timezone=timezone, timezone_range=timezone_range))
+        elif data_type == 'ping':
+            payloads.append(__ping_sensor(db_name=db_name, timezone=timezone, timezone_range=timezone_range))
+        if i < row_count - 1:
+            time.sleep(sleep)
+
+    return payloads
+
+
+

@@ -4,9 +4,9 @@ import random
 import requests
 import uuid
 
-from src.data_generators.__support_file__ import file_processing
-import src.data_generators.__support_timestamp__ as timestamp_generator
-import src.publishing_protocols.support as support
+from src.support.file_processing import file_processing
+import src.support.timestamp_generator as timestamp_generator
+import src.support.__support__ as support
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("src")[0]
 JSON_FILE = os.path.join(ROOT_PATH, 'data', 'ntt_factory_data.json')

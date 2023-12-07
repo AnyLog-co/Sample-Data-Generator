@@ -1,5 +1,7 @@
-import json
 import random
+import time
+
+from src.support.timestamp_generator import generate_timestamp
 
 SAMPLE_DATA = {
   "Host_PID": [261, 9527, 9426, 9811],
@@ -30,7 +32,7 @@ SAMPLE_DATA = {
   "UID": [6906, 2505, 4693, 7435, 6671, 1896, 2759, 8386, 6915, 4812] # randomly generated
 }
 
-def data_generator(db_name:str):
+def data_generator(db_name:str, row_count:int, sleep:float, timezone:str, timezone_range:bool=False):
     """
     Data generator for Syslog, based on kubearmor
     :url:
@@ -62,12 +64,19 @@ def data_generator(db_name:str):
     :return:
         payload
     """
-    payload = {
-        "dbname": db_name,
-        "table": "kvlistValue",
-    }
+    payloads = []
 
-    for key in SAMPLE_DATA:
-        payload[key.lower()] = random.choice(SAMPLE_DATA[key])
+    for i in range(row_count):
+        payload = {
+            "dbname": db_name,
+            "table": "kvlistValue",
+            "UpdatedTime": generate_timestamp(timezone=timezone, enable_timezone_range=timezone_range)
+        }
+        for key in SAMPLE_DATA:
+            payload[key.lower()] = random.choice(SAMPLE_DATA[key])
+        payloads.append(payload)
 
-    return payload
+        if i < row_count - 1:
+            time.sleep(sleep)
+
+    return payloads

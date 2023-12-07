@@ -23,14 +23,14 @@ import json
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
-import src.publishing_protocols.support as support
+import src.support.__support__ as support
 import src.publishing_protocols.publish_data as publish_data
 
 import src.data_generators.lsl_data as lsl_data
 import archive.data_generators.opcua_data as opcua_data
 import archive.data_generators.performance_testing as performance_testing
 import archive.data_generators.power_company as power_company
-import src.data_generators.__support_timestamp__ as timestamp_generator
+import src.support.timestamp_generator as timestamp_generator
 import archive.data_generators.trig as trig
 
 DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")

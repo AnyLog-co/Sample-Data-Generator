@@ -1,5 +1,5 @@
 import random
-import support
+from src.support import __support__
 import sys
 import time
 try:
