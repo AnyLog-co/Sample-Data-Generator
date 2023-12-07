@@ -1,10 +1,10 @@
 import json
 import time
 
-from src.publishing_protocols.rest_protocols import get_data
 from src.support.timestamp_generator import generate_timestamp
+from src.publishing_protocols.anylog_rest import AnyLogREST
 
-def __get_blockchain(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
+def __get_blockchain(anylog_conn:AnyLogREST):
     """
     Execute a `blockchain get` to get a list of all nodes in the network
     :args:
@@ -27,11 +27,11 @@ def __get_blockchain(conn:str, auth:tuple=(), timeout:int=30, exception:bool=Fal
             "command": f"blockchain get {node_type} bring.ip_port ",
             "User-Agent": "AnyLog/1.23"
         }
-        policies[node_type] = get_data(conn=conn, headers=headers, auth=auth, timeout=timeout, exception=exception)
+        policies[node_type] = anylog_conn.get_data(headers=headers)
 
     return policies
 
-def node_insight(conn:str, destination_ip:str, timestamp:str, auth=(), timeout=30, exception=True):
+def node_insight(anylog_conn:AnyLogREST, destination_ip:str, timestamp:str):
     output = None
     headers = {
         "command": "get dictionary where format=json",
@@ -39,7 +39,7 @@ def node_insight(conn:str, destination_ip:str, timestamp:str, auth=(), timeout=3
         "destination": destination_ip
     }
 
-    r = get_data(conn=conn, headers=headers, auth=auth, timeout=timeout, exception=exception)
+    r = anylog_conn.get_data(headers=headers)
     if destination_ip in r and 'node_insight' in r[destination_ip]:
         results = json.loads(r[destination_ip]['node_insight'])
         if isinstance(results, dict):
@@ -51,14 +51,14 @@ def node_insight(conn:str, destination_ip:str, timestamp:str, auth=(), timeout=3
     return output
 
 
-def get_node_insight(conn:str, auth:tuple=(), timeout:int=30, row_count:int=1, sleep:float=30, timezone:str='utc', exception:bool=False)->list:
-    ips_addresses = __get_blockchain(conn=conn, auth=auth, timeout=timeout, exception=exception)
+def get_node_insight(anylog_conn:AnyLogREST, row_count:int=1, sleep:float=30, timezone:str='utc', exception:bool=False)->list:
+
+    ips_addresses = __get_blockchain(anylog_conn=anylog_conn)
     node_insights = []
     for i in range(row_count):
         timestamp = generate_timestamp(timezone=timezone, enable_timezone_range=False)
         for ip in ips_addresses:
-            output = node_insight(conn=conn, destination_ip=ip, timestamp=timestamp, auth=auth, timeout=timeout,
-                                  exception=exception)
+            output = node_insight(destination_ip=ip, timestamp=timestamp)
             if output is not None:
                 node_insights.append(output)
         if i < row_count - 1:

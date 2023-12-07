@@ -9,4 +9,11 @@ elif [[ ${CONVERSION_TYPE} == opencv ]] ; then
   python3 -m pip install --upgrade opencv-python numpy
 fi
 
+# Validate values
+if [[ ${DATA_TYPE} == node_insight ]] && [[ ${INSERT_PROCESS} == mqtt ]] ; then
+  echo "node_insight requires using REST for data processing"
+  exit 1
+fi
+
+
 echo success!
