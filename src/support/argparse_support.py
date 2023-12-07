@@ -106,12 +106,7 @@ def __prepare_conns(conn:str, insert_process:str, exception:bool=False):
 
     return conns
 
-def prepare_configs(dir_name:str, batch_size:int, data_type:str, conversion_type:str, conn:str,
-                    insert_process:str, exception:bool=False):
-    dir_name = os.path.expandvars(os.path.expandvars(dir_name))
-    if not os.path.isdir(dir_name):
-        os.makedirs(dir_name)
-
+def prepare_configs(batch_size:int, data_type:str, conversion_type:str):
     if batch_size == 0:
         batch_size = 1
 
@@ -119,8 +114,4 @@ def prepare_configs(dir_name:str, batch_size:int, data_type:str, conversion_type
     if ('images' in data_type or 'cars' in data_type or 'people' in data_type) and conversion_type is None:
         conversion_type = 'base64'
 
-    conns = None
-    if conn is not None:
-        conns = __prepare_conns(conn=conn, insert_process=insert_process, exception=exception)
-
-    return  dir_name, batch_size, conversion_type, conns
+    return  batch_size, conversion_type

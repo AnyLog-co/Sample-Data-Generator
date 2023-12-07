@@ -14,6 +14,7 @@ import src.data_generators.kubearmor_syslog as kubearmor_syslog
 import src.data_generators.node_insight as node_insight
 
 from src.publishing_protocols.generic_protocols import print_results
+from src.publishing_protocols.generic_protocols import file_results
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
@@ -78,17 +79,13 @@ def main():
     parser.add_argument('--enable-timezone-range', type=bool, nargs='?', const=True, default=False,
                         help='set timestamp within a range of +/- 1 month. For performance testing, it is used to randomize the order timestamps are inserted.')
     parser.add_argument('--dir-name', type=str, default=DATA_DIR, help='directory when storing to file')
-    parser.add_argument('--compress', type=bool, nargs='?', const=True, default=False,
-                        help='whether to zip data dir')
     parser.add_argument('--exception', type=bool, nargs='?', const=True, default=False,
                         help='whether to print exceptions')
     args = parser.parse_args()
 
-    args.dir_name, args.batch_size, args.conversion_type, conns = prepare_configs(
-        dir_name=args.dir_name, batch_size=args.batch_size, data_type=args.data_type,
-        conversion_type=args.conversion_type, conn=args.conn, insert_process=args.insert_process,
-        exception=args.exception)
-
+    args.batch_size, args.conversion_type = prepare_configs(batch_size=args.batch_size, data_type=args.data_type,
+                                                            conversion_type=args.conversation_type)
+    
     row_counter = 0
     while row_counter < args.total_rows:
         if args.data_type in ['percentagecpu', 'ping']:
@@ -105,6 +102,8 @@ def main():
         if row_counter % args.batch_size == 0:
             if args.insert_process == 'print':
                 print_results(payloads=payloads)
+            elif args.insert_process == 'file':
+                file_results(payloads=payloads, data_dir=args.dir_name, exception=args.exception)
         if args.total_rows - row_counter < args.batch_size:
             args.batch_size = args.total_rows - row_counter
 

@@ -1,5 +1,6 @@
-import os
 import json
+import os
+import time
 
 def __read_file(file_name:str, exception:bool=False)->bytes:
     """
@@ -201,3 +202,7 @@ def file_processing(conversion_type:str, file_name:str, exception:bool=False)->(
         exit(1)
 
     return file_content
+
+
+
+

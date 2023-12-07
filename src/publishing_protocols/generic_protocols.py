@@ -1,3 +1,6 @@
+import os
+import time
+import json
 from src.support.__support__ import json_dumps
 
 def print_results(payloads:list):
@@ -10,5 +13,47 @@ def print_results(payloads:list):
     """
     for payload in payloads:
         print(json_dumps(payloads=payload, indent=None))
+
+
+def file_results(payloads:list, data_dir:str, exception:bool=False):
+    """
+    Write results to file
+    :args:
+        payloads:list - results to write to file
+        data_dir:str - directory to store data in
+        exception:bool - whether to print exceptions
+    :params:
+        dbname:str - database name
+        table:str - table name
+        dir_name:str - extend path of data_dir
+        file_name:str - file name ({dbname}.{table}.0.{random_int}.json)
+        full_path:str - dir_name + file_name
+    """
+    dbname = payloads[0]["dbname"]
+    table = payloads[0]["table"]
+
+    dir_name = os.path.expandvars(os.path.expanduser(data_dir))
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+    file_name = f"{dbname}.{table}.0.{int(time.time())}.json"
+    full_path = os.path.join(dir_name, file_name)
+
+    try:
+        with open(full_path, 'w') as f:
+            for payload in payloads:
+                del payload["dbname"]
+                del payload["table"]
+                try:
+                    json.dump(payload, f)
+                except Exception as error:
+                    if exception is True:
+                        print(f"Failed to write content into {full_path} (Error: {error})")
+                else:
+                    if payload != payloads[-1]:
+                        f.write(",")
+                    f.write("\n")
+    except Exception as error:
+        if exception is True:
+            print(f"Failed to open {full_path} (Error: {error})")
 
 
