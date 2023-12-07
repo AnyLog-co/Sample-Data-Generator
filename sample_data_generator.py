@@ -16,6 +16,7 @@ import src.data_generators.node_insight as node_insight
 from src.publishing_protocols.generic_protocols import print_results
 from src.publishing_protocols.generic_protocols import file_results
 from src.publishing_protocols.anylog_rest import AnyLogREST
+from src.publishing_protocols.mqtt_protocol import AnyLogMQTT
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
@@ -87,7 +88,12 @@ def main():
     args.batch_size, args.conversion_type = prepare_configs(batch_size=args.batch_size, data_type=args.data_type,
                                                             conversion_type=args.conversation_type)
 
-    anylog_conn = AnyLogREST(conns=args.conns, timeout=args.timeout, exception=args.exception)
+
+    if args.conns is not None and args.insert_process == 'mqtt':
+        # anylog_mqtt =
+        anylog_mqtt = AnyLogMQTT(conns=args.conn, qos=args.qos, exception=args.excetpion)
+    if args.conns is not None:
+        anylog_conn = AnyLogREST(conns=args.conns, timeout=args.timeout, exception=args.exception)
 
     row_counter = 0
     while row_counter < args.total_rows:
@@ -113,7 +119,7 @@ def main():
             elif args.insert_process == 'post':
                 anylog_conn.post_data(payloads=payloads, topic=args.topic)
             elif args.insert_process == 'mqtt':
-                pass
+                anylog_mqtt.publish_data(payloads=payloads, topic=args.topic)
         if args.total_rows - row_counter < args.batch_size:
             args.batch_size = args.total_rows - row_counter
 

@@ -1,13 +1,13 @@
+import json
 import random
-from src.support import __support__
 import sys
 import time
+
+is_mqtt = True
 try:
     from paho.mqtt import client
 except:
     is_mqtt = False
-else:
-    is_mqtt = True
 
 
 MQTT_ERROR_CODES = { # based on: https://www.vtscada.com/help/Content/D_Tags/D_MQTT_ErrMsg.htm + ChatGTP information
@@ -43,192 +43,125 @@ MQTT_ERROR_CODES = { # based on: https://www.vtscada.com/help/Content/D_Tags/D_M
 }
 
 
-def __wait(message_size:int):
-    wait_time = int(message_size / 2048) + 1
-    if wait_time > 60:
-        wait_time = 60
-    time.sleep(wait_time)
+class AnyLogMQTT:
+    def __init__(self, conns:str, qos:str, exception:bool=False):
+        self.qos = qos
+        self.conns = {}
+        self.exception = exception
 
-def connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=None, exception:bool=True)->client.Client:
-    """
-    Connect to an MQTT broker
-    :args:
-        broker:str - MQTT broker IP
-        port:int - MQTT broker port
-        username:str - MQTT broker user
-        password:str - MQTT broker password correlated to user
-    :params: 
-        mqtt_client_id:str - MQTT client ID
-        client:paho.mqtt.client.Client - MQTT client object
-    :return:
-        client
-    """
-    # connect to MQTT broker
-    status = True
-    mqtt_client_id = 'python-mqtt-%s' % random.randint(random.choice(range(0, 500)), random.choice(range(501, 1000)))
+        for conn in conns.split(","):
+            broker, port = conn.split("@")[-1].split(":")
+            user = None
+            password = None
+            if '@' in conn:
+                user, password = conn.split("@")[0].split(":")
+            self.conns['al-mqtt-%s' % random.choice(list(range(500, 1001)))] = {
+                'broker': broker,
+                'port': int(port),
+                'user': user,
+                'password': password
+            }
 
-    try:
-        mqtt_client = client.Client(mqtt_client_id)
-    except Exception as e:
-        if exception is True:
-            print('Failed to set MQTT client ID (Error: %s)' % e)
-        mqtt_client = None
+        if is_mqtt is False:
+            print("paho-mqtt is not installed. Cannot continue...")
+            exit(1)
 
-    # set username and password
-    if mqtt_client is not None and username is not None and password is not None:
+
+    def __wait(self, msg_size:float):
+        """
+        Based on message size, wait n seconds
+        """
+        wait_time = int(msg_size / 2048) + 1
+        if wait_time > 60:
+            wait_time = 60
+        time.sleep(wait_time)
+
+
+    def connect_mqtt_client(self, client_id:str):
+        """
+        Connect to MQTT broker
+        :args:
+            client_id:str - MQTT broker client ID
+        :global:
+            self.mqtt_client:client.Client - connection to broker
+        :params:
+            broker:str - MQTT broker IP
+            port:int - MQTT broker port
+            user:str - user for broker connection
+            password:str - password associated with user
+        """
+        self.mqtt_client = None
+        broker = self.conns[client_id]['broker']
+        port = self.conns[client_id]['port']
+        user = self.conns[client_id]['user']
+        password = self.conns[client_id]['password']
+
         try:
-            mqtt_client.username_pw_set(username, password)
-        except Exception as e:
-            if exception is True:
-                print('Failed to set MQTT username & password (Error: %s)' % e)
-            mqtt_client = None
+            self.mqtt_client = client.Client(client_id=client_id)
+        except Exception as error:
+            self.mqtt_client = None
+            if self.exception is True:
+                print(f'Failed to set MQTT client ID (Error: {error})')
 
-    # connect to broker
-    if mqtt_client is not None:
+        if all(None is not x for x in [self.mqtt_client, user, password]):
+            try:
+                self.mqtt_client.username_pw_set(username=user, password=password)
+            except Exception as error:
+                self.mqtt_client = None
+                if self.exception is True:
+                    print(f'Failed to set MQTT username & password (Error: {error})')
+
+        if self.mqtt_client is not None:
+            try:
+                self.mqtt_client.connect(host=broker, port=port)
+            except Exception as error:
+                self.mqtt_client = None
+                if self.exception is True:
+                    print('failed to connect to MQTT broker %s against port %s (Error: %s)' % (broker, port, error))
+
+
+    def disconnect_mqtt_client(self, client_id):
+        """
+        Disconnect from MQTT client
+        :args:
+            client_id:str - MQTT broker client ID
+        :params:
+            conn_info:str - connection information
+        """
+        conn_info = f"{self.conns[client_id]['broker']}:{self.conns[client_id]['port']}"
         try:
-            mqtt_client.connect(broker, int(port))
-        except Exception as e:
-            if exception is True:
-                print('failed to connect to MQTT broker %s against port %s (Error: %s)' % (broker, port, e))
-            mqtt_client = None
+            self.mqtt_client.disconnect()
+        except Exception as error:
+            if self.exception is True:
+                print(f"Failed to disconnect from {conn_info} (Error: {error})")
 
-    return mqtt_client
+    def send_data(self, payloads:list, topic:str):
+        message = json.dumps(payloads=payloads)
 
+        try:
+            r = self.mqtt_client.publish(topic, message, self.qos)
+        except Exception as error:
+            if self.exception is True:
+                print(f'Failed to publish results in {self.mqtt_client} (Error: {error})')
+        else:
+            self.__wait(msg_size=sys.getsizeof(message))
+            if r[0] != 0:
+                if self.exception is True:
+                    error_msg = "Unknown"
+                    if r[0] in MQTT_ERROR_CODES:
+                        error_msg = MQTT_ERROR_CODES[r[0]]
+                    print(f"There was a network error when publishing content (Error Code: {r[0]} - {error_msg})")
 
-def disconnect_mqtt(conn_info:str, mqtt_conn:client.Client, exception:bool=False)->bool:
-    """
-    Disconnect from MQTT client
-    :args:
-        mqtt_conn:paho.mqtt.client.Client - connection to MQTT
-        exception:bool - whether to print exception
-    :params:
-        status:bool
-    :return:
-        status
-    """
-    status = True
+    def publish_data(self, payloads:list, topic:str):
+        client_id = random.choice(list(self.conns))
+        self.connect_mqtt_client(client_id=client_id)
 
-    try:
-        mqtt_conn.disconnect()
-    except Exception as error:
-        status = False
-        if exception is True:
-            print(f"Failed to disconnect from {conn_info} (Error: {error})")
+        if self.mqtt_client is None:
+            if self.exception is True:
+                print(f"Failed to connect to MQTT broker")
+            return
 
-    return status
-
-
-def send_data(mqtt_client:client.Client, topic:str, message:str, qos:int=0, exception:bool=False)->bool:
-    """
-    Send data into an MQTT broker
-    :args:
-        mqtt_client:paho.mqtt.client.Client - MQTT broker client
-        topic:str - topic to send data into
-        data:dict - either list or dict of data to send into MQTT broker
-        dbms:str - logical database
-        table:str - logical table name
-        exception:bool - whether or not to print exceptions
-    :params:
-        status:bool
-        payloads:list - converted data
-        r:paho.mqtt.client.MQTTMessageInfo - result from publish process
-    :return:
-        status
-    """
-    status = True
-    try:
-        r = mqtt_client.publish(topic, message, qos=qos, retain=False)
-    except Exception as e:
-        if exception is True:
-            print(f'Failed to publish results in {mqtt_client} (Error: {e})')
-        status = False
-    else:
-        __wait(message_size=sys.getsizeof(message))
-        if r[0] != 0:
-            if exception is True:
-                error_msg = "Unknown"
-                if r[0]in MQTT_ERROR_CODES:
-                    error_msg = MQTT_ERROR_CODES[r[0]]
-                print(f"There was a network error when publishing content (Error Code: {r[0]} - {error_msg})")
-            status = False
-            
-    return status
-
-
-def mqtt_process(mqtt_client:client.Client, payloads:list, topic:str, qos:int=0, exception:bool=True)->bool:
-    """
-    Main for MQTT process
-    :args:
-        payloads:list - content to send into MQTT
-        topic:str - MQTT topic name
-        broker:str - MQTT broker address
-        port:int - IP associated with broker
-        username:str - User associated with MQTT connection information
-        password:str - password associated with user
-        exception:bool - whether to print exception
-    :params:
-        status:bool
-        mqtt_client:client.Client - MQTT client connection
-        str_payloads:str - JSON string of payloads
-    :return:
-        status
-    """
-    status = True
-    if isinstance(payloads, list):
-        for payload in payloads:
-            str_payloads = support.json_dumps(payloads=payload)
-            if send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, qos=qos, exception=exception) is False:
-                status = False
-    elif isinstance(payloads, dict):
-        str_payloads = support.json_dumps(payloads=payloads)
-        if send_data(mqtt_client=mqtt_client, topic=topic, message=str_payloads, qos=qos, exception=exception) is False:
-            status = False
-    else:
-        status = False
-        if exception is True:
-            print(f"Invalid payload in format {type(payloads)}")
-
-    return status
-
-
-def mqtt_main(broker:str, port:int, payloads:list, topic:str, qos:int=0, username:str=None, password:str=None,
-              exception:bool=False):
-    """
-    Main for MQTT client
-    :args:
-        broker:str - MQTT broker IP
-        port:int - MQTT port
-        payloads:list - content to publish
-        topic:str - topic to publish against
-        qos:int - Quality of Service
-        username:str - broker user
-        password:str - broker password
-        exception:bool - whether to print exception
-    :params:
-        status:bool
-        mqtt_client:client.Client - connection to MQTT client
-    """
-    status = True
-    if is_mqtt is False:
-        if exception  is True:
-            print('Failed to import paho.mqtt, cannot continue')
-        return False
-
-    mqtt_client = connect_mqtt_broker(broker=broker, port=port, username=username, password=password, exception=exception)
-    if mqtt_client is None and exception is True:
-        print(f"Failed to configure MQTT client with broker conn: {broker}:{port}")
-        return
-
-    mqtt_client.loop_start()
-
-    status = mqtt_process(mqtt_client=mqtt_client, payloads=payloads, topic=topic, qos=qos, exception=exception)
-    if status is False and exception is True:
-        print(f'Failed to send MQTT message against connection {broker}:{port}')
-
-    # stop loop
-    mqtt_client.loop_stop()
-    return disconnect_mqtt(conn_info=f"{broker}:{port}", mqtt_conn=mqtt_client, exception=exception)
-
-
-
-
+        self.mqtt_client.loop_start()
+        self.send_data(payloads=payloads, topic=topic)
+        self.mqtt_client.loop_stop()
+        self.disconnect_mqtt_client(client_id=client_id)

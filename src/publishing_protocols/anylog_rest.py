@@ -72,10 +72,9 @@ NETWORK_ERRORS = {
 class AnyLogREST:
     def __init__(self, conns:str, timeout:float, topic:str, exception:bool=False):
         """
-        Anylog REST class
+        Anylog MQTT class
         :args:
             conns:str - user inputted connection information
-            timeout:float - REST timeout
             topic:str - REST POST / MQTT topic
             exception:bool - whether to print exceptions
         :self:
@@ -93,7 +92,7 @@ class AnyLogREST:
             if '@' not in conn:
                 self.conns[conn] = ()
             else:
-                self.conns[conn.split("@")[0]] = tuple(conn.split("@")[-1].split(":"))
+                self.conns[conn.split("@")[-1]] = tuple(conn.split("@")[0].split(":"))
 
     def get_data(self, headers:dict):
         """
