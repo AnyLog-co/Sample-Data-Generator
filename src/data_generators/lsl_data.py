@@ -95,7 +95,7 @@ def __ping_sensor(db_name:str, timezone:str, timezone_range:bool=False)->dict:
         value = sub_value
 
     return {
-        'dbms': db_name,
+        'db_name': db_name,
         'table': 'ping_sensor',
         'device_name': device_name,
         'timestamp': generate_timestamp(timezone=timezone, enable_timezone_range=timezone_range),
@@ -130,7 +130,7 @@ def __percentagecpu_sensor(db_name:str, timezone:str, timezone_range:bool=False)
     """
     device_name = random.choice(list(PERCENTAGECPU_DATA.keys()))
     return {
-        'dbms': db_name,
+        'db_name': db_name,
         'table': 'percentagecpu_sensor',
         "timestamp": generate_timestamp(timezone=timezone, enable_timezone_range=timezone_range),
         'device_name': device_name,

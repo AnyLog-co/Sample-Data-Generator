@@ -2,6 +2,7 @@ import json
 import os
 import random
 import requests
+import time
 import uuid
 
 from src.support.file_processing import file_processing
@@ -125,7 +126,7 @@ def __get_data(file_name:str, exception:bool)->(list, str):
     return detection, status
 
 
-def __create_data(db_name:str, table:str, file_name:str, file_content:str, detections:list, status:str,
+def __create_data(db_name:str, file_name:str, file_content:str, detections:list, status:str,
                   timezone:str="local", enable_timezone_range:bool=False)->dict:
     """
     :args:
@@ -152,10 +153,10 @@ def __create_data(db_name:str, table:str, file_name:str, file_content:str, detec
         "status": "ok"
     }
     """
-    timestamp = timestamp_generator.generate_timestamps_range(timezone=timezone, enable_timezone_range=enable_timezone_range)
+    timestamp = timestamp_generator.generate_timestamp(timezone=timezone, enable_timezone_range=enable_timezone_range)
     payload = {
         'dbms': db_name,
-        'table': table,
+        'table': "deeptechtor",
         'id': str(uuid.uuid4()),
         'timestamp': timestamp,
         'file_name': file_name,
@@ -168,10 +169,8 @@ def __create_data(db_name:str, table:str, file_name:str, file_content:str, detec
     return payload
 
 
-def image_data(db_name:str, table:str, conversion_type:str='base64', timezone:str="local",
-               url:str="http://10.31.1.197/v3/predict/e99aefb2-abfc-4ab0-88fb-59e3e8f2b47f",
-               api_key:str="8KK7aDH5fttoV.Dd", authentication:str="b3JpOnRlc3Q=", last_blob:str=None,
-               enable_timezone_range:bool=False, remote_data:bool=False, exception:bool=False)->(dict, str):
+def image_data(db_name:str, row_count:int=1, conversion_type:str='base64', timezone:str="local", sleep:float=0.5,
+               enable_timezone_range:bool=False, exception:bool=False)->(dict, str):
     """
     Based on either live feed data or ntt_factory_data.json file generate payload for an image
     :args:
@@ -191,25 +190,28 @@ def image_data(db_name:str, table:str, conversion_type:str='base64', timezone:st
         detection:list - detection value(s) based on file_namedetection
         status:str - status value based on file_name
     """
+    last_blob = None
+    payloads = []
+
     if not os.path.isdir(DATA_DIR):
         print(f"Failed to locate directory with images/videos ({DATA_DIR}), cannot continue...")
         exit(1)
 
-    image = None
-    while image == last_blob or image is None:
-        image = random.choice(os.listdir(DATA_DIR))
-    full_path = os.path.join(DATA_DIR, image)
-    file_content = file_processing(conversion_type=conversion_type, file_name=full_path, exception=exception)
+    for i in range(row_count):
+        image = None
+        while image == last_blob or image is None:
+            image = random.choice(os.listdir(DATA_DIR))
+        full_path = os.path.join(DATA_DIR, image)
+        file_content = file_processing(conversion_type=conversion_type, file_name=full_path, exception=exception)
 
-    if remote_data is True:
-        detection, status = __get_data_remote(url=url, file_path=full_path, api_key=api_key,
-                                              basic_authorization=authentication, exception=exception)
-    else:
         detection, status = __get_data(file_name=image, exception=exception)
 
-    payload = __create_data(db_name=db_name, table=table, file_name=image, file_content=file_content,
-                            detections=detection, status=status, timezone=timezone, enable_timezone_range=enable_timezone_range)
+        payloads.append(__create_data(db_name=db_name, file_name=image, file_content=file_content, detections=detection,
+                                      status=status, timezone=timezone, enable_timezone_range=enable_timezone_range))
 
-    return payload, image
+        if i < row_count - 1:
+            time.sleep(sleep)
+
+    return payloads
 
 

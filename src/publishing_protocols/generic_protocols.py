@@ -3,6 +3,7 @@ import time
 import json
 from src.support.__support__ import json_dumps
 
+
 def print_results(payloads:list):
     """
     Print payloads one line at a time
@@ -15,7 +16,7 @@ def print_results(payloads:list):
         print(json_dumps(payloads=payload, indent=None))
 
 
-def file_results(payloads:list, data_dir:str, exception:bool=False):
+def file_results(payloads:list, data_dir:str, data_type:str, exception:bool=False):
     """
     Write results to file
     :args:
@@ -29,8 +30,13 @@ def file_results(payloads:list, data_dir:str, exception:bool=False):
         file_name:str - file name ({dbname}.{table}.0.{random_int}.json)
         full_path:str - dir_name + file_name
     """
-    dbname = payloads[0]["dbname"]
-    table = payloads[0]["table"]
+    table = payloads[0]['table']
+    if data_type in ['images']:
+        dbname = payloads[0]["dbms"]
+    elif data_type in ['ping', 'perentagecpu']:
+        dbname = payloads[0]['db_name']
+    else:
+        dbname = payloads[0]["dbname"]
 
     dir_name = os.path.expandvars(os.path.expanduser(data_dir))
     if not os.path.isdir(dir_name):
@@ -41,8 +47,13 @@ def file_results(payloads:list, data_dir:str, exception:bool=False):
     try:
         with open(full_path, 'w') as f:
             for payload in payloads:
-                del payload["dbname"]
                 del payload["table"]
+                if data_type in ['images']:
+                    del payload["dbms"]
+                elif data_type in ['ping', 'perentagecpu']:
+                        del payload['db_name']
+                else:
+                    del payload["dbname"]
                 try:
                     json.dump(payload, f)
                 except Exception as error:

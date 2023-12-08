@@ -12,6 +12,7 @@ import src.data_generators.lsl_data as lsl_data
 import src.data_generators.kubearmor_syslog as kubearmor_syslog
 import src.data_generators.node_insight as node_insight
 from src.data_generators.syslog import get_syslogs
+from src.data_generators.blobs_image_processing import image_data
 
 from src.publishing_protocols.generic_protocols import print_results
 from src.publishing_protocols.generic_protocols import file_results
@@ -22,8 +23,8 @@ ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
 
 
-def __generate_data(anylog_conn:AnyLogREST, db_name:str, data_type:str, batch_size:int, sleep:float, timezone:str,
-                    enable_timezone_range:bool=False, exception:bool=False)->list:
+def __generate_data(anylog_conn:AnyLogREST, db_name:str, data_type:str, batch_size:int, sleep:float, conversion_type:str,
+                    timezone:str, enable_timezone_range:bool=False, exception:bool=False)->list:
     """
     Based on the data type, generate data to be stored
     """
@@ -44,6 +45,10 @@ def __generate_data(anylog_conn:AnyLogREST, db_name:str, data_type:str, batch_si
     elif data_type == 'syslog':
         payloads = get_syslogs(dbname=db_name, row_count=batch_size, sleep=sleep, timezone=timezone,
                                timezone_range=enable_timezone_range, exception=exception)
+    elif data_type == 'images':
+        payloads = image_data(db_name=db_name, row_count=batch_size, conversion_type=conversion_type, timezone=timezone,
+                              sleep=sleep, enable_timezone_range=enable_timezone_range, exception=exception)
+
     return payloads
 
 
@@ -52,7 +57,7 @@ def __publish_data(anylog_conn, insert_process:str, data_type:str, payloads:list
     if insert_process == 'print':
         print_results(payloads=payloads)
     elif insert_process == 'file':
-        file_results(payloads=payloads, data_dir=data_dir, exception=exception)
+        file_results(payloads=payloads, data_dir=data_dir, data_type=data_type, exception=exception)
     elif insert_process == 'put':
         anylog_conn.put_data(data_type=data_type, payloads=payloads)
     elif insert_process == 'post':
@@ -124,9 +129,8 @@ def main():
                                                             conversion_type=args.conversion_type)
 
 
-
     if args.conn is not None and args.insert_process == 'mqtt':
-        anylog_mqtt = AnyLogMQTT(conns=args.conn, qos=args.qos, exception=args.excetpion)
+        anylog_conn = AnyLogMQTT(conns=args.conn, qos=args.qos, exception=args.excetpion)
     elif args.conn is not None:
         anylog_conn = AnyLogREST(conns=args.conn, timeout=args.rest_timeout, exception=args.exception)
     else:
@@ -139,7 +143,8 @@ def main():
     if args.total_rows == 0:
         while True:
             payloads = __generate_data(anylog_conn=anylog_conn, db_name=args.db_name, data_type=args.data_type,
-                                       batch_size=args.batch_size, sleep=args.sleep, timezone=args.timezone,
+                                       batch_size=args.batch_size, sleep=args.sleep,
+                                       conversion_type=args.conversion_type, timezone=args.timezone,
                                        enable_timezone_range=args.enable_timezone_range, exception=args.exception)
 
             row_counter += len(payloads)
@@ -152,7 +157,8 @@ def main():
     else:
         while row_counter < args.total_rows:
             payloads = __generate_data(anylog_conn=anylog_conn, db_name=args.db_name, data_type=args.data_type,
-                                       batch_size=args.batch_size, sleep=args.sleep, timezone=args.timezone,
+                                       batch_size=args.batch_size, sleep=args.sleep,
+                                       conversion_type=args.conversion_type, timezone=args.timezone,
                                        enable_timezone_range=args.enable_timezone_range, exception=args.exception)
 
             row_counter += len(payloads)
