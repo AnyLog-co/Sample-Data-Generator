@@ -12,6 +12,7 @@ from src.support.argparse_support import prepare_configs
 import src.data_generators.lsl_data as lsl_data
 import src.data_generators.kubearmor_syslog as kubearmor_syslog
 import src.data_generators.node_insight as node_insight
+from src.data_generators.syslog import get_syslogs
 
 from src.publishing_protocols.generic_protocols import print_results
 from src.publishing_protocols.generic_protocols import file_results
@@ -21,9 +22,44 @@ from src.publishing_protocols.mqtt_protocol import AnyLogMQTT
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
 
-MICROSECONDS = random.choice(range(100, 300000)) # initial microseconds for timestamp value
-SECOND_INCREMENTS = 86400  # second increments (0.864) for 100000 rows
 
+def __generate_data(anylog_conn:AnyLogREST, db_name:str, data_type:str, batch_size:int, sleep:float, timezone:str,
+                    enable_timezone_range:bool=False, exception:bool=False)->list:
+    """
+    Based on the data type, generate data to be stored
+    """
+    payloads = []
+    if data_type in ['percentagecpu', 'ping']:
+        payloads = lsl_data.data_generator(db_name=db_name, data_type=data_type,
+                                           row_count=batch_size, timezone=timezone,
+                                           timezone_range=enable_timezone_range, sleep=sleep)
+    elif data_type == "kubearmor":
+        payloads = kubearmor_syslog.data_generator(db_name=db_name, row_count=batch_size, sleep=sleep,
+                                                   timezone=timezone, timezone_range=enable_timezone_range)
+    elif data_type == "node_insight":
+        payloads = node_insight.get_node_insight(anylog_conn=anylog_conn, db_name=db_name, row_count=batch_size,
+                                                 sleep=sleep, timezone=timezone, exception=exception)
+    elif data_type == 'syslogs':
+        payloads = get_syslogs(dbname=db_name, row_count=batch_size, sleep=sleep, timezone=timezone,
+                               timezone_range=enable_timezone_range, exception=exception)
+    elif data_type == 'syslog':
+        payloads = get_syslogs(dbname=db_name, row_count=batch_size, sleep=sleep, timezone=timezone,
+                               timezone_range=enable_timezone_range, exception=exception)
+    return payloads
+
+
+def __publish_data(anylog_conn, insert_process:str, data_type:str, payloads:list, topic:str=None,
+                   data_dir:str=None, exception:bool=False):
+    if insert_process == 'print':
+        print_results(payloads=payloads)
+    elif insert_process == 'file':
+        file_results(payloads=payloads, data_dir=data_dir, exception=exception)
+    elif insert_process == 'put':
+        anylog_conn.put_data(data_type=data_type, payloads=payloads)
+    elif insert_process == 'post':
+        anylog_conn.post_data(payloads=payloads, topic=topic)
+    elif insert_process == 'mqtt':
+        anylog_conn.publish_data(payloads=payloads, topic=topic)
 
 
 def main():
@@ -60,7 +96,7 @@ def main():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("data_type", type=str,
-                        choices=['ping', 'percentagecpu', 'node_insight', 'kubearmor', 'images', 'cars', 'people'],
+                        choices=['ping', 'percentagecpu', 'node_insight', 'kubearmor', 'syslog', 'images', 'cars', 'people'],
                         default='ping', help='type of data to insert into AnyLog')
     parser.add_argument("insert_process", type=str, choices=['print', 'file', 'put', 'post', 'mqtt'], default='print',
                         help='format to store data')
@@ -86,44 +122,46 @@ def main():
     args = parser.parse_args()
 
     args.batch_size, args.conversion_type = prepare_configs(batch_size=args.batch_size, data_type=args.data_type,
-                                                            conversion_type=args.conversation_type)
+                                                            conversion_type=args.conversion_type)
 
 
-    if args.conns is not None and args.insert_process == 'mqtt':
-        # anylog_mqtt =
+
+    if args.conn is not None and args.insert_process == 'mqtt':
         anylog_mqtt = AnyLogMQTT(conns=args.conn, qos=args.qos, exception=args.excetpion)
-    if args.conns is not None:
-        anylog_conn = AnyLogREST(conns=args.conns, timeout=args.timeout, exception=args.exception)
+    elif args.conn is not None:
+        anylog_conn = AnyLogREST(conns=args.conn, timeout=args.rest_timeout, exception=args.exception)
+    else:
+        anylog_conn = None
 
     row_counter = 0
-    while row_counter < args.total_rows:
-        if args.data_type in ['percentagecpu', 'ping']:
-            payloads = lsl_data.data_generator(db_name=args.db_name, data_type=args.data_type,
-                                               row_count=args.batch_size, timezone=args.timezone,
-                                               timezone_range=args.enable_timezone_range, sleep=args.sleep)
-        elif args.data_type == "kubearmor":
-            payloads = kubearmor_syslog.data_generator(db_name=args.db_name, row_count=args.batch_size, sleep=args.sleep,
-                                                       timezone=args.timezone, timezone_range=args.enable_timezone_range)
-        elif args.data_type == "node_insight":
-            payloads = node_insight.get_node_insight(anylog_conn=anylog_conn, row_count=args.batch_size,
-                                                     sleep=args.sleep, timezone=args.timezone, exception=args.exception)
+    if args.total_rows == 0:
+        while True:
+            payloads = __generate_data(anylog_conn=anylog_conn, db_name=args.db_name, data_type=args.data_type,
+                                       batch_size=args.batch_size, sleep=args.sleep, timezone=args.timezone,
+                                       enable_timezone_range=args.enable_timezone_range, exception=args.exception)
 
-        row_counter += len(payloads)
-        if row_counter % args.batch_size == 0:
-            if args.insert_process == 'print':
-                print_results(payloads=payloads)
-            elif args.insert_process == 'file':
-                file_results(payloads=payloads, data_dir=args.dir_name, exception=args.exception)
-            elif args.insert_process == 'put':
-                anylog_conn.put_data(payloads=payloads)
-            elif args.insert_process == 'post':
-                anylog_conn.post_data(payloads=payloads, topic=args.topic)
-            elif args.insert_process == 'mqtt':
-                anylog_mqtt.publish_data(payloads=payloads, topic=args.topic)
-        if args.total_rows - row_counter < args.batch_size:
-            args.batch_size = args.total_rows - row_counter
+            row_counter += len(payloads)
+            if row_counter % args.batch_size == 0:
+                __publish_data(anylog_conn=anylog_conn, insert_process=args.insert_process, data_type=args.data_type,
+                               payloads=payloads, topic=args.topic, data_dir=args.dir_name, exception=args.exception)
+            if args.sleep >= 0.5:
+                time.sleep(args.sleep - 0.5)
 
-        time.sleep(args.sleep - 0.5)
+    else:
+        while row_counter < args.total_rows:
+            payloads = __generate_data(anylog_conn=anylog_conn, db_name=args.db_name, data_type=args.data_type,
+                                       batch_size=args.batch_size, sleep=args.sleep, timezone=args.timezone,
+                                       enable_timezone_range=args.enable_timezone_range, exception=args.exception)
+
+            row_counter += len(payloads)
+            if row_counter % args.batch_size == 0:
+                __publish_data(anylog_conn=anylog_conn, insert_process=args.insert_process, data_type=args.data_type,
+                               payloads=payloads, topic=args.topic, data_dir=args.dir_name, exception=args.exception)
+            if args.total_rows - row_counter < args.batch_size:
+                args.batch_size = args.total_rows - row_counter
+
+            if args.sleep >= 0.5:
+                time.sleep(args.sleep - 0.5)
 
 
 

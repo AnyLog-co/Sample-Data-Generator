@@ -70,7 +70,7 @@ NETWORK_ERRORS = {
 }
 
 class AnyLogREST:
-    def __init__(self, conns:str, timeout:float, topic:str, exception:bool=False):
+    def __init__(self, conns:str, timeout:float, exception:bool=False):
         """
         Anylog MQTT class
         :args:
@@ -84,7 +84,6 @@ class AnyLogREST:
             self.exception:bool - whether to print exceptions
         """
         self.timeout = timeout
-        self.topic = topic
         self.exception = exception
 
         self.conns = {}
@@ -127,7 +126,7 @@ class AnyLogREST:
 
         return output
 
-    def put_data(self, payloads:list):
+    def put_data(self, data_type:str, payloads:list):
         """
         Execute REST PUT
         :args:
@@ -152,12 +151,19 @@ class AnyLogREST:
             "Content-Type": "text/plain"
         }
 
-        headers['dbms'] = payloads[0]['dbname']
-        headers['table'] = payloads[0]['table']
+        if data_type in ['ping', 'percentagecpu']:
+            db_name = 'dbms'
+            table_name = 'table'
+        elif data_type == 'kubearmor':
+            db_name = 'dbname'
+            table_name = 'table'
+
+        headers['dbms'] = payloads[0][db_name]
+        headers['table'] = payloads[0][table_name]
 
         for payload in payloads:
-            del payload['dbms']
-            del payload['table']
+            del payload[db_name]
+            del payload[table_name]
 
         try:
             r = requests.put(url=f"http://{conn}", data=json.dumps(payloads), headers=headers, auth=self.conns[conn],

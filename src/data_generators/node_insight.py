@@ -19,19 +19,21 @@ def __get_blockchain(anylog_conn:AnyLogREST):
     :return:
         policies
     """
-    policies = {}
+    ip_list = {}
     for node_type in ["master", "query", "operator", "publisher"]:
-        if node_type not in policies:
-            policies[node_type] = None
+        if node_type not in ip_list:
+            ip_list[node_type] = []
         headers = {
-            "command": f"blockchain get {node_type} bring.ip_port ",
+            "command": f"blockchain get {node_type} bring.ip_port",
             "User-Agent": "AnyLog/1.23"
         }
-        policies[node_type] = anylog_conn.get_data(headers=headers)
+        values = anylog_conn.get_data(headers=headers).split(",")
+        for ip in values:
+            ip_list[node_type].append(ip)
 
-    return policies
+    return ip_list
 
-def node_insight(anylog_conn:AnyLogREST, destination_ip:str, timestamp:str):
+def node_insight(anylog_conn:AnyLogREST, destination_ip:str):
     output = None
     headers = {
         "command": "get dictionary where format=json",
@@ -46,23 +48,26 @@ def node_insight(anylog_conn:AnyLogREST, destination_ip:str, timestamp:str):
             if 'node name' in results and 'Node Name' in results:
                 del results['Node Name']
             output = {key.lower().replace(" ", "_"): value for key, value in results.items()}
-            output['timestamp'] = timestamp
 
     return output
 
 
-def get_node_insight(anylog_conn:AnyLogREST, row_count:int=1, sleep:float=30, timezone:str='utc', exception:bool=False)->list:
+def get_node_insight(anylog_conn:AnyLogREST, db_name:str, row_count:int=1, sleep:float=30, timezone:str='utc', exception:bool=False)->list:
 
     ips_addresses = __get_blockchain(anylog_conn=anylog_conn)
     node_insights = []
     for i in range(row_count):
         timestamp = generate_timestamp(timezone=timezone, enable_timezone_range=False)
-        for ip in ips_addresses:
-            output = node_insight(destination_ip=ip, timestamp=timestamp)
-            if output is not None:
-                node_insights.append(output)
-        if i < row_count - 1:
-            time.sleep(sleep)
+        for node_type in ips_addresses:
+            for ip in ips_addresses[node_type]:
+                output = node_insight(anylog_conn=anylog_conn, destination_ip=ip)
+                if output is not None:
+                    output['dbname'] = db_name
+                    output['table'] = 'node_insight'
+                    output['timestamp'] = timestamp
+                    node_insights.append(output)
+            if i < row_count - 1:
+                time.sleep(sleep)
 
     return node_insights
 
