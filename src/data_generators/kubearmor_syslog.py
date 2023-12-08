@@ -69,7 +69,7 @@ def data_generator(db_name:str, row_count:int, sleep:float, timezone:str, timezo
     for i in range(row_count):
         payload = {
             "dbname": db_name,
-            "table": "kvlistValue",
+            "table": "kvlistvalue",
             "UpdatedTime": generate_timestamp(timezone=timezone, enable_timezone_range=timezone_range)
         }
         for key in SAMPLE_DATA:

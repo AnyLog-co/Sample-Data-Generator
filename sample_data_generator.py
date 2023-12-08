@@ -1,6 +1,5 @@
 import argparse
 import os
-import random
 import time
 
 from src.support.argparse_support import validate_row_size
@@ -132,6 +131,9 @@ def main():
         anylog_conn = AnyLogREST(conns=args.conn, timeout=args.rest_timeout, exception=args.exception)
     else:
         anylog_conn = None
+
+    if args.total_rows < args.batch_size:
+        args.batch_size = args.total_rows
 
     row_counter = 0
     if args.total_rows == 0:
