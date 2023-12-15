@@ -211,6 +211,7 @@ def image_data(db_name:str, row_count:int=1, conversion_type:str='base64', timez
 
         if i < row_count - 1:
             time.sleep(sleep)
+        last_blob = image
 
     return payloads
 

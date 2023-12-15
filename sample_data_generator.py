@@ -48,6 +48,9 @@ def __generate_data(anylog_conn:AnyLogREST, db_name:str, data_type:str, batch_si
     elif data_type == 'images':
         payloads = image_data(db_name=db_name, row_count=batch_size, conversion_type=conversion_type, timezone=timezone,
                               sleep=sleep, enable_timezone_range=enable_timezone_range, exception=exception)
+    elif data_type == 'people_':
+        payloads = get_data(db_name: str, row_count: int, conversion_type: str = "base64", sleep:float = 0.5,
+        timezone:str = "local", enable_timezone_range:bool = False, exception:bool = False)
 
     return payloads
 

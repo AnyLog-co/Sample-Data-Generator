@@ -1,5 +1,6 @@
 import os
 import random
+import time
 
 from src.support.file_processing import file_processing
 import src.support.timestamp_generator as timestamp_generator
@@ -48,8 +49,8 @@ def __generate_number(file_path:str, expected_value:int)->(int, float):
     return count, round(confidence, 3)
 
 
-def get_data(db_name:str, table:str, conversion_type:str="base64", last_blob:str=None,
-             timezone:str="local", enable_timezone_range:bool=False, exception:bool=False)->dict:
+def get_data(db_name:str, row_count:int, conversion_type:str="base64", sleep:float=0.5,
+             timezone:str="local", enable_timezone_range:bool=False, exception:bool=False):
     """
     Generate payload for EdgeX demo
     :args:
@@ -69,33 +70,41 @@ def get_data(db_name:str, table:str, conversion_type:str="base64", last_blob:str
     :return:
         payload
     """
+    last_blob = None
+    payloads = []
+
     if not os.path.isdir(DATA_DIR):
         print(f"Failed to locate directory with images/videos ({DATA_DIR}), cannot continue...")
         exit(1)
 
-    payload = {}
-    video = None
+    for i in range(row_count):
+        video = None
+        while video == last_blob or video is None:
+            video = random.choice(list(DATA))
 
-    while video == last_blob or video is None:
-        video = random.choice(list(DATA))
+        full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(DATA_DIR, video)))
 
-    full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(DATA_DIR, video)))
+        if os.path.isfile(full_file_path):
+            count, confidence = __generate_number(file_path=full_file_path, expected_value=DATA[video])
+            start_ts, end_ts = timestamp_generator.generate_timestamps_range(timezone=timezone,
+                                                                             enable_timezone_range=enable_timezone_range,
+                                                                             period=5)
 
-    if os.path.isfile(full_file_path):
-        count, confidence = __generate_number(file_path=full_file_path, expected_value=DATA[video])
-        start_ts, end_ts = timestamp_generator.generate_timestamps_range(timezone=timezone,
-                                                                         enable_timezone_range=enable_timezone_range,
-                                                                         period=5)
 
-        payload = {
-            "dbms": db_name,
-            "table": table,
-            "start_ts": start_ts,
-            "end_ts": end_ts,
-            "file_content": file_processing(conversion_type=conversion_type, file_name=full_file_path, exception=exception),
-            "count": count,
-            "confidence": confidence
-        }
+            payloads.append({
+                "dbms": db_name,
+                "table": "people_counter",
+                "start_ts": start_ts,
+                "end_ts": end_ts,
+                "file_content": file_processing(conversion_type=conversion_type, file_name=full_file_path,
+                                                exception=exception),
+                "count": count,
+                "confidence": confidence
+            })
 
-    return payload, video
+        if i < row_count - 1:
+            time.sleep(sleep)
+        last_blob = video
+
+    return payloads
 
