@@ -1,2 +1,6 @@
 pytz>=0.0
 requests>=0.0
+paho-mqtt>=0.0
+numpy>=0.0
+opencv-python>=0.0
+tensorflow>=0.0

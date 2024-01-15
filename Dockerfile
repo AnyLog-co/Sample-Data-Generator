@@ -1,21 +1,29 @@
-FROM python:3.8-alpine
+FROM python:3.10-alpine
 
-WORKDIR /app
-RUN mkdir -p /app/Sample-Data-Generator/src
+ENV APP_DIR=/app
+WORKDIR $APP_DIR
 
-COPY requirements.txt /app/Sample-Data-Generator/requirements.txt
-COPY pyproject.toml /app/Sample-Data-Generator/pyproject.toml
-COPY setup.cfg /app/Sample-Data-Generator/setup.cfg
-COPY setup.py  /app/Sample-Data-Generator/setup.py
-COPY src/ /app/Sample-Data-Generator/src
+RUN mkdir -p $APP_DIR/Sample-Data-Generator/src
+RUN mkdir -p $APP_DIR/Sample-Data-Generator/data
+
+COPY setup.py $APP_DIR/Sample-Data-Generator/setup.py
+COPY setup.cfg $APP_DIR/Sample-Data-Generator/setup.cfg
+COPY run.sh $APP_DIR/Sample-Data-Generator/run.sh
+COPY data/* $APP_DIR/Sample-Data-Generator/data
+COPY src/* $APP_DIR/Sample-Data-Generator/src
 
 # Install required packages
 RUN apk update && \
     apk add build-base libffi-dev  py3-pip python3-dev musl-dev jpeg-dev zlib-dev libressl-dev libwebp-dev libxslt-dev \
      libxml2-dev libpq libstdc++ bash && \
     python3 -m pip install --upgrade pip && \
-    python3 -m pip install --upgrade -r /app/Sample-Data-Generator/requirements.txt && \
-    python3 -m pip install --upgrade setuptools Cython poetry
+    python3 -m pip install --upgrade pytz && \
+    python3 -m pip install --upgrade requests && \
+    python3 -m pip install --upgrade Cython && \
+    python3 -m pip install pyinstaller && \
+    python3 $APP_DIR/Sample-Data-Generator/setup.py install
+#    rm -rf $APP_DIR/Sample-Data-Generator/src
+
 
 ENTRYPOINT ["bash"]
-#ENTRYPOINT bash /app/run.sh
+#ENTRYPOINT bash $APP_DIR/Sample-Data-Generator/run.sh
