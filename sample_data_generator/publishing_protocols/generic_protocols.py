@@ -1,7 +1,8 @@
 import os
 import time
 import json
-from src.support.__support__ import json_dumps
+
+from sample_data_generator.support.__support__ import json_dumps
 
 
 def print_results(payloads:list):

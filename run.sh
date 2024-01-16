@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ ${HELP} == true ]] || [[ -z ${DATA_TYPE}  ]] || [[ -z ${INSERT_PROCESS} ]] || [[ -z ${DB_NAME} ]]; then
-  CMD+=" --help"
+  CMD+="python3 $ANYLOG_ROOT_DIR/Sample-Data-Generator/sample_data_generator.py --help"
   bash -c "${CMD}"
   exit 1
 fi
@@ -36,12 +36,6 @@ if [[ ${DATA_TYPE} == edgex ]] || [[ ${DATA_TYPE} == video ]] ; then
   python3 -m pip install tensorflow numpy
 elif [[ ${CONVERSION_TYPE} == opencv ]] ; then
   python3 -m pip install --upgrade opencv-python numpy
-fi
-
-# Validate values
-if [[ ${DATA_TYPE} == node_insight ]] && [[ ${INSERT_PROCESS} == mqtt ]] ; then
-  echo "node_insight requires using REST for data processing"
-  exit 1
 fi
 
 bash -c "${CMD}"

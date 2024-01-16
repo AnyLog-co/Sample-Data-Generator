@@ -136,7 +136,7 @@ class AnyLogMQTT:
                 print(f"Failed to disconnect from {conn_info} (Error: {error})")
 
     def send_data(self, payloads:list, topic:str):
-        message = json.dumps(payloads=payloads)
+        message = json.dumps(payloads)
 
         try:
             r = self.mqtt_client.publish(topic, message, self.qos)

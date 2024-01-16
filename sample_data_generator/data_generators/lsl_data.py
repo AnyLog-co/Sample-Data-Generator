@@ -95,7 +95,7 @@ def __ping_sensor(db_name:str, timezone:str, timezone_range:bool=False)->dict:
         value = sub_value
 
     return {
-        'db_name': db_name,
+        'dbms': db_name,
         'table': 'ping_sensor',
         'device_name': device_name,
         'timestamp': generate_timestamp(timezone=timezone, enable_timezone_range=timezone_range),

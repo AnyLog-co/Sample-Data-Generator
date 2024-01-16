@@ -216,13 +216,13 @@ class AnyLogREST:
                              timeout=self.timeout)
         except Exception as error:
             if self.exception is True:
-                print(f"Failed to execute PUT against {conn} (Error: {error})")
+                print(f"Failed to execute POST against {conn} (Error: {error})")
         else:
             status_code = int(r.status_code)
             if status_code != 200:
                 status = False
                 if self.exception is True:
-                    error_msg = f"Failed to execute PUT against {conn} (Network Error: {status_code} - %s)"
+                    error_msg = f"Failed to execute POST against {conn} (Network Error: {status_code} - %s)"
                     if status_code in NETWORK_ERRORS:
                         error_msg = error_msg % NETWORK_ERRORS[status_code]
                     elif int(str(status_code)[0]) in NETWORK_ERRORS_GENERIC:

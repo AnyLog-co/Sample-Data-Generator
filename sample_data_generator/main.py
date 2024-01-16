@@ -134,7 +134,7 @@ def main():
 
 
     if args.conn is not None and args.insert_process == 'mqtt':
-        anylog_conn = AnyLogMQTT(conns=args.conn, qos=args.qos, exception=args.excetpion)
+        anylog_conn = AnyLogMQTT(conns=args.conn, qos=args.qos, exception=args.exception)
     elif args.conn is not None:
         anylog_conn = AnyLogREST(conns=args.conn, timeout=args.rest_timeout, exception=args.exception)
     else:
