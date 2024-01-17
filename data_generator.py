@@ -140,8 +140,8 @@ def main():
     else:
         anylog_conn = None
 
-    if args.total_rows < args.batch_size:
-        args.batch_size = args.total_rows
+    # if args.total_rows > args.batch_size:
+    #     args.batch_size = args.total_rows
 
     row_counter = 0
     if args.total_rows == 0:

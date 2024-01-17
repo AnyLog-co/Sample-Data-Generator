@@ -6,7 +6,7 @@ from sample_data_generator.support.timestamp_generator import generate_timestamp
 SAMPLE_DATA = {
   "Host_PID": [261, 9527, 9426, 9811],
   "PPID": [1, 2396, 9663],
-  "Operation": ["File", "Network"],
+  "Operation": ["File", "Network", "Process"],
   "Resource": [
     "/var/log/journal/b09389c7d40f420982b5facb1f6e1686",
     "/home/chinwendu/.local/share/JetBrains/consentOptions/accepted",
@@ -70,10 +70,11 @@ def data_generator(db_name:str, row_count:int, sleep:float, timezone:str, timezo
         payload = {
             "dbname": db_name,
             "table": "kvlistvalue",
+            "Timestamp": int(time.time()),
             "UpdatedTime": generate_timestamp(timezone=timezone, enable_timezone_range=timezone_range)
         }
         for key in SAMPLE_DATA:
-            payload[key.lower()] = random.choice(SAMPLE_DATA[key])
+            payload[key] = random.choice(SAMPLE_DATA[key])
         payloads.append(payload)
 
         if i < row_count - 1:

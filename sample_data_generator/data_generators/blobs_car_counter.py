@@ -8,7 +8,7 @@ from sample_data_generator.support.file_processing import file_processing
 import sample_data_generator.support.timestamp_generator as timestamp_generator
 import sample_data_generator.support.__support__ as support
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("src")[0]
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("sample_data_generator")[0]
 DATA_DIR = os.path.join(ROOT_PATH, 'data', 'videos')
 MODEL_FILE = os.path.join(ROOT_PATH, 'data', 'models', 'models', 'vehicle.tflite')
 PROCESS_ID = str(uuid.uuid4())

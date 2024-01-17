@@ -46,7 +46,6 @@ def __create_payload(dbname, line:str, timezone:str, timezone_range:bool=False):
 
     return payload
 
-
 def get_syslogs(dbname:str, row_count:int, sleep:float, timezone:str, timezone_range:bool=False, exception:bool=False):
     payloads = []
     logs = __read_logs(exception=exception)
