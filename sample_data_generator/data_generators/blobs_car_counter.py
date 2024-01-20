@@ -1,65 +1,57 @@
 import datetime
 import os
 import random
+import sys
 import time
 import uuid
 
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("sample_data_generator")[0]
+DATA_GENERATORS = os.path.join(ROOT_PATH, "data_generators")
+DATA_DIR = os.path.join(ROOT_PATH, 'data', 'edgex-demo')
+MODEL_FILE = os.path.join(ROOT_PATH, 'data', 'models', 'vehicle.tflite')
+PUBLISHING_PROTOCOLS = os.path.join(ROOT_PATH, "publishing_protocols")
+DATA_DIR = os.path.join(ROOT_PATH, 'data', 'videos')
+
+sys.path.insert(0, DATA_GENERATORS)
+sys.path.insert(0, PUBLISHING_PROTOCOLS)
+
 from sample_data_generator.support.file_processing import file_processing
+from sample_data_generator.video_processing.video_processing import VideoProcessing
 import sample_data_generator.support.timestamp_generator as timestamp_generator
 import sample_data_generator.support.__support__ as support
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split("sample_data_generator")[0]
-DATA_DIR = os.path.join(ROOT_PATH, 'data', 'videos')
-MODEL_FILE = os.path.join(ROOT_PATH, 'data', 'models', 'models', 'vehicle.tflite')
 PROCESS_ID = str(uuid.uuid4())
 
-from sample_data_generator.video_processing.video_processing import VideoProcessing
+def __car_counter(file_path:str, exception:bool=False):
+    num_cars = []
+    speeds = []
+
+    for label in ["car", "truck", "bus"]:
+        vp = VideoProcessing(model_file=MODEL_FILE, labels=[f"0 car"], img_process='vehicle', video=file_path,
+                             exception=exception)
+        vp.set_interpreter()
+        vp.process_video(min_confidence=0)
+        cars, speed = vp.get_values()
+        num_cars.append(cars)
+        if 'A.mp4':
+            speeds.append(speed * 10)
+        else:
+            speeds.append(speed * 100)
+
+    avg_speed = sum(speeds)/len(speeds)
+    if 'A.mp4' in file_path:
+        return int(sum(num_cars)/100), round(avg_speed * 10, 2)
+    else:
+        return int(int(sum(num_cars) / len(num_cars)) / 100), round(sum(speeds)/len(speeds) * 10, 2)
 
 
-def __create_data(process_id:str, file_name:str, binary_file:str, db_name:str="test", table_name:str="edgx_images",
-                  start_ts:str=datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                  end_ts:str=(datetime.datetime.utcnow() + datetime.timedelta(seconds=5)).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                  profile_name="anylog-video-generator", num_cars:int=0, speed:float=0)->dict:
-    """
-    Given the user information, create a JSON object
-    :args:
-        process_id:str - generated UUID process
-        files_dict:dict - content to store
-        table_name:str - table name
-        device_name:str - name of device data is coming from
-        profile_name:str - name of device profile data is coming from
-    :params:
-        data:dict - placeholder for JSON object to be stored in AnyLog
-        file_name:str - file name without path
-    :return:
-        data
-    :sample json:
-    {
-        "apiVersion": "v2",
-        "dbName": {db_name}
-        "id": "6b055b44-6eae-4f5d-b2fc-f9df19bf42cf",
-        "deviceName": {table_name},
-        "origin": 1660163909,
-        "profileName": "anylog-video-generator",
-        "readings": [{
-            "start_ts": "2022-01-01 00:00:00",
-            "end_ts": "2022-01-01 00:00:05",
-            "binaryValue": "AAAAHGZ0eXBtcDQyAAAAAWlzb21tcDQxbXA0MgADWChtb292AAAAbG12aGQAAAAA3xnEUt8ZxFMAAHUwAANvyQABAA",
-            "mediaType": "video/mp4",
-            "origin": 1660163909,
-            "profileName": "traffic_data",
-            "resourceName": "OnvifSnapshot",
-            "valueType": "Binary",
-            "num_cars": 5,
-            "speed": 65.3
-        }],
-        "sourceName": "OnvifSnapshot"
-    }
-    """
+
+def __create_data(binary_file:str, file_name:str, db_name:str, start_ts:str, end_ts:str, num_cars:int, speed:float,
+                  table_name:str='car_videos', profile_name="anylog-video-generator"):
     data = {
         "apiVersion": "v2",
         "dbName": db_name,
-        "id": process_id,
+        "id": PROCESS_ID,
         "deviceName": table_name,
         "origin": int(time.time()),
         "profileName": profile_name,
@@ -68,7 +60,6 @@ def __create_data(process_id:str, file_name:str, binary_file:str, db_name:str="t
     }
 
     # file_name = file_name.
-
     data["readings"].append({
         "timestamp": start_ts,
         "start_ts": start_ts,
@@ -84,71 +75,27 @@ def __create_data(process_id:str, file_name:str, binary_file:str, db_name:str="t
         "num_cars": num_cars,
         "speed": speed
     })
+
     return data
 
 
-def __car_counter(file_path:str, timezone:str, enable_timezone_range:bool=False)->dict:
-    """
-    Generate car insight information
-    :params:
-        start_ts:datetime.datetime - UTC current timestamp
-        end_ts:datetime.datetime - current timestamp + 5 to 90 seconds into the future
-        hours:int - hour based on start_ts
-        cars:int - number of cars passed at a given hour
-        speed:float - avg car speed
-    :return:
-        dictionary object of
-            - start_ts
-            - end_ts
-            - cars
-            - speed
-    """
-    start_ts, end_ts = timestamp_generator.generate_timestamps_range(timezone=timezone, enable_timezone_range=enable_timezone_range)
-
-    num_cars = {}
-    avg_speed = {}
-    total_time = 0
-    for label in ["car", "truck", "bus"]:
-        start_time = time.time()
-        vp = VideoProcessing(model_file=MODEL_FILE, labels=[f"0 {label}"], img_process='vehicle', video=file_path, exception=True)
-        if vp.status is True:
-            vp.set_interpreter()
-        if vp.status is True:
-            total_time += time.time() - start_time
-            cars, speed = vp.get_values()
-            num_cars[label] = cars
-            avg_speed[label] = speed
-    if 'A.mp4':
-        total_cars = int(sum(num_cars.values()))
-    else:
-        total_cars = int(sum(num_cars.values()) / len(num_cars))
-    avg_speed = sum(avg_speed.values())/len(avg_speed)
-
-    return {
-        'start_ts': timestamp_generator.__timestamp_string(timestamp=start_ts),
-        'end_ts': timestamp_generator.__timestamp_string(timestamp=end_ts),
-        'cars': total_cars,
-        'speed': round(avg_speed, 3)
-    }
-
-def video_data(db_name:str, table:str, conversion_type:str='base64', last_blob:str=None,
-               timezone:str="local", enable_timezone_range:bool=False, exception:bool=False)->(dict, str):
+def car_counting(db_name:str, row_count:int, conversion_type:str="base64", sleep:float=0.5, timezone:str="local",
+                   last_blob:str=None, enable_timezone_range:bool=False, exception:bool=False):
+    payloads = []
 
     if not os.path.isdir(DATA_DIR):
         print(f"Failed to locate directory with images/videos ({DATA_DIR}), cannot continue...")
         exit(1)
 
     video = None
-    while video == last_blob or video is None:
-        video = random.choice(os.listdir(DATA_DIR))
-    full_path = os.path.join(DATA_DIR, video)
-    file_content = file_processing(conversion_type=conversion_type, file_name=full_path, exception=exception)
-    car_info = __car_counter(file_path=full_path, timezone=timezone, enable_timezone_range=enable_timezone_range)
+    for i in range(row_count):
+        while video == last_blob or video is None:
+            video = random.choice(list(os.listdir(DATA_DIR)))
 
-    payload = __create_data(process_id=PROCESS_ID, binary_file=file_content, file_name=video,
-                            db_name=db_name, table_name=table, profile_name="anylog-video-generator",
-                            start_ts=car_info["start_ts"], end_ts=car_info["end_ts"], num_cars=car_info["cars"],
-                            speed=car_info["speed"])
+        full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(DATA_DIR, video)))
+        if os.path.isfile(full_file_path):
+            num_cars, avg_speed = __car_counter(file_path=full_file_path, exception=exception)
+        print(video, num_cars, avg_speed)
+        last_blob  = video
 
-    return payload, video
-
+    return payloads, last_blob

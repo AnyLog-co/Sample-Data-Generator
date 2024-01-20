@@ -12,6 +12,7 @@ import sample_data_generator.data_generators.lsl_data as lsl_data
 import sample_data_generator.data_generators.kubearmor_syslog as kubearmor_syslog
 import sample_data_generator.data_generators.node_insight as node_insight
 from sample_data_generator.data_generators.syslog import get_syslogs
+from sample_data_generator.data_generators.blobs_car_counter import car_counting
 from sample_data_generator.data_generators.blobs_image_processing import image_data
 from sample_data_generator.data_generators.blobs_people_counter import people_counter
 
@@ -23,12 +24,14 @@ from sample_data_generator.publishing_protocols.mqtt_protocol import AnyLogMQTT
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
 
+LAST_BLOB = None
 
 def __generate_data(anylog_conn:AnyLogREST, db_name:str, data_type:str, batch_size:int, sleep:float, conversion_type:str,
                     timezone:str, enable_timezone_range:bool=False, exception:bool=False)->list:
     """
     Based on the data type, generate data to be stored
     """
+    global LAST_BLOB
     payloads = []
     if data_type in ['percentagecpu', 'ping']:
         payloads = lsl_data.data_generator(db_name=db_name, data_type=data_type,
@@ -50,8 +53,14 @@ def __generate_data(anylog_conn:AnyLogREST, db_name:str, data_type:str, batch_si
         payloads = image_data(db_name=db_name, row_count=batch_size, conversion_type=conversion_type, timezone=timezone,
                               sleep=sleep, enable_timezone_range=enable_timezone_range, exception=exception)
     elif data_type == 'people':
-        payloads = people_counter(db_name=db_name, row_count=batch_size, conversion_type=conversion_type, sleep=sleep,
-                                  timezone=timezone, enable_timezone_range=enable_timezone_range, exception=exception)
+        payloads, LAST_BLOB = people_counter(db_name=db_name, row_count=batch_size, conversion_type=conversion_type,
+                                             sleep=sleep, timezone=timezone, enable_timezone_range=enable_timezone_range,
+                                             last_blob=LAST_BLOB,exception=exception)
+    elif data_type == 'cars':
+        payloads, LAST_BLOB = car_counting(db_name=db_name, row_count=batch_size, conversion_type=conversion_type,
+                                             sleep=sleep, timezone=timezone, enable_timezone_range=enable_timezone_range,
+                                             last_blob=LAST_BLOB,exception=exception)
+
 
     return payloads
 
@@ -63,15 +72,23 @@ def __publish_data(anylog_conn, insert_process:str, data_type:str, payloads:list
     elif insert_process == 'file':
         file_results(payloads=payloads, data_dir=data_dir, data_type=data_type, exception=exception)
     elif insert_process == 'put':
-        for payload in payloads:
-            anylog_conn.put_data(data_type=data_type, payloads=payload)
+        if data_type in ['images', 'people', 'cars']:
+            for payload in payloads:
+                anylog_conn.put_data(data_type=data_type, payloads=payload)
+        else:
+            anylog_conn.put_data(data_type=data_type, payloads=payloads)
     elif insert_process == 'post':
-        for payload in payloads:
-            anylog_conn.post_data(payloads=payload, topic=topic)
+        if data_type in ['images', 'people', 'cars']:
+            for payload in payloads:
+                anylog_conn.post_data(payloads=payload, topic=topic)
+        else:
+            anylog_conn.post_data(payloads=payloads, topic=topic)
     elif insert_process == 'mqtt':
-        for payload in payloads:
-            anylog_conn.publish_data(payloads=payload, topic=topic)
-
+        if data_type in ['images', 'people', 'cars']:
+            for payload in payloads:
+                anylog_conn.publish_data(payloads=payload, topic=topic)
+        else:
+            anylog_conn.publish_data(payloads=payloads, topic=topic)
 
 def main():
     """
@@ -142,9 +159,6 @@ def main():
         anylog_conn = AnyLogREST(conns=args.conn, timeout=args.rest_timeout, exception=args.exception)
     else:
         anylog_conn = None
-
-    # if args.total_rows > args.batch_size:
-    #     args.batch_size = args.total_rows
 
     row_counter = 0
     if args.total_rows == 0:

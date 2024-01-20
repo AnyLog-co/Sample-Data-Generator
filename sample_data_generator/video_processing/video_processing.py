@@ -261,7 +261,10 @@ class VideoProcessing:
 
             # Preprocess the frame
             resized_frame = cv2.resize(frame, (300, 300))
-            input_data = resized_frame.astype(np.uint8)  # Convert to UINT8
+            if self.input_details[0]['dtype'] == np.uint8:
+                input_data = resized_frame.astype(np.uint8)  # Convert to UINT8
+            elif self.input_details[0]['dtype'] == np.float32:
+                input_data = resized_frame.astype(np.float32) # Convert to Float32
             input_data = np.expand_dims(input_data, axis=0)
             self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
 
