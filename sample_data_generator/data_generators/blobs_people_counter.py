@@ -1,3 +1,4 @@
+import datetime
 import os
 import random
 import time
@@ -50,7 +51,7 @@ def __generate_number(file_path:str, expected_value:int)->(int, float):
 
 
 def people_counter(db_name:str, row_count:int, conversion_type:str="base64", sleep:float=0.5, timezone:str="local",
-                   enable_timezone_range:bool=False, exception:bool=False):
+                   last_blob:str=None, enable_timezone_range:bool=False, exception:bool=False):
     """
     Generate payload for EdgeX demo
     :args:
@@ -70,15 +71,14 @@ def people_counter(db_name:str, row_count:int, conversion_type:str="base64", sle
     :return:
         payload
     """
-    last_blob = None
     payloads = []
 
     if not os.path.isdir(DATA_DIR):
         print(f"Failed to locate directory with images/videos ({DATA_DIR}), cannot continue...")
         exit(1)
 
+    video = None
     for i in range(row_count):
-        video = None
         while video == last_blob or video is None:
             video = random.choice(list(DATA))
 
@@ -89,7 +89,6 @@ def people_counter(db_name:str, row_count:int, conversion_type:str="base64", sle
             start_ts, end_ts = timestamp_generator.generate_timestamps_range(timezone=timezone,
                                                                              enable_timezone_range=enable_timezone_range,
                                                                              period=5)
-
 
             payloads.append({
                 "dbms": db_name,
@@ -102,9 +101,9 @@ def people_counter(db_name:str, row_count:int, conversion_type:str="base64", sle
                 "confidence": confidence
             })
 
+        last_blob = video
         if i < row_count - 1:
             time.sleep(sleep)
-        last_blob = video
 
-    return payloads
+    return payloads, last_blob
 
