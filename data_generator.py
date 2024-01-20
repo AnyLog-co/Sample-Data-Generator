@@ -63,11 +63,14 @@ def __publish_data(anylog_conn, insert_process:str, data_type:str, payloads:list
     elif insert_process == 'file':
         file_results(payloads=payloads, data_dir=data_dir, data_type=data_type, exception=exception)
     elif insert_process == 'put':
-        anylog_conn.put_data(data_type=data_type, payloads=payloads)
+        for payload in payloads:
+            anylog_conn.put_data(data_type=data_type, payloads=payload)
     elif insert_process == 'post':
-        anylog_conn.post_data(payloads=payloads, topic=topic)
+        for payload in payloads:
+            anylog_conn.post_data(payloads=payload, topic=topic)
     elif insert_process == 'mqtt':
-        anylog_conn.publish_data(payloads=payloads, topic=topic)
+        for payload in payloads:
+            anylog_conn.publish_data(payloads=payload, topic=topic)
 
 
 def main():
