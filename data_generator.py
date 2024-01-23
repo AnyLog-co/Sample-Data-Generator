@@ -61,7 +61,6 @@ def __generate_data(anylog_conn:AnyLogREST, db_name:str, data_type:str, batch_si
                                              sleep=sleep, timezone=timezone, enable_timezone_range=enable_timezone_range,
                                              last_blob=LAST_BLOB,exception=exception)
 
-
     return payloads
 
 
@@ -78,8 +77,7 @@ def __publish_data(anylog_conn, insert_process:str, data_type:str, payloads:list
         for payload in payloads:
             anylog_conn.post_data(payloads=payload, topic=topic)
     elif insert_process == 'mqtt':
-        for payload in payloads:
-            anylog_conn.publish_data(payloads=payload, topic=topic)
+        anylog_conn.publish_data(payloads=payloads, topic=topic)
 
 def main():
     """
