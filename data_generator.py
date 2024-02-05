@@ -2,6 +2,8 @@ import argparse
 import os
 import time
 
+from sample_data_generator.support.__support__ import validate_packages
+
 from sample_data_generator.support.argparse_support import validate_row_size
 from sample_data_generator.support.argparse_support import validate_sleep_time
 from sample_data_generator.support.argparse_support import validate_conn_pattern
@@ -11,7 +13,7 @@ from sample_data_generator.support.argparse_support import prepare_configs
 import sample_data_generator.data_generators.lsl_data as lsl_data
 import sample_data_generator.data_generators.kubearmor_syslog as kubearmor_syslog
 import sample_data_generator.data_generators.node_insight as node_insight
-from sample_data_generator.data_generators.syslog import get_syslogs
+#from sample_data_generator.data_generators.syslog import get_syslogs
 from sample_data_generator.data_generators.blobs_car_counter import car_counting
 from sample_data_generator.data_generators.blobs_image_processing import image_data
 from sample_data_generator.data_generators.blobs_people_counter import people_counter
@@ -25,6 +27,7 @@ ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(ROOT_PATH, 'data', "new-data")
 
 LAST_BLOB = None
+IS_TENSORFLOW = False
 
 def __generate_data(anylog_conn:AnyLogREST, db_name:str, data_type:str, batch_size:int, sleep:float, conversion_type:str,
                     timezone:str, enable_timezone_range:bool=False, exception:bool=False)->list:
@@ -32,7 +35,9 @@ def __generate_data(anylog_conn:AnyLogREST, db_name:str, data_type:str, batch_si
     Based on the data type, generate data to be stored
     """
     global LAST_BLOB
+    global IS_TENSORFLOW
     payloads = []
+
     if data_type in ['percentagecpu', 'ping']:
         payloads = lsl_data.data_generator(db_name=db_name, data_type=data_type,
                                            row_count=batch_size, timezone=timezone,
@@ -43,15 +48,16 @@ def __generate_data(anylog_conn:AnyLogREST, db_name:str, data_type:str, batch_si
     elif data_type == "node_insight":
         payloads = node_insight.get_node_insight(anylog_conn=anylog_conn, db_name=db_name, row_count=batch_size,
                                                  sleep=sleep, timezone=timezone, exception=exception)
-    elif data_type == 'syslogs':
-        payloads = get_syslogs(dbname=db_name, row_count=batch_size, sleep=sleep, timezone=timezone,
-                               timezone_range=enable_timezone_range, exception=exception)
-    elif data_type == 'syslog':
-        payloads = get_syslogs(dbname=db_name, row_count=batch_size, sleep=sleep, timezone=timezone,
-                               timezone_range=enable_timezone_range, exception=exception)
+    # elif data_type == 'syslogs':
+    #     payloads = get_syslogs(dbname=db_name, row_count=batch_size, sleep=sleep, timezone=timezone,
+    #                            timezone_range=enable_timezone_range, exception=exception)
+    # elif data_type == 'syslog':
+    #     payloads = get_syslogs(dbname=db_name, row_count=batch_size, sleep=sleep, timezone=timezone,
+    #                            timezone_range=enable_timezone_range, exception=exception)
     elif data_type == 'images':
-        payloads = image_data(db_name=db_name, row_count=batch_size, conversion_type=conversion_type, timezone=timezone,
-                              sleep=sleep, enable_timezone_range=enable_timezone_range, exception=exception)
+        payloads, LAST_BLOB = image_data(db_name=db_name, row_count=batch_size, conversion_type=conversion_type,
+                                         timezone=timezone, sleep=sleep, enable_timezone_range=enable_timezone_range,
+                                         last_blob=LAST_BLOB, exception=exception)
     elif data_type == 'people':
         payloads, LAST_BLOB = people_counter(db_name=db_name, row_count=batch_size, conversion_type=conversion_type,
                                              sleep=sleep, timezone=timezone, enable_timezone_range=enable_timezone_range,
@@ -71,13 +77,24 @@ def __publish_data(anylog_conn, insert_process:str, data_type:str, payloads:list
     elif insert_process == 'file':
         file_results(payloads=payloads, data_dir=data_dir, data_type=data_type, exception=exception)
     elif insert_process == 'put':
-        for payload in payloads:
-            anylog_conn.put_data(data_type=data_type, payloads=payload)
+        if data_type in ["images", "people", "cars"]:
+            for payload in payloads:
+                anylog_conn.put_data(data_type=data_type, payloads=payload)
+        else:
+            anylog_conn.put_data(data_type=data_type, payloads=payloads)
     elif insert_process == 'post':
-        for payload in payloads:
-            anylog_conn.post_data(payloads=payload, topic=topic)
+        if data_type in ["images", "people", "cars"]:
+            for payload in payloads:
+                anylog_conn.post_data(payloads=payload, topic=topic)
+        else:
+            anylog_conn.post_data(payloads=payloads, topic=topic)
     elif insert_process == 'mqtt':
-        anylog_conn.publish_data(payloads=payloads, topic=topic)
+        if data_type in ["images", "people", "cars"]:
+            for payload in payloads:
+                anylog_conn.publish_data(payloads=payload, topic=topic)
+        else:
+            anylog_conn.publish_data(payloads=payloads, topic=topic)
+
 
 def main():
     """
@@ -111,6 +128,7 @@ def main():
       --exception [EXCEPTION]
                             whether to print exceptions
     """
+    global IS_TENSORFLOW
     parser = argparse.ArgumentParser()
     parser.add_argument("data_type", type=str,
                         choices=['ping', 'percentagecpu', 'node_insight', 'kubearmor', 'syslog', 'images', 'cars', 'people'],
@@ -137,9 +155,11 @@ def main():
     parser.add_argument('--exception', type=bool, nargs='?', const=True, default=False,
                         help='whether to print exceptions')
     args = parser.parse_args()
-
     args.batch_size, args.conversion_type = prepare_configs(batch_size=args.batch_size, data_type=args.data_type,
                                                             conversion_type=args.conversion_type)
+
+    if args.data_type in ['images', 'cars', 'people']:
+        IS_TENSORFLOW = validate_packages(is_blobs=True)
 
 
     if args.conn is not None and args.insert_process == 'mqtt':
@@ -148,6 +168,7 @@ def main():
         anylog_conn = AnyLogREST(conns=args.conn, timeout=args.rest_timeout, exception=args.exception)
     else:
         anylog_conn = None
+
 
     row_counter = 0
     if args.total_rows == 0:

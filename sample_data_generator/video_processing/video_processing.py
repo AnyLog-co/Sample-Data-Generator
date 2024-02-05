@@ -1,12 +1,9 @@
-import cv2
-import numpy as np
 import os
-try:
-    import tensorflow as tf
-except:
-    pass
 import time
 
+import cv2
+import numpy as np
+import tensorflow as tf
 
 def calculate_speed(displacement, elapsed_time):
     """
@@ -18,7 +15,6 @@ def calculate_speed(displacement, elapsed_time):
     dx, dy = displacement
     speed = np.sqrt(dx ** 2 + dy ** 2) / elapsed_time
     return speed
-
 
 def calculate_displacement(new_position, old_position):
     """
@@ -37,8 +33,7 @@ def calculate_displacement(new_position, old_position):
 
     return dx, dy
 
-
-def calculate_elapsed_time(prev_frame_time):
+def __calculate_elapsed_time(prev_frame_time):
     """
     Calculate the elapsed time since the previous frame.
     :param prev_frame_time: Time of the previous frame
@@ -46,10 +41,8 @@ def calculate_elapsed_time(prev_frame_time):
     """
     return time.time() - prev_frame_time
 
-
 class VideoProcessing:
-    def __init__(self, model_file:str,  video:str=None, labels:list=["0 person"], img_process:str='people', label_file:str=None,
-                 exception:bool=False):
+    def __init__(self, model_file:str, video:str=None, labels:list=["0 person"], img_process:str='people', exception:bool=False):
         """
         Declare file params + echeck if they exist
         :args:
@@ -66,7 +59,7 @@ class VideoProcessing:
         """
         self.status = True
         self.obj_count = 0
-        self.confidence = 0 # used for speed when dealing with vehicles
+        self.confidence = 0  # used for speed when dealing with vehicles
         self.grid_rows = 10
         self.grid_cols = 10
         self.inp_mean = 127.5
@@ -90,7 +83,7 @@ class VideoProcessing:
         elif not os.path.isfile(self.video_file):
             self.status = False
             if self.exception is True:
-                print(f"Failed to locate video filfe {video}")
+                print(f"Failed to locate video file {video}")
 
     def __read_video(self):
         """
@@ -101,7 +94,7 @@ class VideoProcessing:
         try:
             self.cap = cv2.VideoCapture(self.video_file)
         except Exception as error:
-            self.status =  False
+            self.status = False
             if self.exception is True:
                 print(f"Failed to read content in {self.video_file} (Error: {error})")
 
@@ -118,7 +111,7 @@ class VideoProcessing:
             if video_width > 1920:
                 grid_rows, grid_cols = 10, 10  # Use a larger grid for high-resolution videos
             else:
-                grid_rows, grid_cols = 5, 5    # Use a smaller grid for lower-resolution videos
+                grid_rows, grid_cols = 5, 5  # Use a smaller grid for lower-resolution videos
         else:
             # For 'person' processing, keep a fixed grid size
             grid_rows, grid_cols = 10, 10
@@ -264,7 +257,7 @@ class VideoProcessing:
             if self.input_details[0]['dtype'] == np.uint8:
                 input_data = resized_frame.astype(np.uint8)  # Convert to UINT8
             elif self.input_details[0]['dtype'] == np.float32:
-                input_data = resized_frame.astype(np.float32) # Convert to Float32
+                input_data = resized_frame.astype(np.float32)  # Convert to Float32
             input_data = np.expand_dims(input_data, axis=0)
             self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
 
@@ -292,4 +285,3 @@ class VideoProcessing:
 
     def get_values(self)->(int, float):
         return self.obj_count, self.confidence
-

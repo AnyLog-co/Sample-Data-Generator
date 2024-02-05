@@ -1,4 +1,3 @@
-import datetime
 import os
 import random
 import time
@@ -98,7 +97,8 @@ def people_counter(db_name:str, row_count:int, conversion_type:str="base64", sle
                 "file_content": file_processing(conversion_type=conversion_type, file_name=full_file_path,
                                                 exception=exception),
                 "count": count,
-                "confidence": float(confidence)
+                "confidence": float(confidence),
+                "file": video
             })
 
         last_blob = video

@@ -170,7 +170,7 @@ def __create_data(db_name:str, file_name:str, file_content:str, detections:list,
 
 
 def image_data(db_name:str, row_count:int=1, conversion_type:str='base64', timezone:str="local", sleep:float=0.5,
-               enable_timezone_range:bool=False, exception:bool=False)->(dict, str):
+               enable_timezone_range:bool=False, last_blob:str=None, exception:bool=False)->(dict, str):
     """
     Based on either live feed data or ntt_factory_data.json file generate payload for an image
     :args:
@@ -190,7 +190,6 @@ def image_data(db_name:str, row_count:int=1, conversion_type:str='base64', timez
         detection:list - detection value(s) based on file_namedetection
         status:str - status value based on file_name
     """
-    last_blob = None
     payloads = []
 
     if not os.path.isdir(DATA_DIR):

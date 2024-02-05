@@ -1,4 +1,3 @@
-import datetime
 import os
 import random
 import sys
@@ -91,18 +90,18 @@ def car_counting(db_name:str, row_count:int, conversion_type:str="base64", sleep
     for i in range(row_count):
         while video == last_blob or video is None:
             video = random.choice(list(os.listdir(DATA_DIR)))
-            full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(DATA_DIR, video)))
-            if not os.path.isfile(full_file_path):
-                video = None
+
+        full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(DATA_DIR, video)))
+        if not os.path.isfile(full_file_path):
+            video = None
 
         num_cars, avg_speed = __car_counter(file_path=full_file_path, exception=exception)
-
         binary_file = file_processing(conversion_type=conversion_type, file_name=full_file_path, exception=exception)
         start_ts, end_ts = timestamp_generator.generate_timestamps_range(timezone=timezone,
                                                                          enable_timezone_range=enable_timezone_range,
                                                                          period=5)
         payloads.append(__create_data(binary_file=binary_file, file_name=video, db_name=db_name, start_ts=start_ts,
                                       end_ts=end_ts, num_cars=num_cars, speed=avg_speed))
-        last_blob  = video
 
+    last_blob  = video
     return payloads, last_blob

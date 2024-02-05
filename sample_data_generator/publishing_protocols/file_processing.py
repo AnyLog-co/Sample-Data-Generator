@@ -1,6 +1,5 @@
 import ast
 
-
 def __write_file(file_path:str, content:bytes, exception:bool=False)->bool:
     status = True
     try:

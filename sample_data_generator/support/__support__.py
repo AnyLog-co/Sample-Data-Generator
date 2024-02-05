@@ -8,26 +8,34 @@ import os
 import uuid
 
 
-def validate_packages(is_blobs:bool=False, is_traffic:bool=False):
+def validate_packages(is_blobs:bool=False):
     """
-    Validate Packages
+    Validate Packages - if a package is missing, returns error message
+    :params:
+        is_tensorflow:bool
+    :return:
+        is_tensorflow
     """
-    try:
-        import paho.mqtt
-    except ImportError as error:
-        raise argparse.ArgumentTypeError(f"Missing package: paho.mqtt (Error: {error}). cannot continue")
-    try:
-        import pytz
-    except ImportError as error:
-        raise argparse.ArgumentTypeError(f"Missing package: pytz (Error: {error}). cannot continue")
+    is_tensorflow = None
+    pkgs = ["pytz", "paho.mqtt"]
 
-    if is_traffic is True:
-        if not importlib.import_module("geopy"):
-            raise argparse.ArgumentTypeError(f"Missing package: geopy. cannot continue")
     if is_blobs is True:
-        for package in ['base64', 'io', 'cv2', 'numpy']:
-            if not importlib.import_module(package):
-                raise argparse.ArgumentTypeError(f"Missing package: {package}. cannot continue")
+        is_tensorflow = True
+        pkgs = ["pytz", "paho.mqtt", 'base64', 'io', 'cv2', 'numpy', "tensorflow"]
+
+    for pkg in pkgs:
+        try:
+            importlib.import_module(pkg)
+        except ImportError as error:
+            if pkg == "tensorflow":
+                is_tensorflow = False
+            else:
+                raise argparse.ArgumentTypeError(f"Missing package: {pkg} (Error: {error}). Cannot continue")
+        else:
+            if pkg == "tensorflow":
+                is_tensorflow = True
+
+    return is_tensorflow
 
 
 def json_dumps(payloads, indent=None)->str:
