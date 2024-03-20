@@ -3,6 +3,9 @@ from data_generator.support import create_timestamp
 
 
 def data_generator(db_name:str='test'):
+    """
+    Generate random value
+    """
     return {
         "dbms": db_name,
         "table": "rand_data",
