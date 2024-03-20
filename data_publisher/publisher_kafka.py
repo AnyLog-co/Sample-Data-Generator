@@ -1,4 +1,8 @@
-import kafka
+try:
+    import kafka
+except:
+    pass
+
 from data_generator.support import serialize_data
 
 def __connect_kafka(conn:str, username:str, password:str, exception:bool=False)->kafka.KafkaProducer:
