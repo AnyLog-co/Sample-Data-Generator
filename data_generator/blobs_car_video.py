@@ -68,27 +68,28 @@ def __create_data(binary_file:str, file_name:str, db_name:str, num_cars:int, spe
 
 
 
-def car_counting(db_name:str, row_count:int, conversion_type:str="base64", sleep:float=0.5, timezone:str="local",
-                   last_blob:str=None, enable_timezone_range:bool=False, exception:bool=False):
-    payloads = []
-
+def car_counting(db_name:str, last_blob:str=None, exception:bool=False):
     if not os.path.isdir(BLOBS_DIR):
         print(f"Failed to locate directory with images/videos ({BLOBS_DIR}), cannot continue...")
         exit(1)
 
     video = None
-    for i in range(row_count):
+    if video is None and last_blob is None:
+        while video is None:
+            video = random.choice(list(os.listdir(BLOBS_DIR)))
+            full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, video)))
+            if not os.path.isfile(full_file_path):
+                video = None
+    else:
         while video == last_blob or video is None:
             video = random.choice(list(os.listdir(BLOBS_DIR)))
             full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, video)))
             if not os.path.isfile(full_file_path):
                 video = None
 
-        num_cars, avg_speed = __car_counter(file_path=full_file_path, exception=exception)
+    num_cars, avg_speed = __car_counter(file_path=full_file_path, exception=exception)
 
-        binary_file = support.file_processing(file_name=full_file_path, exception=exception)
-        payloads.append(__create_data(binary_file=binary_file, file_name=video, db_name=db_name,
-                                      num_cars=num_cars, speed=avg_speed))
-        last_blob  = video
+    binary_file = support.file_processing(file_name=full_file_path, exception=exception)
+    payload = __create_data(binary_file=binary_file, file_name=video, db_name=db_name, num_cars=num_cars, speed=avg_speed)
 
-    return payloads, last_blob
+    return payload, video

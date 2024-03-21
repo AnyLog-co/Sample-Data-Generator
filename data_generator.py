@@ -26,16 +26,25 @@ def __generate_examples():
     print(output)
 
 
-def __generate_data(data_generator:str, db_name:str)->dict:
+def __generate_data(data_generator:str, db_name:str, last_blob:str=None, import_pkg:bool=False, exception:bool=False)->dict:
     if data_generator == 'ping':
-        return ping_percentagecpu.ping_sensor(db_name=db_name)
+        payload = ping_percentagecpu.ping_sensor(db_name=db_name)
     elif data_generator == 'percentagecpu':
-        return ping_percentagecpu.percentagecpu_sensor(db_name=db_name)
+        payload = ping_percentagecpu.percentagecpu_sensor(db_name=db_name)
     elif data_generator == 'rand':
-        return rand_data.data_generator(db_name=db_name)
+        payload = rand_data.data_generator(db_name=db_name)
+    elif data_generator == 'cars':
+        if import_pkg is True:
+            from data_generator.blobs_car_video import car_counting
+            import_pkg = False
+        payload, last_blob = car_counting(db_name=db_name, last_blob=last_blob, exception=exception)
+
+    return payload, last_blob, import_pkg
 
 
-def __publish_data(publisher:str, conn:str, payload:list, topic:str, qos:int=0, auth:tuple=(), timeout:float=30, exception:bool=False):
+
+def __publish_data(publisher:str, conn:str, payload:list, topic:str, qos:int=0, auth:tuple=(), timeout:float=30,
+                   exception:bool=False):
     if publisher == 'put':
         from data_publisher.publisher_rest import publish_via_put
         publish_via_put(conn=conn, payload=payload, auth=auth, timeout=timeout, exception=exception)
@@ -52,7 +61,7 @@ def __publish_data(publisher:str, conn:str, payload:list, topic:str, qos:int=0, 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('data_generator', type=str, default='rand',
-                        choices=['rand', 'ping', 'percentagecpu'], help='data to generate')
+                        choices=['rand', 'ping', 'percentagecpu', 'cars'], help='data to generate')
     parser.add_argument('conn', type=str, default='127.0.0.1:32149',
                         help='connection information (example: [user]:[passwd]@[ip]:[port]')
     parser.add_argument('publisher', type=str, default='put',
@@ -77,9 +86,16 @@ def main():
         __generate_examples()
         exit(1)
 
+    import_pkg = False
+    last_blob = None
+    if args.data_generator == 'cars':
+        import_pkg = True
 
     while True:
-        payloads.append(__generate_data(data_generator=args.data_generator, db_name=args.db_name))
+        payload, last_blob, import_pkg = __generate_data(data_generator=args.data_generator, db_name=args.db_name,
+                                                         last_blob=last_blob, import_pkg=import_pkg,
+                                                         exception=args.exception)
+        payloads.append(payload)
         if len(payloads) == args.batch_size or total_rows + len(payloads) >= args.total_rows:
             __publish_data(publisher=args.publisher, conn=conn, payload=payloads, topic=args.topic, qos=args.qos,
                            auth=auth, timeout=args.timeout, exception=args.exception)
