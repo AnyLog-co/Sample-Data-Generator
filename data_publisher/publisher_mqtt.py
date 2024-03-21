@@ -155,7 +155,10 @@ def __publish_payload(mqtt_client, topic:str, message:str, qos:int=0, exception:
 
 def publish_mqtt(conn:str, payload:list, topic:str, qos:int=0, auth:tuple=(), exception:bool=False):
     broker, port = conn.split(":")
-    username, password = auth
+    username = None
+    password = None
+    if auth != ():
+        username, password = auth
 
     serialized_payload = serialize_data(payload=payload)
     mqtt_client = __connect_mqtt_broker(broker=broker, port=port, username=username, password=password, exception=exception)
