@@ -18,6 +18,11 @@ def __generate_examples():
     output += f"\n\t{serialize_data(rand_data.data_generator(db_name='test'))}"
     output += f"\n\t{serialize_data(ping_percentagecpu.ping_sensor(db_name='test'))}"
     output += f"\n\t{serialize_data(ping_percentagecpu.percentagecpu_sensor(db_name='test'))}"
+    output += "\n\nSample Calls"
+    output += "\n\tSending data to MQTT: python3 ~/Sample-Data-Generator/data_generator.py rand localhost:1883 mqtt --topic test --exception"
+    output += "\n\tSending data to Kafka: python3 ~/Sample-Data-Generator/data_generator.py rand 35.188.2.231:9092 kafka --topic test --exception"
+    output += "\n\tSending data via REST POST: python3 ~/Sample-Data-Generator/data_generator.py rand 127.0.0.1:32149 post --topic test --exception"
+    output += "\n\tSending data via REST PUT: python3 ~/Sample-Data-Generator/data_generator.py rand 127.0.0.1:32149 put --exception"
     print(output)
 
 
