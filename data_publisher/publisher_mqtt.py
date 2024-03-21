@@ -93,7 +93,7 @@ def __connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=
 
 
 
-def __disconnect_mqtt(conn_info:str, mqtt_conn:client.Client, exception:bool=False)->bool:
+def __disconnect_mqtt(conn_info:str, mqtt_conn:mqtt.Client, exception:bool=False)->bool:
     """
     Disconnect from MQTT client
     :args:
