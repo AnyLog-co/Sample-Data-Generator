@@ -1,8 +1,9 @@
 import argparse
 import time
 
-from data_generator import ping_percentagecpu, rand_data
-from data_generator.support import serialize_data
+from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
+from data_generator.rand_data import data_generator as rand_data
+from data_generator.blobls_people_video import  get_data as people_counter
 
 
 def __extract_conn(conn_info:str)->(str, tuple):
@@ -14,10 +15,12 @@ def __extract_conn(conn_info:str)->(str, tuple):
     return auth, conn
 
 def __generate_examples():
+    from data_generator.support import serialize_data
+
     output = "Sample Values:"
-    output += f"\n\t{serialize_data(rand_data.data_generator(db_name='test'))}"
-    output += f"\n\t{serialize_data(ping_percentagecpu.ping_sensor(db_name='test'))}"
-    output += f"\n\t{serialize_data(ping_percentagecpu.percentagecpu_sensor(db_name='test'))}"
+    output += f"\n\t{serialize_data(rand_data(db_name='test'))}"
+    output += f"\n\t{serialize_data(ping_sensor(db_name='test'))}"
+    output += f"\n\t{serialize_data(percentagecpu_sensor(db_name='test'))}"
     output += "\n\nSample Calls"
     output += "\n\tSending data to MQTT: python3 ~/Sample-Data-Generator/data_generator.py rand localhost:1883 mqtt --topic test --exception"
     output += "\n\tSending data to Kafka: python3 ~/Sample-Data-Generator/data_generator.py rand 35.188.2.231:9092 kafka --topic test --exception"
@@ -26,18 +29,21 @@ def __generate_examples():
     print(output)
 
 
-def __generate_data(data_generator:str, db_name:str, last_blob:str=None, import_pkg:bool=False, exception:bool=False)->dict:
+def __generate_data(data_generator:str, db_name:str, last_blob:str=None, import_pkg:bool=False, exception:bool=False):
+    payload = {}
     if data_generator == 'ping':
-        payload = ping_percentagecpu.ping_sensor(db_name=db_name)
+        payload = ping_sensor(db_name=db_name)
     elif data_generator == 'percentagecpu':
-        payload = ping_percentagecpu.percentagecpu_sensor(db_name=db_name)
+        payload = percentagecpu_sensor(db_name=db_name)
     elif data_generator == 'rand':
-        payload = rand_data.data_generator(db_name=db_name)
+        payload = rand_data(db_name=db_name)
     elif data_generator == 'cars':
         if import_pkg is True:
             from data_generator.blobs_car_video import car_counting
             import_pkg = False
         payload, last_blob = car_counting(db_name=db_name, last_blob=last_blob, exception=exception)
+    elif data_generator == 'people':
+        payload, last_blob = people_counter(db_name=db_name, last_blob=last_blob, exception=exception)
 
     return payload, last_blob, import_pkg
 
@@ -61,7 +67,7 @@ def __publish_data(publisher:str, conn:str, payload:list, topic:str, qos:int=0, 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('data_generator', type=str, default='rand',
-                        choices=['rand', 'ping', 'percentagecpu', 'cars'], help='data to generate')
+                        choices=['rand', 'ping', 'percentagecpu', 'cars', 'people'], help='data to generate')
     parser.add_argument('conn', type=str, default='127.0.0.1:32149',
                         help='connection information (example: [user]:[passwd]@[ip]:[port]')
     parser.add_argument('publisher', type=str, default='put',
