@@ -45,7 +45,7 @@ def __generate_data(data_generator:str, db_name:str, last_blob:str=None, import_
         payload, last_blob = car_counting(db_name=db_name, last_blob=last_blob, exception=exception)
     elif data_generator == 'people':
         payload, last_blob = people_counter(db_name=db_name, last_blob=last_blob, exception=exception)
-    elif data_generator == 'image':
+    elif data_generator == 'images':
         payload, last_blob = image_processing(db_name=db_name, last_blob=last_blob, exception=exception)
 
     return payload, last_blob, import_pkg
@@ -70,7 +70,7 @@ def __publish_data(publisher:str, conn:str, payload:list, topic:str, qos:int=0, 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('data_generator', type=str, default='rand',
-                        choices=['rand', 'ping', 'percentagecpu', 'cars', 'people', 'image'], help='data to generate')
+                        choices=['rand', 'ping', 'percentagecpu', 'cars', 'people', 'images'], help='data to generate')
     parser.add_argument('conn', type=str, default='127.0.0.1:32149',
                         help='connection information (example: [user]:[passwd]@[ip]:[port]')
     parser.add_argument('publisher', type=str, default='put',
@@ -90,6 +90,10 @@ def main():
     auth, conn = __extract_conn(conn_info=args.conn)
     total_rows = 0
     payloads = []
+
+    if args.data_generator in ['cars', 'people', 'images'] and args.publisher == 'put':
+        print(f"Data generator for blobs ({args.data_generator} cannot use PUT as a processing option")
+        exit(1)
 
     if args.examples:
         __generate_examples()
