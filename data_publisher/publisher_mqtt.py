@@ -3,7 +3,7 @@ import sys
 import time
 from data_generator.support import serialize_data
 try:
-    import paho.mqtt as client
+    import paho.mqtt as mqtt
 except:
     pass
 
@@ -46,7 +46,7 @@ def __wait(message_size:int):
     time.sleep(wait_time)
 
 
-def __connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=None, exception:bool=False)->client.Client:
+def __connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=None, exception:bool=False)->mqtt.Client:
     """
     Connect to an MQTT broker
     :args:
@@ -65,7 +65,7 @@ def __connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=
     mqtt_client_id = 'python-mqtt-%s' % random.randint(random.choice(range(0, 500)), random.choice(range(501, 1000)))
 
     try:
-        mqtt_client = client.Client(mqtt_client_id)
+        mqtt_client = mqtt.Client(mqtt_client_id)
     except Exception as e:
         if exception is True:
             print('Failed to set MQTT client ID (Error: %s)' % e)
@@ -116,7 +116,7 @@ def __disconnect_mqtt(conn_info:str, mqtt_conn:client.Client, exception:bool=Fal
     return status
 
 
-def __publish_payload(mqtt_client:client.Client, topic:str, message:str, qos:int=0, exception:bool=False)->bool:
+def __publish_payload(mqtt_client:mqtt.Client, topic:str, message:str, qos:int=0, exception:bool=False)->bool:
     """
     Send data into an MQTT broker
     :args:
