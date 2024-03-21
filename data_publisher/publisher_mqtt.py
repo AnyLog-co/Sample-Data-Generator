@@ -3,7 +3,7 @@ import sys
 import time
 from data_generator.support import serialize_data
 try:
-    import paho.mqtt as mqtt
+    import paho.mqtt.client as mqtt
 except:
     pass
 
