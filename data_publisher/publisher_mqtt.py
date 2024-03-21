@@ -46,7 +46,7 @@ def __wait(message_size:int):
     time.sleep(wait_time)
 
 
-def __connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=None, exception:bool=False)->mqtt.Client:
+def __connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=None, exception:bool=False):
     """
     Connect to an MQTT broker
     :args:
