@@ -93,7 +93,7 @@ def __connect_mqtt_broker(broker:str, port:int, username:str=None, password:str=
 
 
 
-def __disconnect_mqtt(conn_info:str, mqtt_conn, exception:bool=False)->bool:
+def __disconnect_mqtt(conn_info:str, mqtt_conn:mqtt.Client, exception:bool=False)->bool:
     """
     Disconnect from MQTT client
     :args:
@@ -116,7 +116,7 @@ def __disconnect_mqtt(conn_info:str, mqtt_conn, exception:bool=False)->bool:
     return status
 
 
-def __publish_payload(mqtt_client, topic:str, message:str, qos:int=0, exception:bool=False)->bool:
+def __publish_payload(mqtt_client:mqtt.Client, topic:str, message:str, qos:int=0, exception:bool=False)->bool:
     """
     Send data into an MQTT broker
     :args:
@@ -162,7 +162,6 @@ def publish_mqtt(conn:str, payload:list, topic:str, qos:int=0, auth:tuple=(), ex
 
     serialized_payload = serialize_data(payload=payload)
     mqtt_client = __connect_mqtt_broker(broker=broker, port=port, username=username, password=password, exception=exception)
-    print(type(mqtt_client))
     if mqtt_client is not None:
         mqtt_client.loop_start()
         status = __publish_payload(mqtt_client=mqtt_client, message=serialized_payload, topic=topic, qos=qos, exception=exception)
