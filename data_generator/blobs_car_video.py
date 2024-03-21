@@ -38,7 +38,7 @@ def __create_data(binary_file:str, file_name:str, db_name:str, num_cars:int, spe
                   table_name:str='car_videos', profile_name="anylog-video-generator"):
     data = {
         "apiVersion": "v2",
-        "dbName": db_name,
+        "dbms": db_name,
         "id": PROCESS_ID,
         "deviceName": table_name,
         "origin": int(time.time()),
@@ -51,7 +51,7 @@ def __create_data(binary_file:str, file_name:str, db_name:str, num_cars:int, spe
     data["readings"].append({
         "timestamp": support.create_timestamp(increase_ts=0),
         "start_ts": support.create_timestamp(increase_ts=0),
-        "end_ts": support.create_timestamp(increase_ts=random.choice(list(range(10, 60)))),
+        "end_ts": support.create_timestamp(increase_ts=random.choice(list(range(10, 15)))),
         "binaryValue": binary_file,
         "deviceName": file_name.split(".")[0],
         "id": support.generate_string_hash(file_name=file_name, data=binary_file),
@@ -69,11 +69,13 @@ def __create_data(binary_file:str, file_name:str, db_name:str, num_cars:int, spe
 
 
 def car_counting(db_name:str, last_blob:str=None, exception:bool=False):
+    video = None
+    payload = {}
+
     if not os.path.isdir(BLOBS_DIR):
         print(f"Failed to locate directory with images/videos ({BLOBS_DIR}), cannot continue...")
         exit(1)
 
-    video = None
     if video is None and last_blob is None:
         while video is None:
             video = random.choice(list(os.listdir(BLOBS_DIR)))
@@ -87,9 +89,10 @@ def car_counting(db_name:str, last_blob:str=None, exception:bool=False):
             if not os.path.isfile(full_file_path):
                 video = None
 
-    num_cars, avg_speed = __car_counter(file_path=full_file_path, exception=exception)
+    if video is not None and os.path.isfile(full_file_path):
+        num_cars, avg_speed = __car_counter(file_path=full_file_path, exception=exception)
 
-    binary_file = support.file_processing(file_name=full_file_path, exception=exception)
-    payload = __create_data(binary_file=binary_file, file_name=video, db_name=db_name, num_cars=num_cars, speed=avg_speed)
+        binary_file = support.file_processing(file_name=full_file_path, exception=exception)
+        payload = __create_data(binary_file=binary_file, file_name=video, db_name=db_name, num_cars=num_cars, speed=avg_speed)
 
     return payload, video

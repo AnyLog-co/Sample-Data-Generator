@@ -48,7 +48,7 @@ def calculate_elapsed_time(prev_frame_time):
 
 
 class VideoProcessing:
-    def __init__(self, model_file:str,  video:str=None, labels:list=["0 person"], img_process:str='people', label_file:str=None,
+    def __init__(self, model_file:str,  video:str=None, labels:list=["0 person"], img_process:str='people',
                  exception:bool=False):
         """
         Declare file params + echeck if they exist
