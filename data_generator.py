@@ -4,6 +4,7 @@ import time
 from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
 from data_generator.rand_data import data_generator as rand_data
 from data_generator.blobls_people_video import  get_data as people_counter
+from data_generator.blobs_factory_images import get_data as image_processing
 
 
 def __extract_conn(conn_info:str)->(str, tuple):
@@ -44,6 +45,8 @@ def __generate_data(data_generator:str, db_name:str, last_blob:str=None, import_
         payload, last_blob = car_counting(db_name=db_name, last_blob=last_blob, exception=exception)
     elif data_generator == 'people':
         payload, last_blob = people_counter(db_name=db_name, last_blob=last_blob, exception=exception)
+    elif data_generator == 'image':
+        payload, last_blob = image_processing(db_name=db_name, last_blob=last_blob, exception=exception)
 
     return payload, last_blob, import_pkg
 
@@ -67,7 +70,7 @@ def __publish_data(publisher:str, conn:str, payload:list, topic:str, qos:int=0, 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('data_generator', type=str, default='rand',
-                        choices=['rand', 'ping', 'percentagecpu', 'cars', 'people'], help='data to generate')
+                        choices=['rand', 'ping', 'percentagecpu', 'cars', 'people', 'image'], help='data to generate')
     parser.add_argument('conn', type=str, default='127.0.0.1:32149',
                         help='connection information (example: [user]:[passwd]@[ip]:[port]')
     parser.add_argument('publisher', type=str, default='put',
@@ -109,8 +112,6 @@ def main():
         if total_rows >= args.total_rows:
             exit(1)
         time.sleep(args.sleep)
-
-
 
 
 if __name__ == '__main__':

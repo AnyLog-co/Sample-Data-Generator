@@ -2,6 +2,7 @@ import base64
 import datetime
 import hashlib
 import json
+import os
 import uuid
 
 
@@ -96,3 +97,17 @@ def file_processing(file_name:str, exception:bool=False):
                     print(f'Failed to convert encoded message to ASCII based value (Error: {error})')
 
         return file_content
+
+
+def read_json_file(file_path:str, exception:bool=False):
+    try:
+        with open(file_path, 'rb') as f:
+            try:
+                return json.load(f)
+            except Exception as error:
+                if exception is True:
+                    print(f"Failed to read content in {file_path} (Error: {error})")
+    except Exception as error:
+        if exception is True:
+            print(f"Failed to open file {file_path} (Error: {error})")
+    return None
