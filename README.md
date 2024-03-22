@@ -44,12 +44,8 @@ The _Sample Data Generator_ is used to insert data into AnyLog using REST (_PUT_
 
 * [People Counter](data_generator/blob_people_video.py) - AI to count number of people in a video
 
-<video controls>
-    <source src="blobs/people_video/edgex4.mp4" width="40%" height="40%" type="video/mp4" />
-</video>
+<img src="blobs/people_video/edgex4.mp4#t=1" width="40%" height="40%" />
 
 * [Car Counter](data_generator/blobs_car_video.py) - using _Tensorflow_, calculate number of cars in a video
 
-<video controls>
-    <source src="blobs/car_video/video1A" width="40%" height="40%" type="video/mp4" />
-</video>
+<img src="blobs/car_video/video1A.mp4#t=1" width="40%" height="40%" />
