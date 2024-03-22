@@ -72,7 +72,7 @@ def main():
     parser.add_argument('data_generator', type=str, default='rand',
                         choices=['rand', 'ping', 'percentagecpu', 'cars', 'people', 'images'], help='data to generate')
     parser.add_argument('conn', type=str, default='127.0.0.1:32149',
-                        help='connection information (example: [user]:[passwd]@[ip]:[port]')
+                        help='connection information (example: [user]:[passwd]@[ip]:[port])')
     parser.add_argument('publisher', type=str, default='put',
                         choices=['put', 'post', 'mqtt', 'kafka'], help='format to publish data')
     parser.add_argument('--batch-size', type=int, default=10, help='number of rows per insert batch')
