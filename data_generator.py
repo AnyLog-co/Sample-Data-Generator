@@ -3,7 +3,7 @@ import time
 
 from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
 from data_generator.rand_data import data_generator as rand_data
-from data_generator.blobls_people_video import  get_data as people_counter
+from data_generator.blob_people_video import  get_data as people_counter
 from data_generator.blobs_factory_images import get_data as image_processing
 
 
@@ -23,7 +23,7 @@ def __generate_examples():
     output += f"\n\t{serialize_data(ping_sensor(db_name='test'))}"
     output += f"\n\t{serialize_data(percentagecpu_sensor(db_name='test'))}"
     output += "\n\nSample Calls"
-    output += "\n\tSending data to MQTT: python3 ~/Sample-Data-Generator/data_generator.py rand localhost:1883 mqtt --topic test --exception"
+    output += "\n\tSending data to MQTT: python3 ~/Sample-Data-Generator/data_generator.py rand anyloguser:mqtt4AnyLog!@localhost:1883 mqtt --topic test --exception"
     output += "\n\tSending data to Kafka: python3 ~/Sample-Data-Generator/data_generator.py rand 35.188.2.231:9092 kafka --topic test --exception"
     output += "\n\tSending data via REST POST: python3 ~/Sample-Data-Generator/data_generator.py rand 127.0.0.1:32149 post --topic test --exception"
     output += "\n\tSending data via REST PUT: python3 ~/Sample-Data-Generator/data_generator.py rand 127.0.0.1:32149 put --exception"
