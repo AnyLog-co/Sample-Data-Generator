@@ -48,4 +48,5 @@ The _Sample Data Generator_ is used to insert data into AnyLog using REST (_PUT_
 
 * [Car Counter](data_generator/blobs_car_video.py) - using _Tensorflow_, calculate number of cars in a video
 
+[video1A.mp4](blobs%2Fcar_video%2Fvideo1A.mp4)
 <img src="blobs/car_video/video1A.mp4#t=1" width="40%" height="40%" />
