@@ -28,7 +28,7 @@ docker run --network host \
   -e DATA_GENERATOR=rand \
   -e CONN=127.0.0.1:32149
   -e PUBLISHER=put \
-  -e DB_NAME new_company \
+  -e DB_NAME=test \
   -e TIMEEOUT 30 \
 --rm anylogco/sample-data-generator:latest  
 ```
@@ -37,9 +37,9 @@ docker run --network host \
 ```shell
 docker run --network host \
   -e DATA_GENERATOR=rand \
-  -e CONN=anyloguser:mqtt4AnyLog!@35.188.2.231:1883 \
-  -e PUBLISHER=mqtt \
-  -e DB_NAME new_company \
+  -e CONN=35.188.2.231:1883 \
+  -e PUBLISHER=kafka \
+  -e DB_NAME=test \
   -e TOPIC=anylog-demo
 --rm anylogco/sample-data-generator:latest  
 ```
@@ -48,9 +48,9 @@ docker run --network host \
 ```shell
 docker run --network host \
   -e DATA_GENERATOR=rand \
-  -e CONN=35.188.2.231:9092 \
+  -e CONN=anyloguser:mqtt4AnyLog!@35.188.2.231:9092 \
   -e PUBLISHER=mqtt \
-  -e DB_NAME new_company \
+  -e DB_NAME=test \
   -e TOPIC=anylog-demo
 --rm anylogco/sample-data-generator:latest
 ```

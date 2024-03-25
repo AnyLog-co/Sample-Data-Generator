@@ -6,10 +6,8 @@ import data_generator.support as support
 
 ROOT_PATH = os.path.expandvars(os.path.expanduser(__file__)).split("data_generator")[0]
 BLOBS_DIR  = os.path.join(ROOT_PATH, 'blobs', 'factory_images')
-JSON_FILE = os.path.join(ROOT_PATH, 'blobs', 'factory_images')
+JSON_FILE = os.path.join(ROOT_PATH, 'blobs', 'factory_images.json')
 JSON_CONTENT = []
-if os.path.isfile(JSON_FILE):
-    JSON_CONTENT = support.read_json_file(file_path=JSON_FILE)
 
 def __read_data(file_name:str, exception:bool=False):
     try:
@@ -22,6 +20,7 @@ def __read_data(file_name:str, exception:bool=False):
             status = JSON_CONTENT[file_name]['status']
     except:
         status = 'Nok'
+
     return detection, status
 
 
@@ -52,16 +51,25 @@ def __create_data(db_name:str, file_name:str, file_content:str, detections:list,
         "status": "ok"
     }
     """
+    data = {}
+    data['timestamp'] = support.create_timestamp(increase_ts=0)
+    data['file_name'] = file_name
+    data['file_type'] = support.media_type(file_suffix=file_name.rsplit('.', 1)[-1])
+    data['file_content'] = file_content
+    data['status'] = status
+    data['bbox'] = []
+    data['class'] = 'kizu'
+    data['score'] = -1
+
+    for param in ['bbox', 'class', 'score']:
+        if len(detections) > 0 and param in detections[0]:
+            data[param] = detections[0][param]
+
     return {
         'dbms': db_name,
-        'table': "deeptechtor",
+        'table': "factory_images",
         'id': str(uuid.uuid4()),
-        'timestamp': support.create_timestamp(increase_ts=0),
-        'file_name': file_name,
-        'file_type': support.media_type(file_suffix=file_name.rsplit('.', 1)[-1]),
-        'file_content': file_content,
-        'detection': detections,
-        'status': status
+        'detection': data
     }
 
 
@@ -86,6 +94,7 @@ def get_data(db_name:str, last_blob:str=None, exception:bool=False)->(dict, str)
         status:str - status value based on file_name
     """
     image = None
+    global JSON_CONTENT
     detection=[]
     status='Nok'
 
@@ -108,13 +117,14 @@ def get_data(db_name:str, last_blob:str=None, exception:bool=False)->(dict, str)
 
     if image is not None and os.path.isfile(full_file_path):
         binary_file = support.file_processing(file_name=full_file_path, exception=exception)
-        if not JSON_CONTENT:
+        if os.path.isfile(JSON_FILE):
+            JSON_CONTENT = support.read_json_file(file_path=JSON_FILE)
+        if JSON_CONTENT != []:
             detection, status = __read_data(file_name=image, exception=exception)
 
         payload = __create_data(db_name=db_name, file_name=image, file_content=binary_file, detections=detection,
                                 status=status)
 
     last_blob = image
-
     return payload, last_blob
 

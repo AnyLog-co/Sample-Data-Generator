@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 if [[ ! ${DATA_GENERATOR} ]] ; then export DATA_GENERATOR=rand ; fi
 if [[ ! ${CONN} ]] ; then export CONN=127.0.0.1:32149 ; fi
 if [[ ! ${PUBLISHER} ]] ; then export PUBLISHER=put ; fi
@@ -15,10 +16,10 @@ if [[ ! ${EXAMPLES} ]] ; then EXAMPLES=false ; fi
 if [[ ! ${HELP} ]] ; then HELP=false ; fi
 
 if [[ ${HELP} == true  ]] ; then
-  python3 data_generator.py --help
+  python3 /app/Sample-Data-Generator/data_generator.py --help
 fi
 if [[ ${EXAMPLES} == true ]] ; then
-  python3 data_generator.py --examples
+  python3 /app/Sample-Data-Generator/data_generator.py rand 127.0.0.1:32149 put --examples
 fi
 
 if [[ ${HELP} == true ]] || [[ ${EXAMPLES} == true ]] ; then
@@ -31,7 +32,7 @@ if [[ ${DATA_GENERATOR} == cars ]]; then
 fi
 
 if [[ ${PUBLISHER} == mqtt ]]; then
-  python3 -m pip install --upgrade paho-mqtt
+  python3 -m pip install --upgrade paho-mqtt==1.5.1
 fi
 
 if [[ ${PUBLISHER} == kafka ]]; then
@@ -39,7 +40,8 @@ if [[ ${PUBLISHER} == kafka ]]; then
 fi
 
 if [[ ${EXCEPTION} == true ]] ; then
-  python3 data_generator.py ${DATA_GENERATOR} ${CONN} ${PUBLISHER} \
+  python3 /app/Sample-Data-Generator/data_generator.py ${DATA_GENERATOR} ${CONN} ${PUBLISHER} \
+    --db-name ${DB_NAME} \
     --batch-size ${BATCH_SIZE} \
     --total-rows ${TOTAL_ROWS} \
     --sleep ${SLEEP} \
@@ -48,7 +50,8 @@ if [[ ${EXCEPTION} == true ]] ; then
     --qos ${QOS} \
     --exception
 else
-    python3 data_generator.py ${DATA_GENERATOR} ${CONN} ${PUBLISHER} \
+    python3 /app/Sample-Data-Generator/data_generator.py ${DATA_GENERATOR} ${CONN} ${PUBLISHER} \
+    --db-name ${DB_NAME} \
     --batch-size ${BATCH_SIZE} \
     --total-rows ${TOTAL_ROWS} \
     --sleep ${SLEEP} \

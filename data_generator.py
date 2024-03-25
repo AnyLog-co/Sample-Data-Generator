@@ -113,6 +113,7 @@ def main():
             __publish_data(publisher=args.publisher, conn=conn, payload=payloads, topic=args.topic, qos=args.qos,
                            auth=auth, timeout=args.timeout, exception=args.exception)
             total_rows += len(payloads)
+            payloads = []
         if total_rows >= args.total_rows:
             exit(1)
         time.sleep(args.sleep)

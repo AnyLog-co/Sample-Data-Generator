@@ -2,7 +2,7 @@
      "20200306202533614.jpeg": {
          "result": {
              "detection": [
-                 {"class": "kizu", "bbox":   [666, 275, 682, 291], "score":  0.83249},
+                 {"class": "kizu", "bbox": [666, 275, 682, 291], "score":  0.83249},
                  {"class": "kizu", "bbox": [669, 262, 684, 277], "score": 0.83249},
                  {"class": "kizu", "bbox": [688, 261, 706, 276], "score": 0.72732},
                  {"class": "kizu", "bbox": [698, 277, 713, 292], "score": 0.72659},
