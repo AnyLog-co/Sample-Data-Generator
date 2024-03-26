@@ -109,11 +109,12 @@ def main():
                                                          last_blob=last_blob, import_pkg=import_pkg,
                                                          exception=args.exception)
         payloads.append(payload)
-        if len(payloads) == args.batch_size or total_rows + len(payloads) >= args.total_rows:
+        if len(payloads) == args.batch_size or (args.total_rows <= len(payloads) + total_rows and args.total_rows != 0):
             __publish_data(publisher=args.publisher, conn=conn, payload=payloads, topic=args.topic, qos=args.qos,
                            auth=auth, timeout=args.timeout, exception=args.exception)
             total_rows += len(payloads)
             payloads = []
+
         if total_rows >= args.total_rows:
             exit(1)
         time.sleep(args.sleep)
