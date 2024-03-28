@@ -51,26 +51,21 @@ def __create_data(db_name:str, file_name:str, file_content:str, detections:list,
         "status": "ok"
     }
     """
-    data = {}
-    data['timestamp'] = support.create_timestamp(increase_ts=0)
-    data['file_name'] = file_name
-    data['file_type'] = support.media_type(file_suffix=file_name.rsplit('.', 1)[-1])
-    data['file_content'] = file_content
-    data['status'] = status
-    data['bbox'] = []
-    data['class'] = 'kizu'
-    data['score'] = -1
-
-    for param in ['bbox', 'class', 'score']:
-        if len(detections) > 0 and param in detections[0]:
-            data[param] = detections[0][param]
-
-    return {
-        'dbms': db_name,
-        'table': "factory_images",
+    data = {
         'id': str(uuid.uuid4()),
-        'detection': data
+        'dbms': db_name,
+        'table': 'factory_imgs',
+        'timestamp': support.create_timestamp(increase_ts=0),
+        'file_name': file_name,
+        'file_type': support.media_type(file_suffix=file_name.rsplit('.', 1)[-1]),
+        'file_content': file_content,
+        'status': status,
+        'detection': []
     }
+    if len(detections) > 0:
+        data['detection'] = detections
+
+    return data
 
 
 def get_data(db_name:str, last_blob:str=None, exception:bool=False)->(dict, str):
