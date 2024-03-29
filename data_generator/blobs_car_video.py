@@ -77,13 +77,13 @@ def car_counting(db_name:str, last_blob:str=None, exception:bool=False):
         exit(1)
 
     if video is None and last_blob is None:
-        while video is None:
+        while video in [None, '.DS_Store']:
             video = random.choice(list(os.listdir(BLOBS_DIR)))
             full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, video)))
             if not os.path.isfile(full_file_path):
                 video = None
     else:
-        while video == last_blob or video is None:
+        while video == last_blob or video in [None, '.DS_Store']:
             video = random.choice(list(os.listdir(BLOBS_DIR)))
             full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, video)))
             if not os.path.isfile(full_file_path):

@@ -81,21 +81,22 @@ def get_data(db_name:str, last_blob:str=None, exception:bool=False)->dict:
     video = None
 
     if video is None and last_blob is None:
-        while video is None:
+        while video in [None, '.DS_Store']:
             video = random.choice(list(os.listdir(BLOBS_DIR)))
             full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, video)))
             if not os.path.isfile(full_file_path):
                 video = None
     else:
-        while video == last_blob or video is None:
+        while video == last_blob or video in [None, '.DS_Store']:
             video = random.choice(list(os.listdir(BLOBS_DIR)))
             full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, video)))
-            if not os.path.isfile(full_file_path):
+            if not os.path.isfile(full_file_path) or os.path.isdir(full_file_path):
                 video = None
 
 
     if video is not None and os.path.isfile(full_file_path):
         count, confidence = __generate_number(expected_value=DATA[video])
+
         payload = {
             "dbms": db_name,
             "table": 'people_counter',

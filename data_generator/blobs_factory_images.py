@@ -98,13 +98,13 @@ def get_data(db_name:str, last_blob:str=None, exception:bool=False)->(dict, str)
         exit(1)
 
     if image is None and last_blob is None:
-        while image is None:
+        while image in [None, '.DS_Store']:
             image = random.choice(list(os.listdir(BLOBS_DIR)))
             full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, image)))
             if not os.path.isfile(full_file_path):
                 image = None
     else:
-        while image == last_blob or image is None:
+        while image == last_blob or image in [None, '.DS_Store']:
             image = random.choice(list(os.listdir(BLOBS_DIR)))
             full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, image)))
             if not os.path.isfile(full_file_path):
