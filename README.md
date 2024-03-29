@@ -33,7 +33,7 @@ docker run --network host \
 --rm anylogco/sample-data-generator:latest  
 ```
 
-* Sample _MQTT_
+* Sample _Kafka_
 ```shell
 docker run --network host \
   -e DATA_GENERATOR=rand \
@@ -44,7 +44,7 @@ docker run --network host \
 --rm anylogco/sample-data-generator:latest  
 ```
 
-* Sample _Kafka_
+* Sample _MQTT_ 
 ```shell
 docker run --network host \
   -e DATA_GENERATOR=rand \
