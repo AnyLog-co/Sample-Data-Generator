@@ -38,7 +38,7 @@ def __create_data(binary_file:str, file_name:str, db_name:str, num_cars:int, spe
                   table_name:str='car_videos', profile_name="anylog-video-generator"):
     data = {
         "apiVersion": "v2",
-        "dbms": db_name,
+        "dbName": db_name,
         "id": PROCESS_ID,
         "deviceName": table_name,
         "origin": int(time.time()),
