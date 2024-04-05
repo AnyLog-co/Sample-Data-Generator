@@ -27,12 +27,12 @@
             },
             {
                 "detectionBox": [707, 154, 725, 175],
-                "detectedClass": "vest",
+                "detectedClass": "hardhat",
                 "detectedScore": "0.91073"
             },
             {
                 "detectionBox": [723, 169, 740, 191],
-                "detectedClass": "vest",
+                "detectedClass": "person",
                 "detectedScore": "0.83051"
             }
         ]
@@ -46,12 +46,12 @@
             },
             {
                 "detectionBox": [686, 365, 702, 384],
-                "detectedClass": "vest",
+                "detectedClass": "hardhat",
                 "detectedScore": "0.82059"
             },
             {
                 "detectionBox": [696, 360, 712, 383],
-                "detectedClass": "vest",
+                "detectedClass": "person",
                 "detectedScore": "0.66439"
             }
         ]
@@ -65,12 +65,12 @@
             },
             {
                 "detectionBox":[702, 370, 718, 391],
-                "detectedClass": "vest",
+                "detectedClass": "hardhat",
                 "detectedScore": "0.74674"
             },
             {
                 "detectionBox": [675, 358, 689, 379],
-                "detectedClass": "vest",
+                "detectedClass": "person",
                 "detectedScore": "0.74674"
             }
         ]
@@ -84,12 +84,12 @@
             },
             {
                 "detectionBox": [687, 546, 703, 568],
-                "detectedClass": "vest",
+                "detectedClass": "hardhat",
                 "detectedScore": "0.92992"
             },
             {
                 "detectionBox": [699, 561, 715, 581],
-                "detectedClass": "vest",
+                "detectedClass": "person",
                 "detectedScore": "0.56778"
             }
         ]
@@ -103,12 +103,12 @@
             },
             {
                 "detectionBox": [654, 232, 677, 247],
-                "detectedClass": "vest",
+                "detectedClass": "hardhat",
                 "detectedScore": "0.412482"
             },
             {
                 "detectionBox": [657, 218, 681, 232],
-                "detectedClass": "vest",
+                "detectedClass": "person",
                 "detectedScore": "0.58493"
             }
         ]
@@ -122,12 +122,12 @@
             },
             {
                 "detectionBox": [634, 383, 664, 400],
-                "detectedClass": "vest",
+                "detectedClass": "hardhat",
                 "detectedScore": "0.5124"
             },
             {
                 "detectionBox": [621, 392, 653, 407],
-                "detectedClass": "vest",
+                "detectedClass": "person",
                 "detectedScore": "0.214752121"
             }
         ]
@@ -135,29 +135,29 @@
     "image7.jpg": {
         "bbox": [
             {"detectedClass": "vest", "detectionBox": [626, 598, 657, 612], "detectedScore": 0.91267},
-            {"detectedClass": "vest", "detectionBox": [606, 603, 636, 617], "detectedScore": 0.88631},
-            {"detectedClass": "vest", "detectionBox": [622, 607, 656, 621], "detectedScore": 0.86265}
+            {"detectedClass": "hardhat", "detectionBox": [606, 603, 636, 617], "detectedScore": 0.88631},
+            {"detectedClass": "person", "detectionBox": [622, 607, 656, 621], "detectedScore": 0.86265}
         ]
     },
     "image8.jpg": {
         "bbox": [
             {"detectedClass": "vest", "detectionBox": [697, 167, 715, 193], "detectedScore": 0.89634},
-            {"detectedClass": "vest", "detectionBox": [699, 161, 716, 176], "detectedScore": 0.89326},
-            {"detectedClass": "vest", "detectionBox": [723, 169, 740, 191], "detectedScore": 0.86099},
+            {"detectedClass": "hardhat", "detectionBox": [699, 161, 716, 176], "detectedScore": 0.89326},
+            {"detectedClass": "person", "detectionBox": [723, 169, 740, 191], "detectedScore": 0.86099},
         ]
     },
     "image9.jpg": {
         "bbox": [
             {"detectedClass": "vest", "detectionBox": [658, 657, 674, 671], "detectedScore": 0.59605},
-            {"detectedClass": "vest", "detectionBox": [699, 33, 724, 53], "detectedScore": 0.61374},
-            {"detectedClass": "vest", "detectionBox": [703, 42, 719, 65], "detectedScore": 0.61374}
+            {"detectedClass": "hardhat", "detectionBox": [699, 33, 724, 53], "detectedScore": 0.61374},
+            {"detectedClass": "person", "detectionBox": [703, 42, 719, 65], "detectedScore": 0.61374}
         ]
     },
     "image10.jpg": {
         "bbox": [
             {"detectedClass": "vest", "detectionBox": [667, 446, 682, 461], "detectedScore": 0.89901},
-            {"detectedClass": "vest", "detectionBox": [675, 451, 691, 466], "detectedScore": 0.88868},
-            {"detectedClass": "vest", "detectionBox": [658, 460, 674, 474], "detectedScore": 0.8741}
+            {"detectedClass": "hardhat", "detectionBox": [675, 451, 691, 466], "detectedScore": 0.88868},
+            {"detectedClass": "person", "detectionBox": [658, 460, 674, 474], "detectedScore": 0.8741}
         ]
     }
 }

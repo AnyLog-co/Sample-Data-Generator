@@ -5,14 +5,14 @@ import uuid
 import data_generator.support as support
 
 ROOT_PATH = os.path.expandvars(os.path.expanduser(__file__)).split("data_generator")[0]
-BLOBS_DIR  = os.path.join(ROOT_PATH, 'blobs', 'factory_images')
-JSON_FILE = os.path.join(ROOT_PATH, 'blobs', 'factory_images.json')
+BLOBS_DIR  = os.path.join(ROOT_PATH, 'blobs', 'video_imgs')
+JSON_FILE = os.path.join(ROOT_PATH, 'blobs', 'image_data.json')
 JSON_CONTENT = []
 
 def __read_data(file_name:str, exception:bool=False):
     try:
-        if JSON_CONTENT[file_name]['result']['detection']:
-            detection = JSON_CONTENT[file_name]["result"]["detection"]
+        if JSON_CONTENT[file_name]['bbox']:
+            detection = JSON_CONTENT[file_name]["bbox"]
     except:
         detection = []
     try:
@@ -54,13 +54,18 @@ def __create_data(db_name:str, file_name:str, file_content:str, detections:list,
     data = {
         'id': str(uuid.uuid4()),
         'dbms': db_name,
-        'table': 'factory_imgs',
+        'table': 'video_imgs',
         'timestamp': support.create_timestamp(increase_ts=0),
         'file_name': file_name,
-        'file_type': support.media_type(file_suffix=file_name.rsplit('.', 1)[-1]),
         'file_content': file_content,
-        'status': status,
-        'detection': []
+        'detection': [],
+        'name': 'demo-model',
+        'version': 2.0,
+        "confidentCutoff": 0.85,
+        "platform": "linux:x64",
+        "cameraDisabled": True,
+        "remoteCamerasOn": "false"
+
     }
     if len(detections) > 0:
         data['detection'] = detections
