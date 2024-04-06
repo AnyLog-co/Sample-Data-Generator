@@ -35,6 +35,7 @@ set policy new_policy [mapping][schema][file_name] = {}
 set policy new_policy [mapping][schema][file_name][type] = "string"
 set policy new_policy [mapping][schema][file_name][bring] = "[file_name]"
 set policy new_policy [mapping][schema][file_name][root] = true.bool
+set policy new_policy [mapping][schema][file_name][default] = "UNKNOWN"
 
 set policy new_policy [mapping][schema][file] = {}
 set policy new_policy [mapping][schema][file][root] = true.bool
@@ -48,6 +49,7 @@ set policy new_policy [mapping][schema][file][apply] = "base64decoding"
 set policy new_policy [mapping][schema][bbox] = {}
 set policy new_policy [mapping][schema][bbox][type] = "string"
 set policy new_policy [mapping][schema][bbox][bring] = "[detectionBox]"
+set policy new_policy [mapping][schema][bbox][default] = ""
 
 set policy new_policy [mapping][schema][score] = {}
 set policy new_policy [mapping][schema][score][type] = "float"
@@ -57,6 +59,7 @@ set policy new_policy [mapping][schema][score][default] = "0"
 set policy new_policy [mapping][schema][class] = {}
 set policy new_policy [mapping][schema][class][type] = "string"
 set policy new_policy [mapping][schema][class][bring] = "[detectedClass]"
+set policy new_policy [mapping][schema][class][default] = ""
 
 set policy new_policy [mapping][schema][confidence] = {}
 set policy new_policy [mapping][schema][confidence][type] = "int"
@@ -65,7 +68,7 @@ set policy new_policy [mapping][schema][confidence][bring] = "[confidentCutoff]"
 set policy new_policy [mapping][schema][confidence][root] = true.bool
 
 :declare-policy:
-test_policy = json !mapping_policy test
+test_policy = json !new_policy test
 if !test_policy == false then goto json-policy-error
 on error call declare-policy-error
 blockchain prepare policy !new_policy
