@@ -36,7 +36,7 @@ def publish_via_put(conn:str, payload:list, auth:tuple=(), timeout:float=30, exc
     return status
 
 
-def publish_via_post(conn:str, payload:list, topic:str, auth:tuple=(), timeout:float=30, exception:bool=False):
+def publish_via_post(conn:str, payloads:list, topic:str, auth:tuple=(), timeout:float=30, exception:bool=False):
     status = True
     headers = {
         'command': 'data',
@@ -46,7 +46,8 @@ def publish_via_post(conn:str, payload:list, topic:str, auth:tuple=(), timeout:f
     }
 
     try:
-        r = requests.post(url=f'http://{conn}', headers=headers, data=serialize_data(payload=payload), auth=auth, timeout=timeout)
+        for payload in payloads:
+            r = requests.post(url=f'http://45.56.116.167:32149', headers=headers, data=serialize_data(payload=payload), auth=auth, timeout=timeout)
     except Exception as error:
         status = False
         if exception is True:

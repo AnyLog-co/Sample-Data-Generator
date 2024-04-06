@@ -3,6 +3,7 @@ import time
 
 from data_generator.blobs_video_imgs import get_data as video_imgs
 from data_publisher.publisher_rest import publish_via_post
+from data_publisher.publisher_rest import publish_via_put
 
 def main():
     parser = argparse.ArgumentParser()
@@ -21,13 +22,15 @@ def main():
 
     total_rows = 0
     payloads = []
+    last_blob = None
 
     while True:
-        payload, last_blob = video_imgs(db_name='test', last_blob=None, exception=args.exception)
+        payload, last_blob = video_imgs(db_name=args.db_name, last_blob=last_blob, exception=args.exception)
 
         payloads.append(payload)
         if len(payloads) == args.batch_size or (args.total_rows <= len(payloads) + total_rows and args.total_rows != 0):
-            publish_via_post(conn=args.conn, payload=payloads, topic=args.topic, auth=(), timeout=args.timeout,
+            # publish_via_put(conn=args.conn, payload=payloads, auth=(), timeout=args.timeout, exception=args.exception)
+            publish_via_post(conn=args.conn, payloads=payloads, topic=args.topic, auth=(), timeout=args.timeout,
                              exception=args.exception)
 
             total_rows += len(payloads)

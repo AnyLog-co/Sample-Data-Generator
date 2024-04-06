@@ -1,6 +1,8 @@
 #----------------------------------------------------------------------------------------------------------------------#
 # AnyLog script to accept data associated with IBM's demo
 #----------------------------------------------------------------------------------------------------------------------#
+# process $EDGELAKE_PATH/deployment-scripts/demo-scripts/ibm_demo.al
+
 on error ignore
 
 :preparre-policy:
@@ -48,7 +50,7 @@ set policy new_policy [mapping][schema][file][apply] = "base64decoding"
 
 set policy new_policy [mapping][schema][bbox] = {}
 set policy new_policy [mapping][schema][bbox][type] = "string"
-set policy new_policy [mapping][schema][bbox][bring] = "[detectionBox]"
+set policy new_policy [mapping][schema][bbox][bring] = "[detectedBox]"
 set policy new_policy [mapping][schema][bbox][default] = ""
 
 set policy new_policy [mapping][schema][score] = {}
