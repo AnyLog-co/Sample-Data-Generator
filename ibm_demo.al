@@ -12,6 +12,7 @@ if !policy then goto mqtt-call
 conversion_type = base64
 
 :create-policy:
+set new_policy = ""
 set policy new_policy [mapping] = {}
 set policy new_policy [mapping][id] = !policy_id
 set policy new_policy [mapping][dbms] = "bring [dbms]"
