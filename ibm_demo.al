@@ -35,7 +35,7 @@ set policy new_policy [mapping][schema][file_name] = {}
 set policy new_policy [mapping][schema][file_name][type] = "string"
 set policy new_policy [mapping][schema][file_name][bring] = "[file_name]"
 set policy new_policy [mapping][schema][file_name][default] = ""
-set policy new_policy [mapping][schema][file][root] = true.bool
+set policy new_policy [mapping][schema][file_name][root] = true.bool
 
 set policy new_policy [mapping][schema][file] = {}
 set policy new_policy [mapping][schema][file][root] = true.bool
