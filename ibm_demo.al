@@ -26,7 +26,7 @@ set policy new_policy [mapping][schema][timestamp][type] = "timestamp"
 set policy new_policy [mapping][schema][timestamp][default] = "now()"
 
 set policy new_policy [mapping][schema][elapse_timestamp] = {}
-set policy new_policy [mapping][schema][elapse_timestamp][type] = "int"
+set policy new_policy [mapping][schema][elapse_timestamp][type] = "float"
 set policy new_policy [mapping][schema][elapse_timestamp][default] = "0"
 set policy new_policy [mapping][schema][elapse_timestamp][bring] = "[elapseTime]"
 set policy new_policy [mapping][schema][elapse_timestamp][root] = true.bool
@@ -57,7 +57,6 @@ set policy new_policy [mapping][schema][score][default] = "0"
 set policy new_policy [mapping][schema][class] = {}
 set policy new_policy [mapping][schema][class][type] = "string"
 set policy new_policy [mapping][schema][class][bring] = "[detectedClass]"
-set policy new_policy [mapping][schema][class][default] = ""
 
 set policy new_policy [mapping][schema][confidence] = {}
 set policy new_policy [mapping][schema][confidence][type] = "int"
