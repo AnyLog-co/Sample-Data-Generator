@@ -34,7 +34,6 @@ set policy new_policy [mapping][schema][elapse_timestamp][root] = true.bool
 set policy new_policy [mapping][schema][file_name] = {}
 set policy new_policy [mapping][schema][file_name][type] = "string"
 set policy new_policy [mapping][schema][file_name][bring] = "[file_name]"
-set policy new_policy [mapping][schema][file_name][default] = ""
 set policy new_policy [mapping][schema][file_name][root] = true.bool
 
 set policy new_policy [mapping][schema][file] = {}
@@ -49,7 +48,6 @@ set policy new_policy [mapping][schema][file][apply] = "base64decoding"
 set policy new_policy [mapping][schema][bbox] = {}
 set policy new_policy [mapping][schema][bbox][type] = "string"
 set policy new_policy [mapping][schema][bbox][bring] = "[detectionBox]"
-set policy new_policy [mapping][schema][bbox][default] = ""
 
 set policy new_policy [mapping][schema][score] = {}
 set policy new_policy [mapping][schema][score][type] = "float"
