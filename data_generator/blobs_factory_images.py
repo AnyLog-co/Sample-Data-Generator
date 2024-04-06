@@ -97,28 +97,30 @@ def get_data(db_name:str, last_blob:str=None, exception:bool=False)->(dict, str)
         print(f"Failed to locate directory with images/videos ({BLOBS_DIR}), cannot continue...")
         exit(1)
 
-    if image is None and last_blob is None:
-        while image in [None, '.DS_Store']:
-            image = random.choice(list(os.listdir(BLOBS_DIR)))
-            full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, image)))
-            if not os.path.isfile(full_file_path):
-                image = None
-    else:
-        while image == last_blob or image in [None, '.DS_Store']:
-            image = random.choice(list(os.listdir(BLOBS_DIR)))
-            full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, image)))
-            if not os.path.isfile(full_file_path):
-                image = None
+    while detection == []:
 
-    if image is not None and os.path.isfile(full_file_path):
-        binary_file = support.file_processing(file_name=full_file_path, exception=exception)
-        if os.path.isfile(JSON_FILE):
-            JSON_CONTENT = support.read_json_file(file_path=JSON_FILE)
-        if JSON_CONTENT != []:
-            detection, status = __read_data(file_name=image, exception=exception)
+        if image is None and last_blob is None:
+            while image in [None, '.DS_Store']:
+                    image = random.choice(list(os.listdir(BLOBS_DIR)))
+                    full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, image)))
+                    if not os.path.isfile(full_file_path):
+                        image = None
+        else:
+            while image == last_blob or image in [None, '.DS_Store']:
+                image = random.choice(list(os.listdir(BLOBS_DIR)))
+                full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, image)))
+                if not os.path.isfile(full_file_path):
+                    image = None
 
-        payload = __create_data(db_name=db_name, file_name=image, file_content=binary_file, detections=detection,
-                                status=status)
+        if image is not None and os.path.isfile(full_file_path):
+            binary_file = support.file_processing(file_name=full_file_path, exception=exception)
+            if os.path.isfile(JSON_FILE):
+                JSON_CONTENT = support.read_json_file(file_path=JSON_FILE)
+            if JSON_CONTENT != []:
+                detection, status = __read_data(file_name=image, exception=exception)
+
+    payload = __create_data(db_name=db_name, file_name=image, file_content=binary_file, detections=detection,
+                            status=status)
 
     last_blob = image
     return payload, last_blob

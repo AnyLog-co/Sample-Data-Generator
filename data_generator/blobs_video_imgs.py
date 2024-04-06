@@ -56,19 +56,19 @@ def __create_data(db_name:str, file_name:str, file_content:str, detections:list,
         'dbms': db_name,
         'table': 'video_imgs',
         'timestamp': support.create_timestamp(increase_ts=0),
+        'elapseTime': 100 + round(random.random() * random.choice(list(range(300, 700))), 6),
         'file_name': file_name,
         'file_content': file_content,
-        'detection': [],
+        'bbox': [],
         'name': 'demo-model',
         'version': 2.0,
-        "confidentCutoff": 0.85,
+        "confidentCutoff": random(random.random(), 2),
         "platform": "linux:x64",
         "cameraDisabled": True,
         "remoteCamerasOn": "false"
-
     }
     if len(detections) > 0:
-        data['detection'] = detections
+        data['bbox'] = detections
 
     return data
 
