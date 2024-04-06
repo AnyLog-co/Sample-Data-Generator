@@ -63,7 +63,6 @@ set policy new_policy [mapping][schema][class][default] = ""
 
 set policy new_policy [mapping][schema][confidence] = {}
 set policy new_policy [mapping][schema][confidence][type] = "int"
-set policy new_policy [mapping][schema][confidence][default] = "0"
 set policy new_policy [mapping][schema][confidence][bring] = "[confidentCutoff]"
 set policy new_policy [mapping][schema][confidence][root] = true.bool
 
