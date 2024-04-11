@@ -1,4 +1,5 @@
 import argparse
+import random
 import time
 
 from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
@@ -8,12 +9,14 @@ from data_generator.blobs_factory_images import get_data as image_processing
 
 
 def __extract_conn(conn_info:str)->(str, tuple):
-    auth = ()
-    conn = conn_info
-    if '@' in conn_info:
-        auth, conn = conn_info.split('@')
-        auth = tuple(auth.split(':'))
-    return auth, conn
+    conns = {}
+    for conn in conn_info.split(","):
+        auth = ()
+        if '@' in conn:
+            auth, conn = conn.split('@')
+            auth = tuple(auth.split(':'))
+        conns[conn] = auth
+    return conns
 
 def __generate_examples():
     from data_generator.support import serialize_data
@@ -84,7 +87,7 @@ def main():
     parser.add_argument('--examples', type=str, nargs='?', const=True, default=False, help='print example calls and sample data')
     args = parser.parse_args()
 
-    auth, conn = __extract_conn(conn_info=args.conn)
+    conns = __extract_conn(conn_info=args.conn)
     total_rows = 0
     payloads = []
 
@@ -100,6 +103,9 @@ def main():
 
 
     while True:
+        conn = random.choice(list(conns.keys()))
+        auth = conns[conn]
+
         payload, last_blob = __generate_data(data_generator=args.data_generator, db_name=args.db_name,
                                              last_blob=last_blob, exception=args.exception)
         payloads.append(payload)
