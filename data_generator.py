@@ -88,6 +88,18 @@ def main():
     args = parser.parse_args()
 
     conns = __extract_conn(conn_info=args.conn)
+
+    data_generators = list(args.data_generator.split(","))
+    status = True
+    if len(data_generators) > 1 and all(x in ['cars', 'people', 'images'] for x in data_generators):
+        print(f"Multiple blobs in a single run not supported")
+        status = False
+    if len(data_generators) > 1 and args.publisher != 'put':
+        print(f"Multiple data generator types require put publishing type")
+        status = False
+    if status is False:
+        exit(1)
+
     total_rows = 0
     payloads = []
 
