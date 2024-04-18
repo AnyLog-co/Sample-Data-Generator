@@ -1,7 +1,17 @@
+# -- generic packages --
 # base64
 # datetime
 # hashlib
 # json
 # os
-requests
 # uuid
+
+# -- publishing packages --
+requests>=0.0
+paho-mqtt==1.5.1
+kafka-python>=0.0
+
+# -- AI / cars data --
+tensorflow>=0.0
+numpy>=0.0
+py3-opencv>=0.0

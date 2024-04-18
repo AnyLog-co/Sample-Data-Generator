@@ -24,7 +24,7 @@ COPY data_generator.sh /app/Sample-Data-Generator/data_generator.sh
 RUN apk update && apk upgrade && \
     apk add bash python3 python3-dev py3-pip && \
     python3 -m pip install --upgrade pip && \
-    python3 -m pip install --upgrade -r /app/Sample-Data-Generator/requirements.txt
+    python3 -m pip install --upgrade requirements
 
 FROM base AS deployment
 #ENTRYPOINT ["/bin/bash"]
