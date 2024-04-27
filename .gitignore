@@ -4,3 +4,4 @@ __pycache__/
 sample_data/
 .idea/
 data/ 
+venv/
