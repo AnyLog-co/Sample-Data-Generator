@@ -41,7 +41,7 @@ conversion_type = base64
             "root": true,
             "blob": true,
             "bring": "[file_content]",
-            "extension": "png",
+            "extension": "jpg",
             "hash": "md5",
             "type": "varchar",
             "apply": "base64decoding"
