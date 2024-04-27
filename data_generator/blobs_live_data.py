@@ -20,7 +20,7 @@ IMGS = [
 ]
 
 
-def __upload_image(exception:bool=False):
+def __upload_image(url:str='35.223.210.200:3002', exception:bool=False):
     """
     Publish image to OpenHorizon AI tool
     """
@@ -28,56 +28,39 @@ def __upload_image(exception:bool=False):
     file_path = os.path.join(BLOBS, file_name)
     files = {'file': open(file_path, 'rb')}
     try:
-        r = requests.post("http://35.223.210.200:3002/upload", files=files)
-    except Excception as error:
+        r = requests.post(url=f"http://{url}/upload", files=files)
+    except Exception as error:
         if exception is True:
-            print(f"Failed to upload data into http://35.223.210.200:3002 (Error: {error})")
+            print(f"Failed to upload data into http://{url} (Error: {error})")
     else:
         if 200 <= int(r.status_code) <= 299:
             if r.json()['status'] is not True and exception is True:
-                print(f"Failed to upload data into http://35.223.210.200:3002 (Error: Invalid data uploaded)")
+                print(f"Failed to upload data into http://{url} (Error: Invalid data uploaded)")
+            elif r.json()['status'] is True:
+                return file_name
         elif exception is True:
-            print(f"Failed to upload data into http://35.223.210.200:3002 (Network Error: {r.status_code})")
+            print(f"Failed to upload data into http://{url} (Network Error: {r.status_code})")
 
-def __get_bbox_info(exception:bool=False):
+def __get_bbox_info(url:str='35.223.210.200:3002', exception:bool=False):
     """
-    BAsed
+    Extract bbox information from OpenHorizon AI tool
     """
+    request_param = "image.json"
+    if int(random.random()*10) >= 8:
+        request_param = "video.json"
     try:
-        r = requests.get(url="http://35.223.210.200:3002/static/js/image.json")
-    except Except as error:
+        r = requests.get(url=f"http://{url}/static/js/{request_param}")
+    except Exception as error:
         if exception is True:
-            print(f"Failed to get live data from http://35.223.210.200:3002 (Error: {error})")
+            print(f"Failed to get live data from http://{url} (Error: {error})")
     else:
         if 200 <= int(r.status_code) <= 299:
             return r.json()['images']
         else:
             if exception is True:
-                print(f"Failed to get live data from http://35.223.210.200:3002 (Network Error: {r.status_code})")
+                print(f"Failed to get live data from http://{url} (Network Error: {r.status_code})")
 
-def __get_video(video:str, exception:bool=False):
-    try:
-        r = requests.get(url=f"http://35.223.210.200:3002/{video}")
-    except Exception as error:
-        if exception is True:
-            print(f"Failed to get live data from http://35.223.210.200:3002 (Error: {error})")
-    else:
-        if 200 <= int(r.status_code) <= 299:
-            name = video.rsplit("/")[-1]
-            print(os.path.join(BLOBS, f'{name}'))
-            with open(os.path.join(BLOBS, f'{name.replace("png", "html")}'), 'w') as f:
-                f.write(r.text)
-        else:
-            print(r.status_code)
-
-
-def main(exception:bool=False):
-    for i in range(2):
-        __upload_image(exception=exception)
-        bbox_info = __get_bbox_info(exception=exception)
-        print(bbox_info)
-        time.sleep(5)
-
-
-if __name__ == '__main__':
-    main(exception=True)
+def main(url:str='35.223.210.200:3002', exception:bool=False):
+    file_name = __upload_image(url=url, exception=exception)
+    bbox_info = __get_bbox_info(url=url, exception=exception)
+    return file_name, bbox_info
