@@ -9,7 +9,7 @@ BLOBS_DIR  = os.path.join(ROOT_PATH, 'blobs', 'video_imgs')
 JSON_FILE = os.path.join(ROOT_PATH, 'blobs', 'image_data.json')
 JSON_CONTENT = []
 
-def __read_data(file_name:str, exception:bool=False):
+def __read_data(file_name:str):
     try:
         if JSON_CONTENT[file_name]['bbox']:
             detection = JSON_CONTENT[file_name]["bbox"]
@@ -20,7 +20,6 @@ def __read_data(file_name:str, exception:bool=False):
             status = JSON_CONTENT[file_name]['status']
     except:
         status = 'Nok'
-
     return detection, status
 
 
@@ -120,7 +119,7 @@ def get_data(db_name:str, last_blob:str=None, exception:bool=False)->(dict, str)
         if os.path.isfile(JSON_FILE):
             JSON_CONTENT = support.read_json_file(file_path=JSON_FILE)
         if JSON_CONTENT != []:
-            detection, status = __read_data(file_name=image, exception=exception)
+            detection, status = __read_data(file_name=image)
 
         payload = __create_data(db_name=db_name, file_name=image, file_content=binary_file, detections=detection,
                                 status=status)
