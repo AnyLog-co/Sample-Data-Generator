@@ -47,7 +47,7 @@ def publish_via_post(conn:str, payloads:list, topic:str, auth:tuple=(), timeout:
 
     try:
         for payload in payloads:
-            r = requests.post(url=f'http://45.56.116.167:32149', headers=headers, data=serialize_data(payload=payload), auth=auth, timeout=timeout)
+            r = requests.post(url=f'http://{conn}', headers=headers, data=serialize_data(payload=payload), auth=auth, timeout=timeout)
     except Exception as error:
         status = False
         if exception is True:

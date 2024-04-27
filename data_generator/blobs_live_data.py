@@ -68,7 +68,10 @@ def __get_bbox_info(url:str='35.223.210.200:3002', exception:bool=False)->dict:
             print(f"Failed to get live data from http://{url} (Error: {error})")
     else:
         if 200 <= int(r.status_code) <= 299:
-            return r.json()['images']
+            if request_param == 'image.json':
+                return r.json()['images']
+            else:
+                return r.json()['videos']
         else:
             if exception is True:
                 print(f"Failed to get live data from http://{url} (Network Error: {r.status_code})")
