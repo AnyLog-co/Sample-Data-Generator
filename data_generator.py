@@ -32,9 +32,8 @@ def __live_blobs(conn:str, data_ip:str, db_name:str='test', grand_total:int=10, 
     last_blob = None
     while True:
         payload, last_blob = live_data(db_name=db_name, url=data_ip, last_blob=last_blob, exception=exception)
-        for payload in payloads:
-            payloads.append(payload)
-        payloads.append(payload)
+        for pl in payload:
+            payloads.append(pl)
         if len(payloads) == batch_size or (grand_total <= len(payloads) + total_rows and grand_total != 0):
             publish_via_post(conn=conn, payloads=payloads, topic=topic, auth=(), timeout=timeout,
                              exception=exception)

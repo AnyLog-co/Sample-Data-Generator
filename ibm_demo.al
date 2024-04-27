@@ -1,5 +1,5 @@
 #----------------------------------------------------------------------------------------------------------------------#
-# AnyLog script to accept data associated with IBM's demo
+# AnyLog script to accept data associated with IBM"s demo
 #----------------------------------------------------------------------------------------------------------------------#
 # process $EDGELAKE_PATH/deployment-scripts/demo-scripts/ibm_demo.al
 
@@ -14,59 +14,61 @@ if !policy then goto mqtt-call
 conversion_type = base64
 
 :create-policy:
-set new_policy = ""
-set policy new_policy [mapping] = {}
-set policy new_policy [mapping][id] = !policy_id
-set policy new_policy [mapping][dbms] = "bring [dbms]"
-set policy new_policy [mapping][table] = "bring [name]"
-set policy new_policy [mapping][readings] = "bbox"
+<new_policy={"mapping": {
+    "id": !policy_id,
+    "dbms": "bring [dbms]",
+    "table": "bring [table]",
+    "readings": "bbox",
+    "schema": {
+        "timestamp": {
+            "type": "timestamp", 
+            "default": "now()",
+            "bring": "[timestamp]"
+        },
+        "elapse_timestamp": {
+            "type": "float", 
+            "default": 0,
+            "bring": "[elapseTime]",
+            "root": true
+        },
+        "file_name": {
+            "type": "string", 
+            "bring": "[file_name]",
+            "root": true, 
+            "default": "UNKNOWN"
+        },
+        "file": {
+            "root": true,
+            "blob": true,
+            "bring": "[file_content]",
+            "extension": "png",
+            "hash": "md5",
+            "type": "varchar",
+            "apply": "base64decoding"
+        },
+        "bbox": {
+            "type": "string", 
+            "bring": "[detectedBox]",
+            "default": ""
+        },
+        "score": {
+            "type": "float",
+            "bring": "[detectedScore]",
+            "default": "0"
+        },
+        "class": {
+            "type": "string",
+            "bring": "[detectedClass]",
+            "default": ""
+        },
+        "confidence": {
+            "type": "int",
+            "bring": "[confidentCutoff]",
+            "root": true
+        }
+    }
+}}>
 
-set policy new_policy [mapping][schema] = {}
-
-set policy new_policy [mapping][schema][timestamp] = {}
-set policy new_policy [mapping][schema][timestamp][type] = "timestamp"
-set policy new_policy [mapping][schema][timestamp][default] = "now()"
-
-set policy new_policy [mapping][schema][elapse_timestamp] = {}
-set policy new_policy [mapping][schema][elapse_timestamp][type] = "float"
-set policy new_policy [mapping][schema][elapse_timestamp][default] = "0"
-set policy new_policy [mapping][schema][elapse_timestamp][bring] = "[elapseTime]"
-set policy new_policy [mapping][schema][elapse_timestamp][root] = true.bool
-
-set policy new_policy [mapping][schema][file_name] = {}
-set policy new_policy [mapping][schema][file_name][type] = "string"
-set policy new_policy [mapping][schema][file_name][bring] = "[file_name]"
-set policy new_policy [mapping][schema][file_name][root] = true.bool
-set policy new_policy [mapping][schema][file_name][default] = "UNKNOWN"
-
-set policy new_policy [mapping][schema][file] = {}
-set policy new_policy [mapping][schema][file][root] = true.bool
-set policy new_policy [mapping][schema][file][blob] = true.bool
-set policy new_policy [mapping][schema][file][bring] = "[file_content]"
-set policy new_policy [mapping][schema][file][extension] = "jpg"
-set policy new_policy [mapping][schema][file][hash] = "md5"
-set policy new_policy [mapping][schema][file][type] = "varchar"
-set policy new_policy [mapping][schema][file][apply] = "base64decoding"
-
-set policy new_policy [mapping][schema][bbox] = {}
-set policy new_policy [mapping][schema][bbox][type] = "string"
-set policy new_policy [mapping][schema][bbox][bring] = "[detectedBox]"
-set policy new_policy [mapping][schema][bbox][default] = ""
-
-set policy new_policy [mapping][schema][score] = {}
-set policy new_policy [mapping][schema][score][type] = "float"
-set policy new_policy [mapping][schema][score][bring] = "[detectedScore]"
-set policy new_policy [mapping][schema][score][default] = "0"
-
-set policy new_policy [mapping][schema][class] = {}
-set policy new_policy [mapping][schema][class][type] = "string"
-set policy new_policy [mapping][schema][class][bring] = "[detectedClass]"
-set policy new_policy [mapping][schema][class][default] = ""
-
-set policy new_policy [mapping][schema][confidence] = {}
-set policy new_policy [mapping][schema][confidence][type] = "int"
-set policy new_policy [mapping][schema][confidence][bring] = "[confidentCutoff]"
-set policy new_policy [mapping][schema][confidence][root] = true.bool
 
 :declare-policy:
 test_policy = json !new_policy test
