@@ -107,6 +107,9 @@ def get_data(db_name:str, last_blob:str=None, url:str='35.223.210.200:3002', exc
         detection = data[box]['bbox']
         if len(detection) == 0:
             status = 'Nok'
+        for item in detection:
+            item['detectedBox'] = [float(coord) for coord in item['detectedBox']]
+            item['detectedScore'] = float(item['detectedScore'])
         payload = __create_data(db_name=db_name, file_name=image, file_content=binary_file, detections=detection,
                                 status=status)
         payloads.append(payload)
