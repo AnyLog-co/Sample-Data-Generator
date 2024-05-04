@@ -1,6 +1,7 @@
 # IBM / EdgeLake demo 
 
-The following demonstrates publishing images into IBM's AI module and getting corresponding corrdinates. 
+The following demonstrates publishing images into IBM's AI module and getting corresponding bbox coordinates. 
+The returned information and image are then stored into an EdgeLake operator node. 
 
 ## Step
 1. Deploy IBM's AI tool 
