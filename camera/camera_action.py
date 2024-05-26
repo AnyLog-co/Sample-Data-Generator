@@ -9,8 +9,8 @@ def get_default_camera_id():
         if cap.isOpened():
             cap.release()
             camera_id = i
-        if camera_id is not None:
             break
+
     if camera_id is None:
         raise Exception("Error: Could not find an available camera.")
     return camera_id
@@ -24,15 +24,14 @@ class VideoDisplay:
         self.is_running = False
         self.cap = self.__enable_video_capure()
         if not self.cap.isOpened() or self.cap is None:
-            print("Error: Could not open video device.")
-            exit()
+            raise Exception(f"Error: Could not open video device for camera ID {camera_id}")
 
     def __enable_video_capure(self):
         cap = None
         try:
             cap = cv2.VideoCapture(self.camera_id)
         except Exception as error:
-            print(f"Failed to start video capture with cemra {self.camera_id} (Error: {error})")
+            raise Exception(f"Failed to start video capture with cemra {self.camera_id} (Error: {error})")
         return cap
 
     def __set_cap_size(self, height:float=None, width:float=None):
@@ -51,7 +50,7 @@ class VideoDisplay:
         while self.is_running:
             ret, frame = self.cap.read()
             if not ret:
-                print("Error: Could not read frame.")
+                raise Warning("Error: Could not read frame.")
                 break
 
             cv2.imshow('Video Feed', frame)
