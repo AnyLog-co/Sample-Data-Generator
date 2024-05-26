@@ -2,7 +2,7 @@ import argparse
 import cv2
 
 class VideoDisplay:
-    def __init__(self, camera_id=0, width=640, height=480):
+    def __init__(self, camera_id:int=0, width:float=640, height:float=480):
         self.camera_id = camera_id
         self.width = width
         self.height = height
@@ -20,7 +20,7 @@ class VideoDisplay:
             print(f"Failed to start video capture with cemra {self.camera_id} (Error: {error})")
         return cap
 
-    def __set_cap_size(self, height:int=None, width:int=None):
+    def __set_cap_size(self, height:float=None, width:float=None):
         if height is None:
             height = self.height
         if width is None:
@@ -29,7 +29,7 @@ class VideoDisplay:
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
-    def start(self, height:int=None, width:int=None):
+    def start(self, height:float=None, width:float=None):
         self.__set_cap_size(height=height, width=width)
 
         self.is_running = True
