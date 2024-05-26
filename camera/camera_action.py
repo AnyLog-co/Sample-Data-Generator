@@ -1,6 +1,21 @@
 import argparse
 import cv2
 
+
+def get_default_camera_id():
+    camera_id = None
+    for i in range(10):
+        cap = cv2.VideoCapture(i)
+        if cap.isOpened():
+            cap.release()
+            camera_id = i
+        if camera_id is not None:
+            break
+    if camera_id is None:
+        raise Exception("Error: Could not find an available camera.")
+    return camera_id
+
+
 class VideoDisplay:
     def __init__(self, camera_id:int=0, width:float=640, height:float=480):
         self.camera_id = camera_id
@@ -57,7 +72,7 @@ class VideoDisplay:
 
 def main():
     parse = argparse.ArgumentParser()
-    parse.add_argument('--camera-id', type=int, default=0, help='Camera ID')
+    parse.add_argument('--camera-id', type=int, default=get_default_camera_id(), help='Camera ID')
     parse.add_argument('--width', type=float, default=640, help='livefeed screen ratio width')
     parse.add_argument('--height', type=float, default=480, help='livefeed screen ratio height')
     parse.add_argument('--show-video', type=bool, nargs='?', const=True, default=False, help='begin with an active livefeed')
