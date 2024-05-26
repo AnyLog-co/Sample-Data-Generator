@@ -14,4 +14,4 @@ kafka-python>=0.0
 # -- AI / cars data --
 tensorflow>=0.0
 numpy>=0.0
-py3-opencv>=0.0
+opencv-python>=0.0
