@@ -67,7 +67,9 @@ class VideoRecorder:
             ret, frame = self.cap.read()
             if not ret:
                 print("Error: Could not read frame.")
-                continue  # Instead of breaking, we continue to try reading the next frame
+                self.is_running = False
+                break
+                # continue  # Instead of breaking, we continue to try reading the next frame
 
             current_time = time.time()
             if current_time - self.start_time >= self.wait_time:  # Check if wait_time seconds have passed
@@ -95,36 +97,31 @@ class VideoRecorder:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-        cv2.destroyAllWindows()
 
 def main():
     parse = argparse.ArgumentParser()
     parse.add_argument('--camera-id', type=int, default=get_default_camera_id(), help='Camera ID')
     parse.add_argument('--width', type=float, default=640, help='Live feed screen ratio width')
     parse.add_argument('--height', type=float, default=480, help='Live feed screen ratio height')
-    parse.add_argument('--show-video', type=bool, nargs='?', const=True, default=False, help='Begin with an active live feed')
-    parse.add_argument('--cut-video', type=int, default=10, help='videoe size (in seconds)')
+    parse.add_argument('--cut-video', type=int, default=10, help='Video size (in seconds)')
     args = parse.parse_args()
 
-    video_recorder = VideoRecorder(camera_id=args.camera_id, width=args.width, height=args.height, wait_time=10)
+    video_recorder = VideoRecorder(camera_id=args.camera_id, width=args.width, height=args.height, wait_time=args.cut_video)
     video_recorder.start_recording()
-    command = None
-    if args.show_video is True:
-        command = 'o'
+
     try:
         while True:
-            if command == 'o':  # Show video
+            command = input("Command (o to open feed, q to quit, h to update height, w to update width): ").strip()
+            if command == 'o':
                 video_recorder.display_feed(height=args.height, width=args.width)
-            elif command == 'q':  # Quit
-                video_recorder.stop_recording()
+            if command == 'q':  # Quit
                 break
             elif command == 'h':  # Update height
                 args.height = float(input("Updated height: "))
             elif command == 'w':  # Update width
                 args.width = float(input("Updated width: "))
-            elif command is not None:
+            else:
                 print(f"Invalid option {command}")
-            command = input("Command: ").strip()
     except KeyboardInterrupt:
         print("\nInterrupted by user. Stopping...")
     except Exception as error:
