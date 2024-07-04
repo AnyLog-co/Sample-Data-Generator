@@ -64,7 +64,6 @@ def file_processing(file_name:str, exception:bool=False):
         file_name:str - file to process
         exception:bool - whether to print exceptions
     :params:
-
         file_content - content from file
         full_file_path:str - full path of file_name
     """
