@@ -79,7 +79,7 @@ def main():
                 future.result()  # This will re-raise any exceptions that occurred in the thread
     except Exception as e:
         if args.exception:
-            print(f"Exception occurred: {e}")
+            print(f"Exception occu  rred: {e}")
 
     end_time = time.time()
     elapsed_time = end_time - start_time
