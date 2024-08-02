@@ -18,10 +18,10 @@ def data_generator_bug(db_name='test'):
     return {
         "dbms": db_name,
         "table": "rand_data",
-        'payload': {
+        "payload": {
+            'ts': create_timestamp(),
             'd': {
-                'timestamp': create_timestamp(),
-                'seal_temperature': [round(random.random() * random.choice(range(1, 1000)), 3)]
+                'Seal Temperature': [round(random.random() * random.choice(range(1, 1000)), 14)]
             }
         }
     }
