@@ -4,12 +4,13 @@ import time
 
 from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
 from data_generator.rand_data import data_generator as rand_data
+from data_generator.rand_data import data_generator_bug as bug
 from data_generator.blob_people_video import  get_data as people_counter
 from data_generator.blobs_factory_images import get_data as image_processing
 
 def __check_data_generators(data_generators:str):
     for data_gen in data_generators.split(","):
-        if data_gen not in ['rand', 'ping', 'percentagecpu', 'cars', 'people', 'images']:
+        if data_gen not in ['rand', 'ping', 'percentagecpu', 'cars', 'people', 'images', "bug"]:
             raise argparse.ArgumentError(f"Invalid data type {data_gen}")
     return data_generators
 
@@ -47,6 +48,8 @@ def __generate_data(data_generator:str, db_name:str, last_blob:str=None, excepti
         payload = percentagecpu_sensor(db_name=db_name)
     elif data_generator == 'rand':
         payload = rand_data(db_name=db_name)
+    elif data_generator == 'bug':
+        payload = bug(db_name=db_name)
     elif data_generator == 'cars':
         from data_generator.blobs_car_video import car_counting
         payload, last_blob = car_counting(db_name=db_name, last_blob=last_blob, exception=exception)
@@ -130,7 +133,7 @@ def main():
         data_generator = random.choice(data_generators)
         auth = conns[conn]
 
-        payload, last_blob = __generate_data(data_generator=args.data_generator, db_name=args.db_name,
+        payload, last_blob = __generate_data(data_generator=data_generator, db_name=args.db_name,
                                              last_blob=last_blob, exception=args.exception)
         payloads.append(payload)
         if len(payloads) == args.batch_size or (args.total_rows <= len(payloads) + total_rows and args.total_rows != 0):
@@ -139,7 +142,7 @@ def main():
             total_rows += len(payloads)
             payloads = []
 
-        if total_rows >= args.total_rows:
+        if total_rows >= args.total_rows > 0:
             exit(1)
         time.sleep(args.sleep)
 

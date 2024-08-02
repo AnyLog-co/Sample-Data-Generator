@@ -12,3 +12,17 @@ def data_generator(db_name:str='test'):
         "timestamp": create_timestamp(),
         "value": round(random.random() * random.choice(range(1, 1000)), 3)
     }
+
+
+def data_generator_bug(db_name='test'):
+    return {
+        "dbms": db_name,
+        "table": "rand_data",
+        'payload': {
+            'd': {
+                'timestamp': create_timestamp(),
+                'seal_temperature': [round(random.random() * random.choice(range(1, 1000)), 3)]
+            }
+        }
+    }
+
