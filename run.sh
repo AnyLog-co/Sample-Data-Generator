@@ -1,0 +1,2 @@
+python3 /Users/orishadmon/Sample-Data-Generator/benchmark3.py ping 34.29.23.245:32149 --batch-size 100000 --total-rows 1000000 --sleep 0 --db-name new_company --max-workers 10 --single-insert --timeout 120 --exception &
+python3 /Users/orishadmon/Sample-Data-Generator/benchmark3.py ping 35.184.154.101:32149 --batch-size 100000 --total-rows 1000000 --sleep 0 --db-name new_company --max-workers 10 --single-insert --timeout 120 --exception &
