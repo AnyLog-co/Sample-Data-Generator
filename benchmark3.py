@@ -3,8 +3,10 @@
 import argparse
 import random
 import time
-import psutil
-import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+from data_generator.ping_percentagecpu import ping_sensor
+from data_generator.rand_data import data_generator as rand_data
 from data_publisher.publisher_rest import publish_via_put
 
 def __extract_conn(conn_info: str) -> dict:
@@ -17,48 +19,15 @@ def __extract_conn(conn_info: str) -> dict:
         conns[conn] = auth
     return conns
 
-
-# def __generate_data(data_generator: str, db_name: str) -> dict:
-#     if data_generator == 'ping':
-#         return ping_sensor(db_name=db_name)
-#     elif data_generator == 'rand':
-#         return rand_data(db_name=db_name)
-#     return {}
-
-def __generate_data(db_name: str) -> dict:
-    uptime = int(time.time() - psutil.boot_time())
-    days, remainder = divmod(uptime, 24 * 3600)
-    hours, remainder = divmod(remainder, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    uptime_formatted = f"{days}:{hours:02}:{minutes:02}:{seconds:02}"
-
-    load_avg = psutil.getloadavg()
-    disk_io = psutil.disk_io_counters()
-    net_io = psutil.net_io_counters()
-    current_time = datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-
-    return {
-        "dbms": db_name,
-        "table": 'machine_info',
-        'timestamp': current_time,
-        'uptime': uptime_formatted,
-        'node_id': random.choice(list(range(1, 11))),
-        'load_avg_5min': load_avg[1],
-        'disk_space': psutil.disk_usage('/').percent,
-        'cpu_percent': psutil.cpu_percent(interval=1),
-        'virtual_memory': psutil.virtual_memory().percent,
-        'swap_memory': psutil.swap_memory().percent,
-        'disk_write': disk_io.write_count,
-        'disk_read': disk_io.read_count,
-        'packets_recv': net_io.packets_recv,
-        'packets_sent': net_io.packets_sent,
-        'load_avg_15min': load_avg[2]
-    }
-
-
+def __generate_data(data_generator: str, db_name: str) -> dict:
+    if data_generator == 'ping':
+        return ping_sensor(db_name=db_name)
+    elif data_generator == 'rand':
+        return rand_data(db_name=db_name)
+    return {}
 
 def publish_batch(data_generators, conn, db_name, auth, timeout, exception, batch_size):
-    payloads = [__generate_data(db_name) for _ in range(batch_size)]
+    payloads = [__generate_data(random.choice(data_generators), db_name) for _ in range(batch_size)]
     try:
         publish_via_put(conn=conn, payload=payloads, auth=auth, timeout=timeout, exception=exception)
     except Exception as e:
@@ -67,6 +36,7 @@ def publish_batch(data_generators, conn, db_name, auth, timeout, exception, batc
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('data_generator', type=str, default='rand', choices=['rand', 'ping'], help='Data to generate')
     parser.add_argument('conn', type=str, default='127.0.0.1:32149', help='Connection information (example: [ip]:[port])')
     parser.add_argument('--batch-size', type=int, default=10, help='Number of rows per insert batch')
     parser.add_argument('--total-rows', type=int, default=10, help='Total rows to insert - if set to 0 then run continuously')
@@ -81,6 +51,7 @@ def main():
     payloads = []
     if args.auth:
         args.auth = tuple(args.auth.split(":"))
+    data_generators = args.data_generator.split(",")
 
     start_time = time.time()
     total_rows = 0
@@ -88,7 +59,7 @@ def main():
 
     try:
         while total_rows < args.total_rows:
-            payload = [__generate_data(args.db_name) for _ in range(args.batch_size)]
+            payload = [__generate_data(random.choice(data_generators), args.db_name) for _ in range(args.batch_size)]
             total_rows += len(payload)
             if total_rows > args.total_rows:
                payload = payload[total_rows-args.total_rows:]
