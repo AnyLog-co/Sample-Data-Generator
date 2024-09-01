@@ -1,13 +1,13 @@
 import requests
 from data_generator.support import serialize_data
 
-def publish_via_put(conn:str, payload:list, auth:tuple=(), timeout:float=30, exception:bool=False):
+def publish_via_put(conn:str, payload:list, mode:str='streaming', auth:tuple=(), timeout:float=30, exception:bool=False):
     status = True
     headers = {
         'type': 'json',
         'dbms': None,
         'table': None,
-        'mode': 'streaming',
+        'mode': mode,
         'Content-Type': 'text/plain'
     }
 

@@ -127,7 +127,6 @@ def publish_batch(data_generators, conn, db_name, auth, timeout, exception, batc
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('data_generator', type=str, default='rand', choices=['rand', 'ping'], help='Data to generate')
     parser.add_argument('conn', type=str, default='127.0.0.1:32149', help='Connection information (example: [ip]:[port])')
     parser.add_argument('--batch-size', type=int, default=10, help='Number of rows per insert batch')
     parser.add_argument('--total-rows', type=int, default=10, help='Total rows to insert - if set to 0 then run continuously')
@@ -136,13 +135,12 @@ def main():
     parser.add_argument('--auth', type=str, default=None, help='REST authentication information (ex. [user]:[password])')
     parser.add_argument('--timeout', type=float, default=30, help='REST timeout')
     parser.add_argument('--exception', action='store_true', help='Whether to print exceptions')
-    parser.add_argument('--max-workers', type=int, default=4, help='Number of parallel workers')
+    parser.add_argument('--mode', type=str, default='streaming', choices=['file', 'streaming'], help='insert mode via REST')
     parser.add_argument('--single-insert', type=bool, const=True, nargs='?', default=False, help='Publish all data in a single insert')
     args = parser.parse_args()
     payloads = []
     if args.auth:
         args.auth = tuple(args.auth.split(":"))
-    data_generators = args.data_generator.split(",")
 
     start_time = time.time()
     total_rows = 0
