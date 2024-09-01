@@ -14,9 +14,9 @@ def publish_via_put(conn:str, payload:list, mode:str='streaming', auth:tuple=(),
     if isinstance(payload, list):
         headers['dbms'] = payload[0]['dbms']
         headers['table'] = payload[0]['table']
-        for row in payload:
-            del row['dbms']
-            del row['table']
+        for row in range(len(payload)):
+            for key in ['table', 'dbms']:
+                del payload[row][key]
     elif isinstance(payload, dict):
         headers['dbms'] = payload['dbms']
         headers['table'] = payload['table']
@@ -24,15 +24,15 @@ def publish_via_put(conn:str, payload:list, mode:str='streaming', auth:tuple=(),
         del payload['table']
 
     try:
-        r = requests.put(url=f'http://{conn}', headers=headers, data=serialize_data(payload=payload), auth=auth, timeout=timeout)
+        with requests.put(url=f'http://{conn}', headers=headers, data=serialize_data(payload=payload), auth=auth, timeout=timeout) as r:
+            status = r.status_code // 100 == 2
+            if not status and exception:
+                print(f"Failed to execute PUT against {conn} (Network Error: {r.status_code})")
     except Exception as error:
         status = False
-        if exception is True:
+        if exception:
             print(f"Failed to execute PUT against {conn} (Error: {error})")
-    else:
-        status = str(r.status_code).startswith('2')
-        if  status is False and exception is True:
-            print(f"Failed to execute PUT against {conn} (Network Error: {r.status_code})")
+
     return status
 
 
