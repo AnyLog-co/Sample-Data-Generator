@@ -15,6 +15,9 @@ kafka-python>=0.0
 tensorflow>=0.0
 numpy>=0.0
 py3-opencv>=0.0
+psutil>=0.0
+orjson>=0.0
+
 
 pip~=24.0
 wheel~=0.43.0
