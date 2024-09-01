@@ -3,7 +3,7 @@
 import argparse
 import random
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import concurrent.futures
 
 from data_generator.ping_percentagecpu import ping_sensor
 from data_generator.rand_data import data_generator as rand_data
@@ -126,6 +126,16 @@ def publish_batch(data_generators, conn, db_name, auth, timeout, exception, batc
             print(f"Error publishing batch: {e}")
 
 def main():
+    def generate_payload(db_name):
+        return __generate_data(db_name)
+
+    def publish_payload(args, payload):
+        try:
+            publish_via_put(conn=args.conn, payload=payload, auth=args.auth, timeout=args.timeout, exception=args.exception)
+        except Exception as e:
+            if args.exception:
+                print(f"Error publishing batch: {e}")
+
     parser = argparse.ArgumentParser()
     parser.add_argument('conn', type=str, default='127.0.0.1:32149', help='Connection information (example: [ip]:[port])')
     parser.add_argument('--batch-size', type=int, default=10, help='Number of rows per insert batch')
@@ -135,6 +145,7 @@ def main():
     parser.add_argument('--auth', type=str, default=None, help='REST authentication information (ex. [user]:[password])')
     parser.add_argument('--timeout', type=float, default=30, help='REST timeout')
     parser.add_argument('--exception', action='store_true', help='Whether to print exceptions')
+    parser.add_argument('--max-workers', type=int, default=10, help='number of threads to run against')
     parser.add_argument('--mode', type=str, default='streaming', choices=['file', 'streaming'], help='insert mode via REST')
     parser.add_argument('--single-insert', type=bool, const=True, nargs='?', default=False, help='Publish all data in a single insert')
     args = parser.parse_args()
@@ -144,11 +155,16 @@ def main():
 
     start_time = time.time()
     total_rows = 0
-    print(f"Benchmark started with {args.total_rows} total rows...")
+    print(f"Benchmark started with {args.total_rows:,} total rows | Batch Size; {args.batch_size:,}")
 
     try:
         while total_rows < args.total_rows:
-            payload = [__generate_data(args.db_name) for _ in range(args.batch_size)]
+            with concurrent.futures.ThreadPoolExecutor(max_workers=args.max_workers) as executor:
+                # Launch multiple parallel tasks to generate the payloads
+                futures = [executor.submit(generate_payload, args.db_name) for _ in range(args.batch_size)]
+                # Collect the results as they complete
+                payload = [future.result() for future in concurrent.futures.as_completed(futures)]
+
             total_rows += len(payload)
             if total_rows > args.total_rows:
                payload = payload[total_rows-args.total_rows:]
@@ -168,12 +184,17 @@ def main():
             if args.exception:
                 print(f"Error publishing batch: {e}")
     else:
-        for payload in payloads:
-            try:
-                publish_via_put(conn=args.conn, payload=payload, auth=args.auth, timeout=args.timeout, exception=args.exception)
-            except Exception as e:
-                if args.exception:
-                    print(f"Error publishing batch: {e}")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=args.max_workers) as executor:
+            # Submit tasks to the executor to run in parallel
+            futures = [executor.submit(publish_payload, payload) for payload in payloads]
+
+            # Optionally, you can wait for all futures to complete (or handle them as they finish)
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    # You can retrieve the result here if publish_payload returned something
+                    result = future.result()
+                except Exception as e:
+                    print(f"Exception occurred during publishing: {e}")
 
     end_time = time.time()
     elapsed_time = end_time - start_time
