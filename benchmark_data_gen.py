@@ -3,18 +3,13 @@
 import argparse
 import random
 import time
-import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from data_generator.ping_percentagecpu import ping_sensor
 from data_generator.rand_data import data_generator as rand_data
-from data_generator.machine_insight import random_machine_data, machine_data
 from data_publisher.publisher_rest import publish_via_put
-
-
-BATCH_TIME = []
-INSERT_TIME = []
-PAYLOAD = {}
+import datetime
+import psutil
 
 def __extract_conn(conn_info: str) -> dict:
     conns = {}
@@ -28,16 +23,36 @@ def __extract_conn(conn_info: str) -> dict:
 
 
 def __generate_data(data_generator: str, db_name: str) -> dict:
-    if data_generator == 'ping':
-        return ping_sensor(db_name=db_name)
-    elif data_generator == 'rand':
-        return rand_data(db_name=db_name)
-    elif data_generator == 'rand_machine':
-        return random_machine_data(db_name=db_name)
-    elif data_generator == 'machine':
-        return machine_data(db_name=db_name)
+    current_time = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    uptime = int(time.time() - psutil.boot_time())
+    days, remainder = divmod(uptime, 24 * 3600)
+    hours, remainder = divmod(remainder, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    uptime_formatted = f"{days}:{hours:02}:{minutes:02}:{seconds:02}"
 
-    return {}
+    load_avg = psutil.getloadavg()
+    disk_io = psutil.disk_io_counters()
+    net_io = psutil.net_io_counters()
+
+    return {
+        "dbms": db_name,
+        "table": 'machine_info',
+        'timestamp': current_time,
+        'uptime': uptime_formatted,
+        'node_id': random.choice(range(1, 11)),
+        'load_avg_1min': load_avg[0],
+        'load_avg_5min': load_avg[1],
+        'load_avg_15min': load_avg[2],
+        'disk_space': psutil.disk_usage('/').percent,
+        'cpu_percent': psutil.cpu_percent(interval=1),
+        'virtual_memory': psutil.virtual_memory().percent,
+        'swap_memory': psutil.swap_memory().percent,
+        'disk_write': disk_io.write_count,
+        'disk_read': disk_io.read_count,
+        'packets_recv': net_io.packets_recv,
+        'packets_sent': net_io.packets_sent,
+
+    }
 
 def publish_batch(data_generators, conn, db_name, auth, timeout, exception, batch_size):
     payloads = [__generate_data(random.choice(data_generators), db_name) for _ in range(batch_size)]
@@ -49,7 +64,7 @@ def publish_batch(data_generators, conn, db_name, auth, timeout, exception, batc
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('data_generator', type=str, default='rand', choices=['rand', 'ping', 'rand_machine', 'machine'], help='Data to generate')
+    parser.add_argument('data_generator', type=str, default='rand', choices=['rand', 'ping'], help='Data to generate')
     parser.add_argument('conn', type=str, default='127.0.0.1:32149', help='Connection information (example: [ip]:[port])')
     parser.add_argument('--batch-size', type=int, default=10, help='Number of rows per insert batch')
     parser.add_argument('--total-rows', type=int, default=10, help='Total rows to insert - if set to 0 then run continuously')
@@ -68,16 +83,13 @@ def main():
 
     start_time = time.time()
     total_rows = 0
-    print(f"Benchmark started with {args.total_rows:,} total rows | Batch Size: {args.batch_size:,} | Data Generator: {data_generators}")
+    print(f"Benchmark started with {args.total_rows} total rows...")
 
     try:
         while total_rows < args.total_rows:
-            batch_start_time = time.time()
+            start_time = time.time()
             payload = [__generate_data(random.choice(data_generators), args.db_name) for _ in range(args.batch_size)]
-            BATCH_TIME.append(time.time() - batch_start_time)
-            if PAYLOAD == {}:
-                PAYLOAD['sample'] = json.dumps(payload[0])
-                PAYLOAD['size'] = len(PAYLOAD['sample'])
+            print(time.time() - start_time)
             total_rows += len(payload)
             if total_rows > args.total_rows:
                payload = payload[total_rows-args.total_rows:]
@@ -86,38 +98,27 @@ def main():
                     payloads.append(py)
             else:
                 payloads.append(payload)
-            print(f'\t- Batch Number: {total_rows/args.batch_size} | Batch Processing Time: {BATCH_TIME[-1]:.2} seconds')
     except Exception as e:
         if args.exception:
             print(f"Exception occurred: {e}")
 
     if args.single_insert is True:
-        start_insert = time.time()
         try:
             publish_via_put(conn=args.conn, payload=payloads, auth=args.auth, timeout=args.timeout, exception=args.exception)
         except Exception as e:
             if args.exception:
                 print(f"Error publishing batch: {e}")
-        INSERT_TIME.append(time.time() - start_insert)
     else:
         for payload in payloads:
-            start_insert = time.time()
             try:
-                publish_via_put(conn=args.conn, payload=payload, auth=args.auth, timeout=args.timeout,
-                                exception=args.exception)
+                publish_via_put(conn=args.conn, payload=payload, auth=args.auth, timeout=args.timeout, exception=args.exception)
             except Exception as e:
                 if args.exception:
                     print(f"Error publishing batch: {e}")
-            INSERT_TIME.append(time.time() - start_insert)
 
     end_time = time.time()
     elapsed_time = end_time - start_time
-    print(f"""----------------------------------------------------------------
-Benchmark completed in {elapsed_time:.2f} seconds.
-\tTotal Insert Time: {sum(BATCH_TIME):.2f} seconds | AVG: {sum(BATCH_TIME)/len(BATCH_TIME):.2f} seconds | MIN: {min(BATCH_TIME):.2f} seconds | Max: {max(BATCH_TIME):.2f} seconds 
-\tTotal Insert Time: {sum(INSERT_TIME):.2f} seconds | AVG: {sum(INSERT_TIME)/len(INSERT_TIME):.2f} seconds | MIN: {min(INSERT_TIME):.2f} seconds | Max: {max(INSERT_TIME):.2f} seconds
-\tSample Data: {PAYLOAD['sample']} | Data Size: {PAYLOAD['size']} 
-----------------------------------------------------------------""")
+    print(f"Benchmark completed in {elapsed_time:.2f} seconds.")
 
 if __name__ == '__main__':
     # profiler = cProfile.Profile()
