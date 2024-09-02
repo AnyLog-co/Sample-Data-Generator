@@ -19,12 +19,14 @@ def __extract_conn(conn_info: str) -> dict:
         conns[conn] = auth
     return conns
 
+
 def __generate_data(data_generator: str, db_name: str) -> dict:
     if data_generator == 'ping':
         return ping_sensor(db_name=db_name)
     elif data_generator == 'rand':
         return rand_data(db_name=db_name)
     return {}
+
 
 def publish_batch(data_generators, conn, db_name, auth, timeout, exception, batch_size):
     payloads = [__generate_data(random.choice(data_generators), db_name) for _ in range(batch_size)]

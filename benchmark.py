@@ -36,8 +36,8 @@ def __generate_data(data_generator: str, db_name: str) -> dict:
         return random_machine_data(db_name=db_name)
     elif data_generator == 'machine':
         return machine_data(db_name=db_name)
-
     return {}
+
 
 def publish_batch(data_generators, conn, db_name, auth, timeout, exception, batch_size):
     payloads = [__generate_data(random.choice(data_generators), db_name) for _ in range(batch_size)]
@@ -114,7 +114,7 @@ def main():
     elapsed_time = end_time - start_time
     print(f"""----------------------------------------------------------------
 Benchmark completed in {elapsed_time:.2f} seconds.
-\tTotal Insert Time: {sum(BATCH_TIME):.2f} seconds | AVG: {sum(BATCH_TIME)/len(BATCH_TIME):.2f} seconds | MIN: {min(BATCH_TIME):.2f} seconds | Max: {max(BATCH_TIME):.2f} seconds 
+\tTotal Batch Time: {sum(BATCH_TIME):.2f} seconds | AVG: {sum(BATCH_TIME)/len(BATCH_TIME):.2f} seconds | MIN: {min(BATCH_TIME):.2f} seconds | Max: {max(BATCH_TIME):.2f} seconds 
 \tTotal Insert Time: {sum(INSERT_TIME):.2f} seconds | AVG: {sum(INSERT_TIME)/len(INSERT_TIME):.2f} seconds | MIN: {min(INSERT_TIME):.2f} seconds | Max: {max(INSERT_TIME):.2f} seconds
 \tSample Data: {PAYLOAD['sample']} | Data Size: {PAYLOAD['size']} 
 ----------------------------------------------------------------""")
