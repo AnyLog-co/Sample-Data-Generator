@@ -1,9 +1,13 @@
+import argparse
 import socket
 import psutil
 import time
 import datetime
 import random
 from threading import Lock
+from concurrent.futures import ThreadPoolExecutor
+
+from declare_policies import __read_yaml
 
 cache_lock = Lock()
 cache = {
@@ -15,8 +19,7 @@ cache = {
 }
 CACHE_EXPIRY = 10  # seconds
 
-
-def __generate_data() -> dict:
+def __generate_data(member_id:int=1) -> dict:
     current_time = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
     # Cache results
@@ -43,7 +46,7 @@ def __generate_data() -> dict:
     return {
         'row_id': int(random.random() * 100),
         'insert_timestamp': current_time,
-        'tsd_name': 1,
+        'tsd_name': member_id,
         'tsd_id': int(random.random() * 1000),
         'timestamp': current_time,
         'uptime': uptime_formatted,
@@ -61,7 +64,7 @@ def __generate_data() -> dict:
     }
 
 
-def tcp_server(host='0.0.0.0', port=32148):
+def tcp_server(host='0.0.0.0', port=32148, member_id:int=1):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
         server_socket.bind((host, port))
         server_socket.listen(1)
@@ -76,11 +79,41 @@ def tcp_server(host='0.0.0.0', port=32148):
                 command = client_socket.recv(1024).decode('utf-8')
 
                 if 'sql' in command:
-                    data = __generate_data()
+                    data = __generate_data(member_id=member_id)
                     client_socket.sendall(str(data).encode('utf-8'))
                 else:
                     client_socket.sendall(b'Invalid Command')
 
 
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('yaml_file', type=str, default='$HOME/Sample-Data-Generator/dummy_operators/dummy_configs.yaml', help='YAML operaator(s) config file')
+    args = parser.parse_args()
+
+    setup_info = __read_yaml(args.yaml_file)
+    for cluster in setup_info:
+        for operator in setup_info[cluster]:
+            member_id = random.randmo()
+            if 'member' in setup_info[cluster][operator]:
+                member_id = setup_info[cluster][operator]['member']
+            port = int(setup_info[cluster][operator]['port'])
+            tcp_server(host='0.0.0.0', port=port, member_id=member_id)
+
+    # Using ThreadPoolExecutor to run tasks in parallel
+    # with ThreadPoolExecutor() as executor:
+    #     futures = []
+    #     for cluster in setup_info:
+    #         for operator in setup_info[cluster]:
+    #             member_id = random.randmo()
+    #             if 'member' in setup_info[cluster][operator]:
+    #                 member_id = setup_info[cluster][operator]['member']
+    #             port = int(setup_info[cluster][operator]['port'])
+    #             futures.append(executor.submit(tcp_server, '0.0.0.0', port, member_id))
+    #
+    #     # Optionally wait for all futures to complete
+    #     for future in futures:
+    #         future.result()  # This will re-raise any exception that occurred in the thread
+
+
 if __name__ == "__main__":
-    tcp_server()
+    main()

@@ -1,5 +1,4 @@
 from flask import Flask, jsonify
-import random
 import time
 import psutil
 import datetime

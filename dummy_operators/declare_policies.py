@@ -1,8 +1,8 @@
+import argparse
 import json
 import os
 import requests
 import yaml
-import random
 
 
 def __read_yaml(yaml_file:str):
@@ -12,6 +12,16 @@ def __read_yaml(yaml_file:str):
         exit(1)
     with open(full_path) as f:
         return yaml.safe_load(f)
+
+
+def __write_yaml(yaml_file:str, data:dict):
+    full_path = os.path.expanduser(os.path.expandvars(yaml_file))
+    if not os.path.isfile(full_path):
+        print("Failed to locate YAML file,  cannot continue...")
+        exit(1)
+    open(full_path, 'w').close()
+    with open(full_path, 'a') as outfile:
+        yaml.dump(data, outfile, default_flow_style=False)
 
 
 def __check_policy(conn:str, policy_name:str):
@@ -111,40 +121,51 @@ def __publish_policy(conn:str, ledger_conn:str, policy:dict, auth:tuple=(), time
 
 
 def main():
-    yaml_file = "$HOME/Sample-Data-Generator/dummy_operators/dummy_configs.yaml"
-    setup_info = __read_yaml(yaml_file)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('yaml_file', type=str, default='$HOME/Sample-Data-Generator/dummy_operators/dummy_configs.yaml', help='YAML operaator(s) config file')
+    parser.add_argument('--query-node', type=str, default='127.0.0.1:32349',help='Query Node REST conn')
+    parser.add_argument('--ledger-conn', type=str, default='127.0.0.1:32048', help='Ledger connection information')
+    args = parser.parse_args()
+    
+    setup_info = __read_yaml(args.yaml_file)
     member_id = 1
 
-    for cluster in setup_info:
-        output = __check_policy(conn='172.232.20.156:32349', policy_name=cluster)
-        while not output:
-            cluster_policy = create_policy(policy_type="cluster", policy_name=cluster)
-            __publish_policy(conn='172.232.20.156:32349', policy=cluster_policy, ledger_conn='172.232.20.156:32048')
-            output = __check_policy(conn='172.232.20.156:32349', policy_name=cluster)
-        cluster_policy_id = output[0]['cluster']['id']
-        for operator in setup_info[cluster]:
-            operator_node = f'{cluster}-{operator}'
-            output = __check_policy(conn='172.232.20.156:32349', policy_name=operator_node)
-            while not output:
-                operator_policy = create_policy(policy_type='operator',policy_name=operator_node,
-                                                parent_policy=cluster_policy_id, member_id=member_id,
-                                                operator_ip=setup_info[cluster][operator]['ip'],
-                                                operator_port=int(setup_info[cluster][operator]['port']))
-                __publish_policy(conn='172.232.20.156:32349', policy=operator_policy, ledger_conn='172.232.20.156:32048')
-                output = __check_policy(conn='172.232.20.156:32349', policy_name=operator_node)
-                if output:
-                    member_id += 1
-        output = __check_policy(conn='172.232.20.156:32349', policy_name=cluster)
-        while len(output) != 2:
-            cluster_policy = create_policy(policy_type="cluster", parent_policy=cluster_policy_id, policy_name=cluster)
-            __publish_policy(conn='172.232.20.156:32349', policy=cluster_policy, ledger_conn='172.232.20.156:32048')
-            output = __check_policy(conn='172.232.20.156:32349', policy_name=cluster)
-        output = __check_policy(conn='172.232.20.156:32349', policy_name='dummy_data')
-        while not output:
-            table_policy = create_policy(policy_type="table")
-            __publish_policy(conn='172.232.20.156:32349', policy=table_policy, ledger_conn='172.232.20.156:32048')
-            output = __check_policy(conn='172.232.20.156:32349', policy_name='dummy_data')
+    # for cluster in setup_info:
+    #     output = __check_policy(conn=args.query_node, policy_name=cluster)
+    #     while not output:
+    #         cluster_policy = create_policy(policy_type="cluster", policy_name=cluster)
+    #         __publish_policy(conn=args.query_node, policy=cluster_policy, ledger_conn=args.ledger_conn)
+    #         output = __check_policy(conn=args.query_node, policy_name=cluster)
+    #     cluster_policy_id = output[0]['cluster']['id']
+    #     for operator in setup_info[cluster]:
+    #         operator_node = f'{cluster}-{operator}'
+    #         output = __check_policy(conn=args.query_node, policy_name=operator_node)
+    #         old_member_id = member_id
+    #         if 'member' in setup_info[cluster][operator]:
+    #             member_id = setup_info[cluster][operator]
+    #         while not output:
+    #             operator_policy = create_policy(policy_type='operator',policy_name=operator_node,
+    #                                             parent_policy=cluster_policy_id, member_id=member_id,
+    #                                             operator_ip=setup_info[cluster][operator]['ip'],
+    #                                             operator_port=int(setup_info[cluster][operator]['port']))
+    #             __publish_policy(conn=args.query_node, policy=operator_policy, ledger_conn=args.ledger_conn)
+    #             output = __check_policy(conn=args.query_node, policy_name=operator_node)
+    #             if output:
+    #                 if 'member' not in setup_info[cluster][operator]:
+    #                     setup_info[cluster][operator]['member'] = member_id
+    #                 member_id = old_member_id + 1
+    #     output = __check_policy(conn=args.query_node, policy_name=cluster)
+    #     while len(output) != 2:
+    #         cluster_policy = create_policy(policy_type="cluster", parent_policy=cluster_policy_id, policy_name=cluster)
+    #         __publish_policy(conn=args.query_node, policy=cluster_policy, ledger_conn=args.ledger_conn)
+    #         output = __check_policy(conn=args.query_node, policy_name=cluster)
+    #     output = __check_policy(conn=args.query_node, policy_name='dummy_data')
+    #     while not output:
+    #         table_policy = create_policy(policy_type="table")
+    #         __publish_policy(conn=args.query_node, policy=table_policy, ledger_conn=args.ledger_conn)
+    #         output = __check_policy(conn=args.query_node, policy_name='dummy_data')
 
+    __write_yaml(yaml_file=args.yaml_file, data=setup_info)
 
 
 if __name__ == '__main__':
