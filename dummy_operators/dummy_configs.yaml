@@ -1,0 +1,4 @@
+cluster1:
+  operator1:
+    ip: 73.202.142.172
+    port: 32148
