@@ -16,6 +16,7 @@ cache = {
 }
 CACHE_EXPIRY = 10  # seconds
 
+
 def __generate_data(db_name: str) -> dict:
     current_time = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
@@ -63,6 +64,7 @@ def get_data():
     db_name = "example_db"  # Change as needed
     data = __generate_data(db_name)
     return jsonify(data)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5100)
