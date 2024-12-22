@@ -117,7 +117,7 @@ def publish_policy(conn:str, device_id:str):
     """
     # check if device already exists
     try:
-        response = requests.get(url=f'http://172.105.86.168:32149',
+        response = requests.get(url=f'http://192.168.86.23:32549',
                                 headers={'command': f'blockchain get r_50 where device_id = {device_id}',
                                          'User-Agent': 'AnyLog/1.23'})
     except requests.exceptions.ConnectionError as error:
@@ -213,7 +213,7 @@ def main():
     conns = __extract_conn(conn_info=args.conn)
     payloads = []
     device_id = generate_id()  # get policy ID (used as name)
-    publish_policy(conn=args.conn, device_id=device_id)
+#    publish_policy(conn=args.conn, device_id=device_id)
 
     while True:
         conn = random.choice(list(conns.keys()))
@@ -221,8 +221,12 @@ def main():
 
         payload = get_data()
         if payload and isinstance(payload, dict):
-            payload['serial_number'] = device_id
+            if 'ts' in payload:
+                ts = payload['ts']
+                del payload['ts']
             payloads.append({'d': payload})
+            payloads[-1]['ts'] = ts
+            payloads[-1]['serial_number'] = device_id
 
         if len(payloads) == args.batch_size or (args.total_rows <= len(payloads) + total_rows and args.total_rows != 0):
             __publish_data(publisher=args.publisher, conn=conn, payload=payloads, topic=args.topic, qos=args.qos,

@@ -44,15 +44,15 @@ def publish_via_post(conn:str, payload:list, topic:str, auth:tuple=(), timeout:f
         'User-Agent': 'AnyLog/1.23',
         'Content-Type': 'text/plain'
     }
-
-    try:
-        r = requests.post(url=f'http://{conn}', headers=headers, data=serialize_data(payload=payload), auth=auth, timeout=timeout)
-    except Exception as error:
-        status = False
-        if exception is True:
-            print(f"Failed to execute POST against {conn} (Error: {error})")
-    else:
-        status = str(r.status_code).startswith('2')
-        if  status is False and exception is True:
-            print(f"Failed to execute POST against {conn} (Network Error: {r.status_code})")
+    for py in payload:
+        try:
+            r = requests.post(url=f'http://{conn}', headers=headers, data=serialize_data(payload=py), auth=auth, timeout=timeout)
+        except Exception as error:
+            status = False
+            if exception is True:
+                print(f"Failed to execute POST against {conn} (Error: {error})")
+        else:
+            status = str(r.status_code).startswith('2')
+            if  status is False and exception is True:
+                print(f"Failed to execute POST against {conn} (Network Error: {r.status_code})")
     return status

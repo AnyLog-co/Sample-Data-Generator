@@ -161,7 +161,7 @@ def publish_mqtt(conn:str, payload:list, topic:str, qos:int=0, auth:tuple=(), ex
         username, password = auth
 
     serialized_payload = serialize_data(payload=payload)
-    mqtt_client = __connect_mqtt_broker(broker=broker, port=port, username=username, password=password, exception=exception)
+    mqtt_client = __connect_mqtt_broker(broker=broker, port=int(port), username=username, password=password, exception=exception)
     if mqtt_client is not None:
         mqtt_client.loop_start()
         status = __publish_payload(mqtt_client=mqtt_client, message=serialized_payload, topic=topic, qos=qos, exception=exception)
