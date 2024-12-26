@@ -130,8 +130,7 @@ if __name__ == '__main__':
     print(datetime.datetime.now())
     end_time = datetime.datetime.now() + datetime.timedelta(minutes=1)
 
-    # while datetime.datetime.now() < end_time:
-    TOTAL_INSERTS += asyncio.run(main())
-
+    while datetime.datetime.now() < end_time:
+        TOTAL_INSERTS += asyncio.run(main())
     print(datetime.datetime.now())
     print(TOTAL_INSERTS)
