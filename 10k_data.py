@@ -4,16 +4,13 @@ import random
 import string
 import time
 import uuid
-import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 
+import requests
+
+TOTAL_INSERTS = 0
 data = {}
 
 DESCRIBE_DATA = "describe_data.json"
-NUM_WORKERS = 25  # Number of parallel threads
-
 
 # -- describe data --
 def describe_data():
@@ -50,13 +47,17 @@ def read_description():
 
 def get_data(data_describe):
     output = {}
+    timestamp=None
+    device_id=None
+    insert_id=None
+
     for column in data_describe:
         if column == 'timestamp':
-            output[column] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         elif column == 'device_id':
-            output[column] = data_describe[column]['value']
+            device_id = data_describe[column]['value']
         elif column == 'insert_id':
-            output[column] = uuid.uuid4().__str__().replace("-", "")
+            insert_id = uuid.uuid4().__str__().replace("-", "")
         elif data_describe[column]['type'] == 'bool':
             output[column] = random.choice([True, False])
         elif data_describe[column]['type'] == 'int':
@@ -69,94 +70,53 @@ def get_data(data_describe):
             if len(value) > data_describe[column]['length']:
                 output[column] = value[data_describe[column]['length']-1:]
 
-
-    return json.dumps(output)
-
-
-def create_session():
-    # Create a session with connection pooling and retries
-    session = requests.Session()
-    retries = Retry(total=5, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
-    adapter = HTTPAdapter(max_retries=retries, pool_connections=10, pool_maxsize=50)
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
-    return session
+    return timestamp, device_id, insert_id, json.dumps(output)
 
 
-def put_data(conn:str, auth:tuple, dbms:str, table:str, payload:str, mode:str='streaming'):
+def post_data(conn:str, auth:tuple, payloads:str):
     headers = {
-        'type': 'json',
-        'dbms': dbms,
-        'table': table,
-        'mode': mode,
+        'command': 'data',
+        'topic': 'telegraf-data',
+        'User-Agent': 'AnyLog/1.23',
         'Content-Type': 'text/plain'
     }
+
     try:
-        r = requests.put(f'http://{conn}', auth=auth, timeout=30, headers=headers, data=payload)
+        r = requests.post(f'http://{conn}', auth=auth, timeout=30, headers=headers, data=payloads)
     except Exception as e:
-        raise Exception(f'Failed to send data via PUT against {conn} | table {table} (Error: {e})')
+        raise Exception(f'Failed to send data via PUT against {conn} (Error: {e})')
     else:
         if int(r.status_code) != 200:
             raise Exception(f'Failed to send data via PUT against {conn} due to network error: {r.status_code}')
-
-
-def put_data_with_session(session, conn: str, auth: tuple, dbms: str, table: str, payload: str,
-                          mode: str = 'streaming') -> bool:
-    headers = {
-        'type': 'json',
-        'dbms': dbms,
-        'table': table,
-        'mode': mode,
-        'Content-Type': 'text/plain'
-    }
-    try:
-        r = session.put(f'http://{conn}', auth=auth, timeout=30, headers=headers, data=payload)
-    except Exception as e:
-        raise Exception(f'Failed to send data via PUT against {conn} | table {table} (Error: {e})')
-    else:
-        if int(r.status_code) != 200:
-            raise Exception(f'Failed to send data via PUT against {conn} due to network error: {r.status_code}')
-        return r
-
-
-def worker(session, task):
-    table, data_describe, conn, auth, dbms = task
-    payload = get_data(data_describe)
-    put_data_with_session(session, conn=conn, auth=auth, dbms=dbms, table=table, payload=payload, mode='streaming')
 
 
 def main():
     data_describe = read_description()
-    tasks = [
-        (table, data_describe[table], '10.0.0.131:8049', (), 'nov')
-        for table in data_describe
-    ]
-
-    # Create a session outside the thread pool
-    session = create_session()
-
-    # Use ThreadPoolExecutor for parallel execution
-    with ThreadPoolExecutor(max_workers=NUM_WORKERS) as executor:
-        futures = [executor.submit(worker, session, task) for task in tasks]
-
-        for future in as_completed(futures):
-            try:
-                future.result()
-            except Exception as e:
-                print(f"Error: {e}")
-
-
-def main2():
-    data_describe = read_description()
+    payloads = []
     for table in data_describe:
-        payload = get_data(data_describe[table])
-        put_data(conn='10.0.0.131:8049', auth=(), dbms='nov', table=table, payload=payload)
-    time.sleep(0.5)
+        timestamp, device_id, insert_id, data = get_data(data_describe[table])
+        payload = {
+            "fields": data,
+            "tags": {
+                "table": table,
+                "device_id": device_id,
+                "insert_id": insert_id
+            },
+            "timestamp": timestamp
+        }
+        payloads.append(payload)
+    try:
+        json_data = json.dumps(payloads, indent=None)
+    except Exception as e:
+        print('Failed to convert data into JSON (Error: %s)' % e)
+    post_data(conn='10.0.0.131:32149', auth=(), payloads=json_data)
+    return len(payloads)
 
 if __name__ == '__main__':
     print(datetime.datetime.now())
-    end_time = datetime.datetime.now() + datetime.timedelta(minutes=10)
+    end_time = datetime.datetime.now() + datetime.timedelta(minutes=1)
     while datetime.datetime.now() < end_time:
-        main2()
-        time.sleep(0.5)
+        TOTAL_INSERTS += main()
+        # time.sleep(0.5)
     print(datetime.datetime.now())
+    print(TOTAL_INSERTS)
