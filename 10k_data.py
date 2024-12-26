@@ -96,7 +96,7 @@ def put_data(conn:str, auth:tuple, dbms:str, table:str, payload:str, mode:str='s
     except Exception as e:
         raise Exception(f'Failed to send data via PUT against {conn} | table {table} (Error: {e})')
     else:
-        if r.status_code != 200:
+        if int(r.status_code) != 200:
             raise Exception(f'Failed to send data via PUT against {conn} due to network error: {r.status_code}')
 
 
@@ -114,7 +114,7 @@ def put_data_with_session(session, conn: str, auth: tuple, dbms: str, table: str
     except Exception as e:
         raise Exception(f'Failed to send data via PUT against {conn} | table {table} (Error: {e})')
     else:
-        if r.status_code != 200:
+        if int(r.status_code) != 200:
             raise Exception(f'Failed to send data via PUT against {conn} due to network error: {r.status_code}')
         return r
 
@@ -128,7 +128,7 @@ def worker(session, task):
 def main():
     data_describe = read_description()
     tasks = [
-        (table, data_describe[table], '10.0.0.131:32149', (), 'nov')
+        (table, data_describe[table], '10.0.0.131:8049', (), 'nov')
         for table in data_describe
     ]
 
@@ -150,13 +150,13 @@ def main2():
     data_describe = read_description()
     for table in data_describe:
         payload = get_data(data_describe[table])
-        put_data(conn='10.0.0.131:32149', auth=(), dbms='nov', table=table, payload=payload)
+        put_data(conn='10.0.0.131:8049', auth=(), dbms='nov', table=table, payload=payload)
     time.sleep(0.5)
 
 if __name__ == '__main__':
     print(datetime.datetime.now())
     end_time = datetime.datetime.now() + datetime.timedelta(minutes=10)
     while datetime.datetime.now() < end_time:
-        main()
+        main2()
         time.sleep(0.5)
     print(datetime.datetime.now())
