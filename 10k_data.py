@@ -4,96 +4,99 @@ import json
 import random
 import string
 import uuid
+from xml.etree.ElementTree import indent
+
 import requests
+from asyncio import Semaphore
 
 TOTAL_INSERTS = 0
-data = {}
-
+run_stats = []
 DESCRIBE_DATA = "describe_data.json"
 
-
-# -- describe data --
+# -- Functions for data description --
 def describe_data():
+    data = {}
     for table in range(25):
-        data[f'table_{table + 1}'] = {}
+        table_name = f'table_{table + 1}'
+        data[table_name] = {}
         for column in ['timestamp', 'device_id', 'insert_id']:
-            data[f'table_{table + 1}'][column] = {}
+            data[table_name][column] = {}
             if column == 'timestamp':
-                data[f'table_{table + 1}'][column]['type'] = 'datetime'
+                data[table_name][column]['type'] = 'datetime'
             elif column == 'device_id':
-                data[f'table_{table + 1}'][column]['value'] = uuid.uuid4().__str__()
+                data[table_name][column]['value'] = uuid.uuid4().__str__()
             else:
-                data[f'table_{table + 1}'][column]['type'] = 'string'
+                data[table_name][column]['type'] = 'string'
         for column in range(397):
-            data[f'table_{table + 1}'][f'column_{column + 1}'] = {
-                "type": random.choice(['string', 'bool', 'int', 'float'])
-            }
-            if data[f'table_{table + 1}'][f'column_{column + 1}']['type'] in ['int', 'float']:
-                data[f'table_{table + 1}'][f'column_{column + 1}']['min'] = random.choice(list(range(1, 500)))
-                data[f'table_{table + 1}'][f'column_{column + 1}']['max'] = random.choice(list(range(499, 1000)))
-            elif data[f'table_{table + 1}'][f'column_{column + 1}']['type'] == 'string':
-                data[f'table_{table + 1}'][f'column_{column + 1}']['length'] = random.choice(list(range(1, 10)))
-
+            col_name = f'column_{column + 1}'
+            col_type = random.choice(['string', 'bool', 'int', 'float'])
+            data[table_name][col_name] = {"type": col_type}
+            if col_type in ['int', 'float']:
+                data[table_name][col_name]['min'] = random.randint(1, 500)
+                data[table_name][col_name]['max'] = random.randint(501, 1000)
+            elif col_type == 'string':
+                data[table_name][col_name]['length'] = random.randint(1, 10)
     with open(DESCRIBE_DATA, 'w') as f:
-        f.write(json.dumps(data, indent=4))
-
-
-# -- describe data --
-
+        json.dump(data, f, indent=4)
+# -- Functions for data description --
 def read_description():
     with open(DESCRIBE_DATA, 'r') as f:
         return json.load(f)
 
-
 def get_data(data_describe):
     output = {}
-    timestamp = None
-    device_id = None
-    insert_id = None
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    device_id = data_describe['device_id']['value']
+    insert_id = uuid.uuid4().__str__().replace("-", "")
 
-    for column in data_describe:
-        if column == 'timestamp':
-            timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-        elif column == 'device_id':
-            device_id = data_describe[column]['value']
-        elif column == 'insert_id':
-            insert_id = uuid.uuid4().__str__().replace("-", "")
-        elif data_describe[column]['type'] == 'bool':
+    for column, props in data_describe.items():
+        if column in ['timestamp', 'device_id', 'insert_id']:
+            continue
+        col_type = props['type']
+        if col_type == 'bool':
             output[column] = random.choice([True, False])
-        elif data_describe[column]['type'] == 'int':
-            output[column] = random.choice(list(range(data_describe[column]['min'], data_describe[column]['max'])))
-        elif data_describe[column]['type'] == 'float':
-            output[column] = round(random.random() * random.choice(
-                list(range(data_describe[column]['min'], data_describe[column]['max']))), 3)
-        elif data_describe[column]['type'] == 'string':
-            value = ''.join(random.choice(string.ascii_letters) for _ in range(data_describe[column]['length']))
-            if len(value) > data_describe[column]['length']:
-                output[column] = value[data_describe[column]['length'] - 1:]
-
+        elif col_type == 'int':
+            output[column] = random.randint(props['min'], props['max'])
+        elif col_type == 'float':
+            output[column] = round(random.uniform(props['min'], props['max']), 3)
+        elif col_type == 'string':
+            length = props['length']
+            output[column] = ''.join(random.choices(string.ascii_letters, k=length))
     return timestamp, device_id, insert_id, json.dumps(output)
 
-
-async def post_data(conn: str, auth: tuple, payloads: list):
+async def post_data(conn, auth, payloads):
     headers = {
         'command': 'data',
         'topic': 'telegraf-data',
         'User-Agent': 'AnyLog/1.23',
         'Content-Type': 'text/plain'
     }
-    json_data = json.dumps(payloads, indent=None)
-
     try:
-        r = requests.post(f'http://{conn}', auth=auth, timeout=30, headers=headers, data=json_data)
-    except Exception as e:
-        raise Exception(f'Failed to send data via PUT against {conn} (Error: {e})')
-    else:
-        if int(r.status_code) != 200:
-            raise Exception(f'Failed to send data via PUT against {conn} due to network error: {r.status_code}')
+        r = requests.post(f'http://{conn}', auth=auth, timeout=30, headers=headers, json=payloads)
+        r.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error posting data: {e}")
+
+async def put_data(conn, auth, payloads):
+    headers = {
+        'type': 'json',
+        'dbms': 'nov',
+        'table': 'summary',
+        'mode': 'streaming',
+        'Content-Type': 'text/plain'
+    }
+    try:
+        r = requests.put(f'http://{conn}', auth=auth, timeout=30, headers=headers, json=payloads)
+        r.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error posting data: {e}")
+
+
 
 
 async def generate_data_for_table(table_name, data_describe):
     timestamp, device_id, insert_id, data = get_data(data_describe)
-    payload = {
+    return {
         "fields": data,
         "tags": {
             "table": table_name,
@@ -103,34 +106,64 @@ async def generate_data_for_table(table_name, data_describe):
         "timestamp": timestamp
     }
 
-    return payload
+async def limited_gather(semaphore, tasks):
+    async with semaphore:
+        return await asyncio.gather(*tasks)
 
-
-async def main():
+async def main(run_number, parallel_threads):
     data_describe = read_description()
     payloads = []
+    row_counts = {f'table_{i+1}': 0 for i in range(25)}
 
-    # Collect all payloads in parallel
+    semaphore = Semaphore(parallel_threads)
     tasks = [generate_data_for_table(table, data_describe[table]) for table in data_describe]
-    results = await asyncio.gather(*tasks)
+    results = await limited_gather(semaphore, tasks)
 
-    # Add results to the payloads list
-    payloads.extend(results)
+    for table, result in zip(data_describe.keys(), results):
+        payloads.append(result)
+        row_counts[table] += 1
 
-    # Now send data in batches of 25
     batch_size = 25
     for i in range(0, len(payloads), batch_size):
         batch = payloads[i:i + batch_size]
         await post_data(conn='10.0.0.131:32149', auth=(), payloads=batch)
 
+    end_time = datetime.datetime.now()
+    run_stats.append({
+        "run_number": run_number,
+        "start_time": start_time,
+        "end_time": end_time,
+        "total_rows": len(payloads),
+        **row_counts
+    })
     return len(payloads)
-
 
 if __name__ == '__main__':
     print(datetime.datetime.now())
-    end_time = datetime.datetime.now() + datetime.timedelta(minutes=1)
+    end_time = datetime.datetime.now() + datetime.timedelta(seconds=10)
+
+    # Set your desired parallel threads here (1, 5, 10, 25)
+    PARALLEL_THREADS = 100  # You can change this value to 1, 5, 10, or 25
+    run_number = 1
 
     while datetime.datetime.now() < end_time:
-        TOTAL_INSERTS += asyncio.run(main())
-    print(datetime.datetime.now())
-    print(TOTAL_INSERTS)
+        start_time = datetime.datetime.now()
+        TOTAL_INSERTS += asyncio.run(main(run_number, PARALLEL_THREADS))
+        run_number += 1
+
+    # Generate JSON summary
+    summary = {
+        "start_timestamp": run_stats[0]["start_time"].strftime('%Y-%m-%d %H:%M:%S'),
+        "end_timestamp": run_stats[-1]["end_time"].strftime('%Y-%m-%d %H:%M:%S'),
+        "num_runs": len(run_stats),
+    }
+    total_rows = 0
+    for i in range(25):
+        table_key = f"table_{i + 1}_rows"
+        summary[table_key] = sum(stat[f'table_{i + 1}'] for stat in run_stats)
+        total_rows += summary[table_key]
+    summary['total_rows'] = total_rows
+
+    # Print JSON summary to screen
+#    asyncio.run(put_data(conn='10.0.0.131:32149', auth=(), payloads=json.dumps(summary)))
+    print(json.dumps(summary, indent=4))
