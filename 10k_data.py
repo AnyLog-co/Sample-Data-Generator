@@ -4,8 +4,6 @@ import json
 import random
 import string
 import uuid
-from xml.etree.ElementTree import indent
-
 import requests
 from asyncio import Semaphore
 
@@ -39,6 +37,8 @@ def describe_data():
     with open(DESCRIBE_DATA, 'w') as f:
         json.dump(data, f, indent=4)
 # -- Functions for data description --
+
+
 def read_description():
     with open(DESCRIBE_DATA, 'r') as f:
         return json.load(f)
@@ -54,15 +54,22 @@ def get_data(data_describe):
             continue
         col_type = props['type']
         if col_type == 'bool':
-            output[column] = random.choice([True, False])
-        elif col_type == 'int':
-            output[column] = random.randint(props['min'], props['max'])
+            output[column] = random.choice([True, False, ""])
+            output[f'quality_{column}'] = 'Nok' if output[column] is "" else 'Ok'
+        elif col_type in ['int', 'float']:
+            value = round(random.uniform(props['min'], props['max']), 3)
+            min_value = random.choice(list(range(80, 90)))/100
+            max_value = 1 + (1 - min_value)
+            output[column] = int(value) if col_type == 'int' else value
+            output[f'quality_{column}'] = 'Ok' if value * min_value <= value <= value * max_value else 'Nok'
         elif col_type == 'float':
             output[column] = round(random.uniform(props['min'], props['max']), 3)
         elif col_type == 'string':
             length = props['length']
             output[column] = ''.join(random.choices(string.ascii_letters, k=length))
-    return timestamp, device_id, insert_id, json.dumps(output)
+
+    return timestamp, device_id, insert_id,  output
+
 
 async def post_data(conn, auth, payloads):
     headers = {
@@ -71,11 +78,14 @@ async def post_data(conn, auth, payloads):
         'User-Agent': 'AnyLog/1.23',
         'Content-Type': 'text/plain'
     }
-    try:
-        r = requests.post(f'http://{conn}', auth=auth, timeout=30, headers=headers, json=payloads)
-        r.raise_for_status()
-    except requests.RequestException as e:
-        print(f"Error posting data: {e}")
+
+    for payload in payloads:
+        try:
+            r = requests.post(f'http://{conn}', auth=auth, timeout=30, headers=headers, data=payload)
+            r.raise_for_status()
+        except requests.RequestException as e:
+            print(f"Error posting data: {e}")
+
 
 async def put_data(conn, auth, payloads):
     headers = {
@@ -85,6 +95,7 @@ async def put_data(conn, auth, payloads):
         'mode': 'streaming',
         'Content-Type': 'text/plain'
     }
+
     try:
         r = requests.put(f'http://{conn}', auth=auth, timeout=30, headers=headers, json=payloads)
         r.raise_for_status()
@@ -126,7 +137,8 @@ async def main(run_number, parallel_threads):
     batch_size = 25
     for i in range(0, len(payloads), batch_size):
         batch = payloads[i:i + batch_size]
-        await post_data(conn='10.0.0.131:32149', auth=(), payloads=batch)
+        serialized_batch = [json.dumps(item) for item in batch]
+        await post_data(conn='10.0.0.131:32149', auth=(), payloads=serialized_batch)
 
     end_time = datetime.datetime.now()
     run_stats.append({
@@ -139,8 +151,9 @@ async def main(run_number, parallel_threads):
     return len(payloads)
 
 if __name__ == '__main__':
+    # describe_data()
     print(datetime.datetime.now())
-    end_time = datetime.datetime.now() + datetime.timedelta(seconds=10)
+    end_time = datetime.datetime.now() + datetime.timedelta(minutes=1)
 
     # Set your desired parallel threads here (1, 5, 10, 25)
     PARALLEL_THREADS = 100  # You can change this value to 1, 5, 10, or 25
@@ -157,13 +170,13 @@ if __name__ == '__main__':
         "end_timestamp": run_stats[-1]["end_time"].strftime('%Y-%m-%d %H:%M:%S'),
         "num_runs": len(run_stats),
     }
-    total_rows = 0
+
     for i in range(25):
         table_key = f"table_{i + 1}_rows"
         summary[table_key] = sum(stat[f'table_{i + 1}'] for stat in run_stats)
-        total_rows += summary[table_key]
-    summary['total_rows'] = total_rows
+    summary['total_rows'] = sum(summary[f'table_{i + 1}_rows'] for i in range(25))
 
     # Print JSON summary to screen
-#    asyncio.run(put_data(conn='10.0.0.131:32149', auth=(), payloads=json.dumps(summary)))
-    print(json.dumps(summary, indent=4))
+    asyncio.run(put_data(conn='10.0.0.131:32149', auth=(), payloads=summary))
+
+
