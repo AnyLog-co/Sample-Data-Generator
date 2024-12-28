@@ -17,7 +17,7 @@ def describe_data():
     for table in range(25):
         table_name = f'table_{table + 1}'
         data[table_name] = {}
-        for column in ['timestamp', 'device_id', 'insert_id']:
+        for column in ['timestamp', 'device_id']:
             data[table_name][column] = {}
             if column == 'timestamp':
                 data[table_name][column]['type'] = 'datetime'
@@ -47,7 +47,7 @@ def get_data(data_describe):
     output = {}
     timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     device_id = data_describe['device_id']['value']
-    insert_id = uuid.uuid4().__str__().replace("-", "")
+    # insert_id = uuid.uuid4().__str__().replace("-", "")
 
     for column, props in data_describe.items():
         if column in ['timestamp', 'device_id', 'insert_id']:
@@ -68,7 +68,7 @@ def get_data(data_describe):
             length = props['length']
             output[column] = ''.join(random.choices(string.ascii_letters, k=length))
 
-    return timestamp, device_id, insert_id,  output
+    return timestamp, device_id, output
 
 
 async def post_data(conn, auth, payloads):
@@ -106,13 +106,12 @@ async def put_data(conn, auth, payloads):
 
 
 async def generate_data_for_table(table_name, data_describe):
-    timestamp, device_id, insert_id, data = get_data(data_describe)
+    timestamp, device_id, data = get_data(data_describe)
     return {
         "fields": data,
         "tags": {
             "table": table_name,
-            "device_id": device_id,
-            "insert_id": insert_id
+            "device_id": device_id
         },
         "timestamp": timestamp
     }
@@ -156,7 +155,7 @@ if __name__ == '__main__':
     end_time = datetime.datetime.now() + datetime.timedelta(minutes=1)
 
     # Set your desired parallel threads here (1, 5, 10, 25)
-    PARALLEL_THREADS = 100  # You can change this value to 1, 5, 10, or 25
+    PARALLEL_THREADS = 1  # You can change this value to 1, 5, 10, or 25
     run_number = 1
 
     while datetime.datetime.now() < end_time:
@@ -166,6 +165,7 @@ if __name__ == '__main__':
 
     # Generate JSON summary
     summary = {
+        "timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         "start_timestamp": run_stats[0]["start_time"].strftime('%Y-%m-%d %H:%M:%S'),
         "end_timestamp": run_stats[-1]["end_time"].strftime('%Y-%m-%d %H:%M:%S'),
         "num_runs": len(run_stats),
