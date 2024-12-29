@@ -3,7 +3,6 @@ import datetime
 import json
 import random
 import string
-import time
 import uuid
 import aiohttp
 from asyncio import Semaphore, create_task
@@ -13,6 +12,7 @@ TOTAL_INSERTS = 0
 run_stats = []
 DESCRIBE_DATA = "describe_data.json"
 SUMMARY_INTERVAL = 60  # Interval in seconds for generating summaries
+CONN='10.0.0.131:32149'
 
 # -- Functions for data description --
 def describe_data():
@@ -138,7 +138,7 @@ async def generate_summary():
                 summary[table_key] = sum(stat.get(f'table_{i + 1}', 0) for stat in run_stats)
             summary['total_rows'] = sum(summary[f'table_{i + 1}_rows'] for i in range(25))
 
-            await put_data(conn='10.0.0.131:32149', payloads=summary)
+            await put_data(conn=CONN, payloads=summary)
 
 
 # Main Loop
@@ -148,41 +148,41 @@ async def main_loop(parallel_threads, end_time):
     table_names = list(data_describe.keys())
 
     while datetime.datetime.now() <= end_time:
-        tasks = [
-            create_task(generate_data_for_table(table, data_describe[table])) for table in table_names
-        ]
-        results = await asyncio.gather(*tasks)
+        async with semaphore:
+            tasks = [
+                create_task(generate_data_for_table(table, data_describe[table]))
+                for table in table_names
+            ]
+            results = await asyncio.gather(*tasks)
 
-        # Batch payloads for efficient transmission
-        batch_size = 50  # Adjust batch size for optimal performance
-        payload_batches = [results[i:i + batch_size] for i in range(0, len(results), batch_size)]
+            # Batch payloads for efficient transmission
+            batch_size = 50  # Adjust batch size for optimal performance
+            payload_batches = [results[i:i + batch_size] for i in range(0, len(results), batch_size)]
 
-        # Concurrent POST tasks
-        await post_data(conn='10.0.0.131:32149', payloads=[item for batch in payload_batches for item in batch])
+            for batch in payload_batches:
+                await post_data(conn=CONN, payloads=batch)
 
-        run_stats.append({
-            "run_number": len(run_stats) + 1,
-            "start_time": datetime.datetime.now(),
-            "end_time": datetime.datetime.now(),
-            "total_rows": len(results),
-        })
+            run_stats.append({
+                "run_number": len(run_stats) + 1,
+                "start_time": datetime.datetime.now(),
+                "end_time": datetime.datetime.now(),
+                "total_rows": len(results),
+            })
 
         if datetime.datetime.now() > end_time:
-            await exit(1)
-
-    # After the time is up, we exit the loop
+            break
 
 
 # Main Entry Point
 async def main():
     # Set duration for the generator
-    time.sleep(30)
-    X_minutes = 30  # Set to desired number of minutes
+    # time.sleep(30)
+    X_minutes = 1  # Set to desired number of minutes
     end_time = datetime.datetime.now() + datetime.timedelta(minutes=X_minutes)
 
     await asyncio.gather(
         main_loop(parallel_threads=PARALLEL_THREADS, end_time=end_time),
-        generate_summary()
+        # generate_summary()
     )
 
 
@@ -191,4 +191,5 @@ if __name__ == '__main__':
 
     asyncio.run(main())
 
-    # run client () sql nov format=table and include=(table_24,table_15,table_18,table_25,table_7,table_14,table_19,table_11,table_12,table_20,table_2,table_5,table_21,table_13,table_17,table_8,table_1,table_6,table_3,table_22,table_9,table_16,table_10,table_4) "select min(timestamp), max(timestamp), count(*) from table_23 where insert_timestamp >= '2024-12-27 19:28:29.920843'"
+    # run client () sql nov format=table and include=(table_24,table_15,table_18,table_25,table_7,table_14,table_19,table_11,table_12,table_20,table_2,table_5,table_21,table_13,table_17,table_8,table_1,table_6,table_3,table_22,table_9,table_16,table_10,table_4) and extend=(@table_name) "select increments(minute, 1, timestamp), min(timestamp), max(timestamp), count(*) from table_23"
+
