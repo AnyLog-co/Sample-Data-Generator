@@ -1,18 +1,22 @@
 import asyncio
 import datetime
-import json
+import orjson
 import random
 import string
 import uuid
-import aiohttp
 from asyncio import Semaphore, create_task
+import aiohttp
+import msgspec
 
 # Constants
-TOTAL_INSERTS = 0
 run_stats = []
 DESCRIBE_DATA = "describe_data.json"
-SUMMARY_INTERVAL = 60  # Interval in seconds for generating summaries
-CONN='10.0.0.131:32149'
+CONN = '10.0.0.131:32149'
+RUN_TIME = 1  # in minutes, how long to run
+
+async def serialize(data):
+    encoder = msgspec.json.Encoder()
+    return encoder.encode(data)
 
 # -- Functions for data description --
 def describe_data():
@@ -35,40 +39,69 @@ def describe_data():
                 data[table_name][col_name]['max'] = random.randint(501, 1000)
             elif col_type == 'string':
                 data[table_name][col_name]['length'] = random.randint(1, 10)
-    with open(DESCRIBE_DATA, 'w') as f:
-        json.dump(data, f, indent=4)
+    with open(DESCRIBE_DATA, 'wb') as f:
+        f.write(orjson.dumps(data))
 
 
 def read_description():
-    with open(DESCRIBE_DATA, 'r') as f:
-        return json.load(f)
+    with open(DESCRIBE_DATA, 'rb') as f:
+        return orjson.loads(f.read())
 
 
-def get_data(data_describe):
-    output = {}
+# -- Asynchronous Functions --
+async def get_column_data(column, props):
+    """Generate data for a single column asynchronously."""
+    if column in ['timestamp', 'device_id']:
+        return None  # Skip timestamp and device_id
+
+    col_type = props['type']
+    result = {}
+
+    if col_type == 'bool':
+        result[column] = random.choice([True, False])
+        result[f'quality_{column}'] = 'Ok'
+    elif col_type in ['int', 'float']:
+        value = round(random.uniform(props['min'], props['max']), 3)
+        result[column] = int(value) if col_type == 'int' else value
+        result[f'quality_{column}'] = 'Ok'
+    elif col_type == 'string':
+        length = props['length']
+        result[column] = ''.join(random.choices(string.ascii_letters, k=length))
+        result[f'quality_{column}'] = 'Ok'
+
+    return result
+
+
+async def get_data(data_describe):
+    """Generate data asynchronously for all columns except timestamp and device_id."""
     timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     device_id = data_describe['device_id']['value']
 
-    for column, props in data_describe.items():
-        if column in ['timestamp', 'device_id']:
-            continue
-        col_type = props['type']
-        if col_type == 'bool':
-            output[column] = random.choice([True, False])
-            output[f'quality_{column}'] = 'Ok'
-        elif col_type in ['int', 'float']:
-            value = round(random.uniform(props['min'], props['max']), 3)
-            output[column] = int(value) if col_type == 'int' else value
-            output[f'quality_{column}'] = 'Ok'
-        elif col_type == 'string':
-            length = props['length']
-            output[column] = ''.join(random.choices(string.ascii_letters, k=length))
+    columns = [column for column in data_describe if column not in ['timestamp', 'device_id']]
+    tasks = [get_column_data(column, data_describe[column]) for column in columns]
+
+    # Run all tasks in parallel and collect results
+    results = await asyncio.gather(*tasks)
+
+    output = {}
+    for result in results:
+        if result:  # Avoid None for timestamp/device_id
+            output.update(result)
 
     return timestamp, device_id, output
 
 
-# Async HTTP Functions
-async def post_data(conn, payloads):
+async def post_data(session, conn, payload, retries=3, delay=2):
+    """
+    Asynchronously posts data to a server with retry logic.
+
+    Args:
+        session: aiohttp ClientSession object.
+        conn: Connection string (e.g., "10.0.0.78:7849").
+        payload: Data to be sent as JSON.
+        retries: Number of retry attempts in case of failure.
+        delay: Delay (in seconds) between retry attempts.
+    """
     headers = {
         'command': 'data',
         'topic': 'telegraf-data',
@@ -76,39 +109,34 @@ async def post_data(conn, payloads):
         'Content-Type': 'application/json'
     }
 
-    try:
-        async with aiohttp.ClientSession() as session:
-            tasks = []
-            for payload in payloads:
-                try:
-                    await session.post(f'http://{conn}', data=json.dumps(payload), headers=headers)
-                except Exception as error:
-                    raise Exception(f"Failed to execute POST against {conn} (Error: {error})")
-            responses = await asyncio.gather(*tasks)  # Send all POST requests in parallel
-            # Check responses for any errors
-            for response in responses:
-                if response.status != 200:
-                    raise ConnectionError(f"Error posting data: {response.status} - {await response.text()}")
-    except Exception as error:
-        raise Exception(f"Failed to open connection session (Error: {error})")
+    for attempt in range(retries):
+        try:
+            # Serialize payload to JSON if necessary
+            serialized_payload = orjson.dumps(payload) if isinstance(payload, (dict, list)) else payload
 
-async def put_data(conn, payloads):
-    headers = {
-        'type': 'json',
-        'dbms': 'nov',
-        'table': 'summary',
-        'mode': 'streaming',
-        'Content-Type': 'application/json'
-    }
-    async with aiohttp.ClientSession() as session:
-        async with session.put(f'http://{conn}', json=payloads, headers=headers) as response:
-            if response.status != 200:
-                print(f"Error posting data: {response.status} - {await response.text()}")
+            # Make POST request
+            async with session.post(f'http://{conn}', data=serialized_payload, headers=headers) as response:
+                if response.status == 200:
+                    return  # Success
+                # Raise an error for non-successful responses
+                raise ConnectionError(f"Error posting data: {response.status} - {await response.text()}")
+
+        except aiohttp.ClientConnectionError as error:
+            if attempt < retries - 1:
+                await asyncio.sleep(delay)  # Wait before retrying
+            else:
+                raise Exception(f"Failed to connect after {retries} attempts: {error}")
+
+        except Exception as general_error:
+            if attempt < retries - 1:
+                await asyncio.sleep(delay)  # Wait before retrying
+            else:
+                raise Exception(f"Error posting data: {general_error}")
 
 
-async def generate_data_for_table(table_name, data_describe):
-    timestamp, device_id, data = get_data(data_describe)
-    return {
+async def generate_data_for_table(session, table_name, data_describe):
+    timestamp, device_id, data = await get_data(data_describe)
+    payload = {
         "fields": data,
         "tags": {
             "table": table_name,
@@ -117,79 +145,30 @@ async def generate_data_for_table(table_name, data_describe):
         "timestamp": timestamp
     }
 
-
-# Generate Summary
-async def generate_summary():
-    while True:
-        if not run_stats:
-            await asyncio.sleep(1)  # Sleep for 1 second and retry
-
-        if run_stats:
-            await asyncio.sleep(SUMMARY_INTERVAL)
-            summary = {
-                "timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                "start_timestamp": run_stats[0]["start_time"].strftime('%Y-%m-%d %H:%M:%S'),
-                "end_timestamp": run_stats[-1]["end_time"].strftime('%Y-%m-%d %H:%M:%S'),
-                "num_runs": len(run_stats),
-            }
-
-            for i in range(25):
-                table_key = f"table_{i + 1}_rows"
-                summary[table_key] = sum(stat.get(f'table_{i + 1}', 0) for stat in run_stats)
-            summary['total_rows'] = sum(summary[f'table_{i + 1}_rows'] for i in range(25))
-
-            await put_data(conn=CONN, payloads=summary)
+    await post_data(session, conn=CONN, payload=payload)
 
 
-# Main Loop
 async def main_loop(parallel_threads, end_time):
     data_describe = read_description()
     semaphore = Semaphore(parallel_threads)
     table_names = list(data_describe.keys())
 
-    while datetime.datetime.now() <= end_time:
-        async with semaphore:
-            tasks = [
-                create_task(generate_data_for_table(table, data_describe[table]))
-                for table in table_names
-            ]
-            results = await asyncio.gather(*tasks)
-
-            # Batch payloads for efficient transmission
-            batch_size = 50  # Adjust batch size for optimal performance
-            payload_batches = [results[i:i + batch_size] for i in range(0, len(results), batch_size)]
-
-            for batch in payload_batches:
-                await post_data(conn=CONN, payloads=batch)
-
-            run_stats.append({
-                "run_number": len(run_stats) + 1,
-                "start_time": datetime.datetime.now(),
-                "end_time": datetime.datetime.now(),
-                "total_rows": len(results),
-            })
-
-        if datetime.datetime.now() > end_time:
-            break
+    async with aiohttp.ClientSession() as session:
+        while datetime.datetime.now() <= end_time:
+            async with semaphore:
+                tasks = [
+                    create_task(generate_data_for_table(session, table, data_describe[table])) for table in table_names
+                ]
+                await asyncio.gather(*tasks)
 
 
 # Main Entry Point
 async def main():
-    # Set duration for the generator
-    # time.sleep(30)
-    X_minutes = 1  # Set to desired number of minutes
-    end_time = datetime.datetime.now() + datetime.timedelta(minutes=X_minutes)
-
-    await asyncio.gather(
-        main_loop(parallel_threads=PARALLEL_THREADS, end_time=end_time),
-        # generate_summary()
-    )
+    end_time = datetime.datetime.now() + datetime.timedelta(minutes=RUN_TIME)
+    await main_loop(parallel_threads=100, end_time=end_time)
 
 
 if __name__ == '__main__':
-    PARALLEL_THREADS = 1  # Adjust threads for better parallelism
-
     asyncio.run(main())
 
-    # run client () sql nov format=table and include=(table_24,table_15,table_18,table_25,table_7,table_14,table_19,table_11,table_12,table_20,table_2,table_5,table_21,table_13,table_17,table_8,table_1,table_6,table_3,table_22,table_9,table_16,table_10,table_4) and extend=(@table_name) "select increments(minute, 1, timestamp), min(timestamp), max(timestamp), count(*) from table_23"
-
+# run client () sql nov format=table "select count(*) from table_1 where period(minute, 1, now(), insert_timestamp)"
