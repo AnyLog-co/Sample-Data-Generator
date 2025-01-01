@@ -11,7 +11,8 @@ import msgspec
 # Constants
 run_stats = []
 DESCRIBE_DATA = "describe_data.json"
-CONN = '10.0.0.131:32149'
+# CONN = '10.0.0.131:32149'
+CONN='23.92.31.110:32149'
 RUN_TIME = 1  # in minutes, how long to run
 
 async def serialize(data):
