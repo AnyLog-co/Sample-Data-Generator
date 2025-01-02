@@ -11,6 +11,15 @@ from opcua import Server
 
 HOST = "0.0.0.0"  # Replace with your host IP or name
 
+def __check_num(value):
+    try:
+        value = int(value)
+    except Exception as error:
+        raise argparse.ArgumentError(f'Invalid data type for column - expect int given {type(value)} (Error: {errno})')
+    else:
+        if value < 1:
+            raise argparse.ArgumentError(f'Invalid value for column. Minimum value 1')
+    return value
 
 # -- Functions for data description -- #
 def describe_data(describe_data_file:str, num_tables:int=20, num_columns:int=100, include_quality:bool=False):
@@ -71,6 +80,7 @@ async def get_column_data(column, props, include_quality:bool=False):
 
     if col_type == 'bool':
         result[column] = random.choice([True, False, None])
+
         if include_quality is True:
             result[f'quality_{column}'] = 'NOk' if result[column] is None else 'Ok'
     elif col_type in ['int', 'float']:
@@ -105,7 +115,7 @@ async def generate_row_data(data_describe, include_quality:bool=False):
     return row
 
 
-def run_opcua_server(describe_data_file, port, rows, include_quality):
+def run_opcua_server(describe_data_file, port, rows, include_quality:bool=False):
     data_describe = read_description(describe_data_file)
 
     # Create an instance of the Server
@@ -129,19 +139,52 @@ def run_opcua_server(describe_data_file, port, rows, include_quality):
         table_variables[table_name] = {}
 
         for column, props in data_describe[table_name].items():
-            # Create a variable for each column
-            if column in ['timestamp', 'device_id']:
+            col_type = props.get('type')
+
+            if col_type == 'bool':
                 table_variables[table_name][column] = table_obj.add_variable(
-                    ns_idx, column, ""
+                    ns_idx, column, random.choice([True, False, None])
                 )
+                if include_quality:
+                    quality_value = 'NOk' if table_variables[table_name][column].get_value() is None else 'Ok'
+                    table_variables[table_name][f'quality_{column}'] = table_obj.add_variable(
+                        ns_idx, f'quality_{column}', quality_value
+                    )
+
+            elif col_type in ['int', 'float']:
+                value = round(random.uniform(props['min'], props['max']), 3)
+                value = int(value) if col_type == 'int' else value
+                table_variables[table_name][column] = table_obj.add_variable(
+                    ns_idx, column, value
+                )
+                if include_quality:
+                    threshold_min = 0.75 * ((props['min'] + props['max']) / 2)
+                    threshold_max = 1.25 * ((props['min'] + props['max']) / 2)
+                    quality_value = 'Ok' if threshold_min <= value <= threshold_max else 'Nok'
+                    table_variables[table_name][f'quality_{column}'] = table_obj.add_variable(
+                        ns_idx, f'quality_{column}', quality_value
+                    )
+
+            elif col_type == 'string':
+                length = props['length']
+                random_string = ''.join(random.choices(string.ascii_letters, k=length))
+                table_variables[table_name][column] = table_obj.add_variable(
+                    ns_idx, column, random_string
+                )
+                if include_quality:
+                    table_variables[table_name][f'quality_{column}'] = table_obj.add_variable(
+                        ns_idx, f'quality_{column}', "Ok"
+                    )
+
             else:
+                # Fallback for unsupported types
                 table_variables[table_name][column] = table_obj.add_variable(
-                    ns_idx, column, 0 if props['type'] in ['int', 'float'] else ""
+                    ns_idx, column, None
                 )
-                # Add quality variable
-                table_variables[table_name][f'quality_{column}'] = table_obj.add_variable(
-                    ns_idx, f'quality_{column}', "Ok"
-                )
+                if include_quality:
+                    table_variables[table_name][f'quality_{column}'] = table_obj.add_variable(
+                        ns_idx, f'quality_{column}', "Nok"
+                    )
 
         # Set all variables to writable
         for var in table_variables[table_name].values():
@@ -161,7 +204,7 @@ def run_opcua_server(describe_data_file, port, rows, include_quality):
                     if column in table_variables[table_name]:
                         table_variables[table_name][column].set_value(value)
 
-            await asyncio.sleep(1)  # Update every second
+            await asyncio.sleep(1/rows)  # Update every second
 
     try:
         asyncio.run(update_data())
@@ -178,12 +221,10 @@ def main():
                        help='File describing data')
     parse.add_argument('--describe-data', type=bool, nargs='?', const=True, default=False,
                        help='Generate describe data')
-    parse.add_argument('--num-tables', type=int, default=5, help='Number of tables in describe data')
-    parse.add_argument('--num-columns', type=int, default=100, help='Number of columns per table')
-    parse.add_argument('--num-rows', type=int, default=25, help='Number of rows per iteration per table')
+    parse.add_argument('--num-tables', type=__check_num, default=5, help='Number of tables in describe data')
+    parse.add_argument('--num-columns', type=__check_num, default=100, help='Number of columns per table')
+    parse.add_argument('--num-rows', type=__check_num, default=25, help='Number of rows per second per table')
     parse.add_argument('--quality', type=bool, nargs='?', const=True, default=False, help='Include quality per data')
-    parse.add_argument('--single-insert', type=bool, nargs='?', const=True, default=False,
-                       help='Insert data into a single point')
     args = parse.parse_args()
 
     # generate / get describe data
