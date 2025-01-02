@@ -5,109 +5,105 @@ import string
 import os
 import random
 import uuid
+import time
 
 from datetime import datetime
 from opcua import Server
 
 HOST = "0.0.0.0"  # Replace with your host IP or name
 
+
 def __check_num(value):
     try:
         value = int(value)
     except Exception as error:
-        raise argparse.ArgumentError(f'Invalid data type for column - expect int given {type(value)} (Error: {errno})')
+        raise argparse.ArgumentTypeError(f"Invalid data type for column - expected int but got {type(value)}")
     else:
         if value < 1:
-            raise argparse.ArgumentError(f'Invalid value for column. Minimum value 1')
+            raise argparse.ArgumentTypeError("Invalid value for column. Minimum value is 1")
     return value
 
+
 # -- Functions for data description -- #
-def describe_data(describe_data_file:str, num_tables:int=20, num_columns:int=100, include_quality:bool=False):
+def describe_data(describe_data_file: str, num_tables: int = 20, num_columns: int = 100, include_quality: bool = False):
     """
-    Generate configuration for data flowing into OPC-UA server
-    :args:
-        describe_data_file:str - File describing data
-        num_tables:int - number of tables to generate
-        num_columns:int - number of columns per table
-        include_quality:bool - generated data will include quality
-    :params:
-        data:dict - generated base information
-        column_count:int - column count
+    Generate configuration for data flowing into OPC-UA server.
     """
     data = {}
     for table in range(num_tables):
-        table_name = f'table_{table + 1}'
+        table_name = f"table_{table + 1}"
         data[table_name] = {}
-        for column in ['timestamp', 'device_id']:
+        for column in ["timestamp", "device_id"]:
             data[table_name][column] = {}
-            if column == 'timestamp':
-                data[table_name][column]['type'] = 'datetime'
-            elif column == 'device_id':
-                data[table_name][column]['value'] = uuid.uuid4().__str__()
+            if column == "timestamp":
+                data[table_name][column]["type"] = "datetime"
+            elif column == "device_id":
+                data[table_name][column]["value"] = uuid.uuid4().__str__()
 
         column_count = 0
         while column_count < num_columns:
-            col_name = f'column_{column_count + 1}'
-            col_type = random.choice(['string', 'bool', 'int', 'float'])
+            col_name = f"column_{column_count + 1}"
+            col_type = random.choice(["string", "bool", "int", "float"])
             data[table_name][col_name] = {"type": col_type}
-            if col_type in ['int', 'float']:
-                data[table_name][col_name]['min'] = random.randint(1, 500)
-                data[table_name][col_name]['max'] = random.randint(501, 1000)
-            elif col_type == 'string':
-                data[table_name][col_name]['length'] = random.randint(1, 10)
+            if col_type in ["int", "float"]:
+                data[table_name][col_name]["min"] = random.randint(1, 500)
+                data[table_name][col_name]["max"] = random.randint(501, 1000)
+            elif col_type == "string":
+                data[table_name][col_name]["length"] = random.randint(1, 10)
             column_count += 1
-            if col_type in ['bool', 'int', 'float'] and include_quality is True:
-                column_count +=1
+            if col_type in ["bool", "int", "float"] and include_quality is True:
+                column_count += 1
 
-    with open(describe_data_file, 'w') as f:
+    with open(describe_data_file, "w") as f:
         f.write(json.dumps(data, indent=4))
-# -- Functions for data description -- #
 
 
 def read_description(describe_data_file):
     """Read the JSON description file."""
-    with open(describe_data_file, 'r') as f:
+    with open(describe_data_file, "r") as f:
         return json.loads(f.read())
 
 
-async def get_column_data(column, props, include_quality:bool=False):
+async def get_column_data(column, props, include_quality: bool = False):
     """Generate data for a single column asynchronously."""
-    if column in ['timestamp', 'device_id']:
+    if column in ["timestamp", "device_id"]:
         return None  # Skip timestamp and device_id
 
-    col_type = props['type']
+    col_type = props["type"]
     result = {}
 
-    if col_type == 'bool':
+    if col_type == "bool":
         result[column] = random.choice([True, False, None])
-
-        if include_quality is True:
-            result[f'quality_{column}'] = 'NOk' if result[column] is None else 'Ok'
-    elif col_type in ['int', 'float']:
-        value = round(random.uniform(props['min'], props['max']), 3)
-        result[column] = int(value) if col_type == 'int' else value
-        if include_quality is True:
-            result[f'quality_{column}'] = 'Ok' if 0.75 * ((props['min'] + props['max']) / 2) <= value <= 1.25 * (
-                        (props['min'] + props['max']) / 2) else 'Nok'
-    elif col_type == 'string':
-        length = props['length']
-        result[column] = ''.join(random.choices(string.ascii_letters, k=length))
-
+        if include_quality:
+            result[f"quality_{column}"] = "NOk" if result[column] is None else "Ok"
+    elif col_type in ["int", "float"]:
+        value = round(random.uniform(props["min"], props["max"]), 3)
+        result[column] = int(value) if col_type == "int" else value
+        if include_quality:
+            result[f"quality_{column}"] = (
+                "Ok"
+                if 0.75 * ((props["min"] + props["max"]) / 2)
+                <= value
+                <= 1.25 * ((props["min"] + props["max"]) / 2)
+                else "Nok"
+            )
+    elif col_type == "string":
+        length = props["length"]
+        result[column] = "".join(random.choices(string.ascii_letters, k=length))
 
     return result
 
 
-async def generate_row_data(data_describe, include_quality:bool=False):
+async def generate_row_data(data_describe, include_quality: bool = False):
     """Generate a single row of data."""
-    timestamp = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    device_id = data_describe['device_id']['value']
+    timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    device_id = data_describe["device_id"]["value"]
 
-    columns = [column for column in data_describe if column not in ['timestamp', 'device_id']]
-
+    columns = [column for column in data_describe if column not in ["timestamp", "device_id"]]
     tasks = [get_column_data(column, data_describe[column], include_quality) for column in columns]
     results = await asyncio.gather(*tasks)
 
-    row = {'timestamp': timestamp, 'device_id': device_id}
+    row = {"timestamp": timestamp, "device_id": device_id}
     for result in results:
         if result:
             row.update(result)
@@ -115,7 +111,7 @@ async def generate_row_data(data_describe, include_quality:bool=False):
     return row
 
 
-def run_opcua_server(describe_data_file, port, rows, include_quality:bool=False):
+def run_opcua_server(describe_data_file, port, rows, include_quality: bool = False):
     data_describe = read_description(describe_data_file)
 
     # Create an instance of the Server
@@ -139,62 +135,22 @@ def run_opcua_server(describe_data_file, port, rows, include_quality:bool=False)
         table_variables[table_name] = {}
 
         for column, props in data_describe[table_name].items():
-            col_type = props.get('type')
+            if "type" not in props:
+                continue  # Skip columns without a 'type' key
 
-            if col_type == 'bool':
-                table_variables[table_name][column] = table_obj.add_variable(
-                    ns_idx, column, random.choice([True, False, None])
-                )
-                if include_quality:
-                    quality_value = 'NOk' if table_variables[table_name][column].get_value() is None else 'Ok'
-                    table_variables[table_name][f'quality_{column}'] = table_obj.add_variable(
-                        ns_idx, f'quality_{column}', quality_value
-                    )
-
-            elif col_type in ['int', 'float']:
-                value = round(random.uniform(props['min'], props['max']), 3)
-                value = int(value) if col_type == 'int' else value
-                table_variables[table_name][column] = table_obj.add_variable(
-                    ns_idx, column, value
-                )
-                if include_quality:
-                    threshold_min = 0.75 * ((props['min'] + props['max']) / 2)
-                    threshold_max = 1.25 * ((props['min'] + props['max']) / 2)
-                    quality_value = 'Ok' if threshold_min <= value <= threshold_max else 'Nok'
-                    table_variables[table_name][f'quality_{column}'] = table_obj.add_variable(
-                        ns_idx, f'quality_{column}', quality_value
-                    )
-
-            elif col_type == 'string':
-                length = props['length']
-                random_string = ''.join(random.choices(string.ascii_letters, k=length))
-                table_variables[table_name][column] = table_obj.add_variable(
-                    ns_idx, column, random_string
-                )
-                if include_quality:
-                    table_variables[table_name][f'quality_{column}'] = table_obj.add_variable(
-                        ns_idx, f'quality_{column}', "Ok"
-                    )
-
-            else:
-                # Fallback for unsupported types
-                table_variables[table_name][column] = table_obj.add_variable(
-                    ns_idx, column, None
-                )
-                if include_quality:
-                    table_variables[table_name][f'quality_{column}'] = table_obj.add_variable(
-                        ns_idx, f'quality_{column}', "Nok"
-                    )
-
-        # Set all variables to writable
-        for var in table_variables[table_name].values():
-            var.set_writable()
+            col_type = props["type"]
+            initial_value = None
+            table_variables[table_name][column] = table_obj.add_variable(ns_idx, column, initial_value)
+            table_variables[table_name][column].set_writable()
 
     # Start the server
     server.start()
     print(f"Server started at {server.endpoint}")
 
     async def update_data():
+        row_count = 0  # To count the total number of rows generated
+        start_time = time.time()  # Record the start time
+
         while True:
             for table_name, table_desc in data_describe.items():
                 row_data = await generate_row_data(table_desc, include_quality)
@@ -204,7 +160,16 @@ def run_opcua_server(describe_data_file, port, rows, include_quality:bool=False)
                     if column in table_variables[table_name]:
                         table_variables[table_name][column].set_value(value)
 
-            await asyncio.sleep(1/rows)  # Update every second
+                row_count += 1  # Increment the row count for each generated row
+
+            # Log rows processed every second
+            elapsed_time = time.time() - start_time
+            if elapsed_time >= 60:  # Every second
+                print(f"Rows processed in the last minute: {row_count}")
+                row_count = 0  # Reset the row counter
+                start_time = time.time()  # Reset the timer
+
+            await asyncio.sleep(1 / rows)  # Update at the specified rate
 
     try:
         asyncio.run(update_data())
@@ -215,31 +180,43 @@ def run_opcua_server(describe_data_file, port, rows, include_quality:bool=False)
 
 def main():
     parse = argparse.ArgumentParser()
-    parse.add_argument('--opcua-port', type=int, default=4840, help='OPC-UA server port')
-    parse.add_argument('--describe-data-file', type=str,
-                       default=os.path.join(__file__.split('opcua_server.py')[0], 'blobs', "opcua_describe_data.json"),
-                       help='File describing data')
-    parse.add_argument('--describe-data', type=bool, nargs='?', const=True, default=False,
-                       help='Generate describe data')
-    parse.add_argument('--num-tables', type=__check_num, default=5, help='Number of tables in describe data')
-    parse.add_argument('--num-columns', type=__check_num, default=100, help='Number of columns per table')
-    parse.add_argument('--num-rows', type=__check_num, default=25, help='Number of rows per second per table')
-    parse.add_argument('--quality', type=bool, nargs='?', const=True, default=False, help='Include quality per data')
+    parse.add_argument("--opcua-port", type=int, default=4840, help="OPC-UA server port")
+    parse.add_argument(
+        "--describe-data-file",
+        type=str,
+        default=os.path.join(os.path.dirname(__file__), "opcua_describe_data.json"),
+        help="File describing data",
+    )
+    parse.add_argument(
+        "--describe-data", type=bool, nargs="?", const=True, default=False, help="Generate describe data"
+    )
+    parse.add_argument("--num-tables", type=__check_num, default=5, help="Number of tables in describe data")
+    parse.add_argument("--num-columns", type=__check_num, default=100, help="Number of columns per table")
+    parse.add_argument("--num-rows", type=__check_num, default=25, help="Number of rows per second per table")
+    parse.add_argument(
+        "--quality", type=bool, nargs="?", const=True, default=False, help="Include quality per data"
+    )
     args = parse.parse_args()
 
-    # generate / get describe data
+    # Generate or get describe data
     args.describe_data_file = os.path.expanduser(os.path.expandvars(args.describe_data_file))
-    if args.describe_data is True:
-        open(args.describe_data_file, 'w').close()
-        describe_data(describe_data_file=args.describe_data_file, num_tables=args.num_tables,
-                      num_columns=args.num_columns, include_quality=args.quality)
+    if args.describe_data:
+        describe_data(
+            describe_data_file=args.describe_data_file,
+            num_tables=args.num_tables,
+            num_columns=args.num_columns,
+            include_quality=args.quality,
+        )
     elif not os.path.isfile(args.describe_data_file):
-        raise FileNotFoundError(f'Failed to locate {args.describe_data_file}')
+        raise FileNotFoundError(f"Failed to locate {args.describe_data_file}")
 
-    run_opcua_server(describe_data_file=args.describe_data_file, port=args.opcua_port, rows=args.num_rows,
-                     include_quality=args.quality)
+    run_opcua_server(
+        describe_data_file=args.describe_data_file,
+        port=args.opcua_port,
+        rows=args.num_rows,
+        include_quality=args.quality,
+    )
 
 
 if __name__ == "__main__":
     main()
-    # run_opcua_server()
