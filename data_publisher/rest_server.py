@@ -1,7 +1,9 @@
 import asyncio
+
 from flask import Flask, jsonify
 from concurrent.futures import ThreadPoolExecutor
-from data_generator.configuration_based_data import configuration_data, PlaceholderVariable
+
+from data_generator.configuration_based_data import configuration_data,  opcua_serialize_data
 from data_generator.rand_data import data_generator as rand_data
 from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
 from data_generator.modified_atmosphere_packaging_machine import r_50
@@ -10,17 +12,14 @@ app = Flask(__name__)
 
 global DB_NAME
 executor = ThreadPoolExecutor()
-
-def serialize_data(data):
-    """Process data to ensure all values are serializable."""
-    for table_name, table_data in data.items():
-        for column, value in table_data.items():
-            if isinstance(value, PlaceholderVariable):
-                table_data[column] = value.value  # or value.value if that's appropriate
-    return data
+# ROOT_PATH = os.path.expandvars(os.path.expanduser(__file__)).split("data_publisher")[0]
+# PEOPLE_DIR  = os.path.join(ROOT_PATH, 'blobs', 'people_video')
+# CAR_DIR  = os.path.join(ROOT_PATH, 'blobs', 'car_video')
+# PEOPLE_DIR  = os.path.join(ROOT_PATH, 'blobs', 'factory_images')
 
 
-def generate_data(data_generator: str, db_name: str):
+
+def generate_data(data_generator:str, db_name:str, last_blob:str=None, exception:bool=False):
     """
     Generate payload data based on the specified data generator type.
 
@@ -46,16 +45,18 @@ def generate_data(data_generator: str, db_name: str):
             payload = loop.run_until_complete(configuration_data())
         finally:
             loop.close()
-        payload = serialize_data(payload)
+        payload = opcua_serialize_data(payload, db_name=db_name)
     else:
         raise ValueError(f"Unsupported data generator: {data_generator}")
 
-    return payload
+    return payload, last_blob
+
 
 @app.route('/simulated_data/<data_type>', methods=['GET'])
-def simulated_data(data_type):
+def simulated_data(data_type, exception:bool=False):
+    last_blob = None
     try:
-        data = generate_data(data_type, db_name=DB_NAME)
+        data, last_blob = generate_data(data_type, db_name=DB_NAME, last_blob=last_blob, exception=exception)
         try:
             return jsonify(data)
         except TypeError:

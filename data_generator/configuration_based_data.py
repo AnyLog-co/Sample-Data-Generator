@@ -19,6 +19,16 @@ class PlaceholderVariable:
         return f"PlaceholderVariable(value={self.value})"
         # return self.value
 
+def opcua_serialize_data(data, db_name):
+    """Process data to ensure all values are serializable."""
+    for table_name, table_data in data.items():
+        table_data['dbms'] = db_name
+        for column, value in table_data.items():
+            if isinstance(value, PlaceholderVariable):
+                table_data[column] = value.value  # or value.value if that's appropriate
+    return data
+
+
 
 # -- Functions for data description -- #
 def describe_data(describe_data_file: str, num_tables: int = 20, num_columns: int = 100, include_quality: bool = False):
