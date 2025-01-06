@@ -10,7 +10,6 @@ from data_generator.modified_atmosphere_packaging_machine import r_50
 
 app = Flask(__name__)
 
-global DB_NAME
 executor = ThreadPoolExecutor()
 # ROOT_PATH = os.path.expandvars(os.path.expanduser(__file__)).split("data_publisher")[0]
 # PEOPLE_DIR  = os.path.join(ROOT_PATH, 'blobs', 'people_video')
@@ -19,7 +18,7 @@ executor = ThreadPoolExecutor()
 
 
 
-def generate_data(data_generator:str, db_name:str, last_blob:str=None, exception:bool=False):
+def generate_data(data_generator:str, db_name:str):
     """
     Generate payload data based on the specified data generator type.
 
@@ -47,23 +46,29 @@ def generate_data(data_generator:str, db_name:str, last_blob:str=None, exception
             loop.close()
         payload = opcua_serialize_data(payload, db_name=db_name)
     else:
-        raise ValueError(f"Unsupported data generator: {data_generator}")
+        if EXCEPTION is True:
+            raise ValueError(f"Unsupported data generator: {data_generator}")
 
-    return payload, last_blob
+    return payload
 
 
 @app.route('/simulated_data/<data_type>', methods=['GET'])
-def simulated_data(data_type, exception:bool=False):
-    last_blob = None
+def simulated_data(data_type):
     try:
-        data, last_blob = generate_data(data_type, db_name=DB_NAME, last_blob=last_blob, exception=exception)
+        data = generate_data(data_type, db_name=DB_NAME)
         try:
             return jsonify(data)
         except TypeError:
             return jsonify(data['table_1'])
     except ValueError as e:
-        return jsonify({"error": str(e)}), 400
+        if EXCEPTION is True:
+            return jsonify({"error": str(e)}), 400
 
-if __name__ == '__main__':
-    DB_NAME = "test_db"
-    app.run(host='127.0.0.1', port=8481, debug=True)
+
+def main(db_name:str, service_port:int, exception:bool=False):
+    global DB_NAME
+    global EXCEPTION
+    DB_NAME = db_name
+    EXCEPTION = exception
+    app.run(host='0.0.0.0', port=service_port, debug=True)
+
