@@ -4,31 +4,58 @@
             "type": "datetime"
         },
         "device_id": {
-            "value": "2f121b80-ecf6-446b-a8ad-388d14c2e554"
+            "value": "fc2fea9a-a85a-4457-8e8b-e9c0b7adc4fe"
         },
         "column_1": {
-            "type": "string",
-            "length": 8
+            "type": "bool"
         },
         "column_2": {
             "type": "float",
-            "min": 358,
-            "max": 891
+            "min": 237,
+            "max": 747
         },
         "column_3": {
             "type": "float",
-            "min": 210,
-            "max": 654
+            "min": 455,
+            "max": 730
         },
         "column_4": {
-            "type": "int",
-            "min": 311,
-            "max": 829
+            "type": "float",
+            "min": 151,
+            "max": 671
         },
         "column_5": {
+            "type": "string",
+            "length": 9
+        }
+    },
+    "table_2": {
+        "timestamp": {
+            "type": "datetime"
+        },
+        "device_id": {
+            "value": "fbaba443-259b-40f0-8d62-253d2a176400"
+        },
+        "column_1": {
+            "type": "int",
+            "min": 67,
+            "max": 873
+        },
+        "column_2": {
+            "type": "bool"
+        },
+        "column_3": {
             "type": "float",
-            "min": 197,
-            "max": 697
+            "min": 316,
+            "max": 563
+        },
+        "column_4": {
+            "type": "bool"
+        },
+        "column_5": {
+            "type": "int",
+            "min": 113,
+            "max": 989
         }
     }
 }
