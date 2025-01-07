@@ -12,7 +12,6 @@ from opcua import Server
 
 HOST = "0.0.0.0"  # Replace with your host IP or name
 
-
 def __check_num(value):
     try:
         value = int(value)

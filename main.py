@@ -5,7 +5,7 @@ import re
 import time
 
 from data_publisher.rest_server import main as rest_server
-from data_publisher.opcua_server import run_opcua_server
+from data_publisher.opcua_server_bkup import run_opcua_server
 from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
 from data_generator.rand_data import data_generator as rand_data
 from data_generator.blob_people_video import  get_data as people_counter
