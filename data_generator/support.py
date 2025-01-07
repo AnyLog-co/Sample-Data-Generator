@@ -13,7 +13,6 @@ def create_timestamp(increase_ts:float=0):
 def serialize_data(payload):
     return json.dumps(payload)
 
-
 def generate_string_hash(file_name:str, data:str)->str:
     """
     based on file_name + data generate hash value
@@ -97,7 +96,6 @@ def file_processing(file_name:str, exception:bool=False):
 
         return file_content
 
-
 def read_json_file(file_path:str, exception:bool=False):
     try:
         with open(file_path, 'rb') as f:
@@ -110,3 +108,5 @@ def read_json_file(file_path:str, exception:bool=False):
         if exception is True:
             print(f"Failed to open file {file_path} (Error: {error})")
     return None
+
+# --- OPC-UA configs --- #

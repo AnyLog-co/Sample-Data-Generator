@@ -5,7 +5,7 @@ import time
 
 def run_opcua_client():
     # Connect to the server
-    server_url = "opc.tcp://10.0.0.228:4840/freeopcua/server/"
+    server_url = "opc.tcp://10.0.0.228:8481/freeopcua/server/"
     client = Client(server_url)
 
     try:

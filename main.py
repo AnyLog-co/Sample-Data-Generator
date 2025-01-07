@@ -1,14 +1,18 @@
 import argparse
+import os
 import random
 import re
 import time
 
 from data_publisher.rest_server import main as rest_server
+from data_publisher.opcua_server import run_opcua_server
 from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
 from data_generator.rand_data import data_generator as rand_data
 from data_generator.blob_people_video import  get_data as people_counter
 from data_generator.blobs_factory_images import get_data as image_processing
 
+
+OCPUA_DATA_FILE = os.path.join(os.path.dirname(__file__), "blobs", "opcua_describe_data.json")
 
 def __check_conn_info(conns:str)->str:
     """
@@ -106,14 +110,16 @@ def main():
     if args.publisher == 'server':
         rest_server(db_name=args.db_name, service_port=args.service_port, exception=args.exception)
     elif args.publisher == 'opcua':
-        exit(1)
+        run_opcua_server(data_generator=args.data_type, port=args.service_port, db_name=args.db_name,
+                         describe_data_file=OCPUA_DATA_FILE, rows=args.batch_size,
+                         include_quality=False, exception=args.exception)
 
     payloads = []
     total_rows = 0
     last_blob = None
     while True:
         conn = random.choice(list(args.conn.keys()))
-        auth = conn[auth]
+        auth = args.conn[conn]
 
         payload, last_blob = __generate_data(data_generator=args.data_generator, db_name=args.db_name,
                                              last_blob=last_blob, exception=args.exception)

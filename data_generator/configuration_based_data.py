@@ -6,7 +6,7 @@ import random
 import string
 import uuid
 
-DATA_FILE = os.path.join(os.path.dirname(__file__).split("data_generator")[0], "opcua_describe_data.json")
+DATA_FILE = os.path.join(os.path.dirname(__file__).split("data_generator")[0], "blobs", "opcua_describe_data.json")
 
 class PlaceholderVariable:
     def __init__(self):
@@ -98,7 +98,7 @@ async def get_column_data(column, props, include_quality: bool = False):
 
     return result
 
-async def generate_row_data(data_describe, include_quality: bool = False):
+async def generate_row_data(data_describe, include_quality:bool=False):
     """Generate a single row of data."""
     timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     device_id = data_describe["device_id"]["value"]

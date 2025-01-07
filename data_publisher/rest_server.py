@@ -17,7 +17,6 @@ executor = ThreadPoolExecutor()
 # PEOPLE_DIR  = os.path.join(ROOT_PATH, 'blobs', 'factory_images')
 
 
-
 def generate_data(data_generator:str, db_name:str):
     """
     Generate payload data based on the specified data generator type.
@@ -28,11 +27,11 @@ def generate_data(data_generator:str, db_name:str):
     :raises ValueError: If an unsupported data generator is specified.
     """
     if data_generator == 'ping':
-        payload = ping_sensor(db_name=DB_NAME)
+        payload = ping_sensor(db_name=db_name)
     elif data_generator == 'percentagecpu':
-        payload = percentagecpu_sensor(db_name=DB_NAME)
+        payload = percentagecpu_sensor(db_name=db_name)
     elif data_generator == 'rand':
-        payload = rand_data(db_name=DB_NAME)
+        payload = rand_data(db_name=db_name)
     elif data_generator == 'r_50':
         payload = r_50()
         payload['dbms'] = DB_NAME
@@ -46,6 +45,7 @@ def generate_data(data_generator:str, db_name:str):
             loop.close()
         payload = opcua_serialize_data(payload, db_name=db_name)
     else:
+        payload = {}
         if EXCEPTION is True:
             raise ValueError(f"Unsupported data generator: {data_generator}")
 
