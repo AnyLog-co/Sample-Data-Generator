@@ -5,6 +5,7 @@ import os
 import random
 import string
 import uuid
+import shutil
 
 DATA_FILE = os.path.join(os.path.dirname(__file__).split("data_generator")[0], "blobs", "opcua_describe_data.json")
 
@@ -22,19 +23,28 @@ class PlaceholderVariable:
 def opcua_serialize_data(data, db_name):
     """Process data to ensure all values are serializable."""
     for table_name, table_data in data.items():
-        table_data['dbms'] = db_name
         for column, value in table_data.items():
             if isinstance(value, PlaceholderVariable):
                 table_data[column] = value.value  # or value.value if that's appropriate
+    data['dbms'] = db_name
     return data
+
+
+def __copy_file():
+    if os.path.isfile(DATA_FILE):
+        try:
+            shutil.copyfile(DATA_FILE, DATA_FILE.replace("json","json.old"))
+        except Exception as error:
+            raise Exception(f"Failed to create backup for {DATA_FILE} (Error: {error})")
 
 
 
 # -- Functions for data description -- #
-def describe_data(describe_data_file: str, num_tables: int = 20, num_columns: int = 100, include_quality: bool = False):
+def describe_data(num_tables:int=20, num_columns:int=100, include_quality:bool=False):
     """
     Generate configuration for data flowing into OPC-UA server.
     """
+    __copy_file()
     data = {}
     for table in range(num_tables):
         table_name = f"table_{table + 1}"
@@ -60,9 +70,10 @@ def describe_data(describe_data_file: str, num_tables: int = 20, num_columns: in
             if col_type in ["bool", "int", "float"] and include_quality is True:
                 column_count += 1
 
-    with open(describe_data_file, "w") as f:
+    with open(DATA_FILE, "w") as f:
         f.write(json.dumps(data, indent=4))
 # -- Functions for data description -- #
+
 
 def read_description(describe_data_file):
     """Read the JSON description file."""

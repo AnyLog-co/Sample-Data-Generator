@@ -1,18 +1,16 @@
 import argparse
-import os
+import asyncio
 import random
 import re
 import time
 
 from data_publisher.rest_server import main as rest_server
-from data_publisher.opcua_server_bkup import run_opcua_server
+from data_generator.configuration_based_data import describe_data, opcua_serialize_data,configuration_data
 from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
 from data_generator.rand_data import data_generator as rand_data
 from data_generator.blob_people_video import  get_data as people_counter
 from data_generator.blobs_factory_images import get_data as image_processing
 
-
-OCPUA_DATA_FILE = os.path.join(os.path.dirname(__file__), "blobs", "opcua_describe_data.json")
 
 def __check_conn_info(conns:str)->str:
     """
@@ -44,6 +42,7 @@ def __extract_conn(conn_info:str)->(str, tuple):
             auth, conn = conn.split('@')
             auth = tuple(auth.split(':'))
         conns[conn] = auth
+
     return conns
 
 
@@ -53,6 +52,14 @@ def __generate_data(data_generator:str, db_name:str, last_blob:str=None, excepti
         payload = ping_sensor(db_name=db_name)
     elif data_generator == 'percentagecpu':
         payload = percentagecpu_sensor(db_name=db_name)
+    elif data_generator == 'large':
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            payload = loop.run_until_complete(configuration_data())
+        finally:
+            loop.close()
+        payload = opcua_serialize_data(data=payload, db_name=db_name)
     elif data_generator == 'rand':
         payload = rand_data(db_name=db_name)
     elif data_generator == 'cars':
@@ -95,24 +102,37 @@ def main():
     parse.add_argument('--batch-size', type=int, default=10, help='number of rows per insert batch')
     parse.add_argument('--total-rows', type=int, default=10,
                         help='total rows to insert - if set to 0 then run continuously')
-    parse.add_argument('--sleep', type=float, default=0.5, help='wait time between each row to insert')
-    parse.add_argument('--topic', type=str, default='anylog-demo', help='topic name for POST, MQTT and Kafka')
+    parse.add_argument('--sleep', type=float, default=0.5,
+                       help='wait time between each row to insert')
+    parse.add_argument('--topic', type=str, default='anylog-demo',
+                       help='topic name for POST, MQTT and Kafka')
     parse.add_argument('--timeout', type=float, default=30, help='REST timeout')
-    parse.add_argument('--qos', type=int, choices=list(range(0, 4)), default=0, help='Quality of Service')
+    parse.add_argument('--qos', type=int, choices=list(range(0, 4)), default=0,
+                       help='Quality of Service')
     parse.add_argument('--service-port', type=int, default=8481, help='Server or OPC-UA service port')
+    parse.add_argument('--create-large-data', type=bool, nargs='?', const=True, default=False,
+                       help='Create new data set for large data')
+    parse.add_argument('--num-tables', type=int, default=10,
+                       help='when creating a large data set, number of tables')
+    parse.add_argument('--num-columns', type=int, default=10,
+                       help='number of columns per ')
     parse.add_argument('--exception', type=bool, nargs='?', const=True, default=False,
                         help='Whether to print exceptions')
     args = parse.parse_args()
 
     if args.data_type in ['car', 'people', 'factory'] and args.publisher not in ['post', 'mqtt', 'kafka']:
         raise argparse.ArgumentTypeError(f"Script supports sending {args.data_type} only via POST, MQTT and Kafka.")
+    if args.create_large_data is True:
+        describe_data(num_tables=args.num_tables, num_columns=args.num_columns)
+
 
     if args.publisher == 'server':
         rest_server(db_name=args.db_name, service_port=args.service_port, exception=args.exception)
     elif args.publisher == 'opcua':
-        run_opcua_server(data_generator=args.data_type, port=args.service_port, db_name=args.db_name,
-                         describe_data_file=OCPUA_DATA_FILE, rows=args.batch_size,
-                         include_quality=False, exception=args.exception)
+        pass
+        # run_opcua_server(data_generator=args.data_type, port=args.service_port, db_name=args.db_name,
+        #                  describe_data_file=OPCUA_DATA_FILE, rows=args.batch_size,
+        #                  include_quality=False, exception=args.exception)
 
     payloads = []
     total_rows = 0
@@ -134,13 +154,6 @@ def main():
         if total_rows >= args.total_rows:
             exit(1)
         time.sleep(args.sleep)
-
-
-
-
-
-
-
 
 
 
