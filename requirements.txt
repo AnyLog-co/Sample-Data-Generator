@@ -1,47 +1,19 @@
-# -- generic packages --
-# base64
-# datetime
-# hashlib
-# json
-# os
-# uuid
+# Core Libraries
+Flask==2.2.2
+tensorflow==2.11.0
+numpy==1.23.5
+opencv-python-headless==4.6.0.66
+requests==2.28.1
 
-# -- publishing packages --
-requests>=0.0
-paho-mqtt==1.5.1
-kafka-python>=0.0
+# Kafka
+kafka-python==2.0.2
 
-# -- Modbus Server --
-pyModbus>=0.0
-flask>=0
+# MQTT
+paho-mqtt==1.6.1
 
-# -- AI / cars data --
-tensorflow>=0.0
-numpy>=0.0
-py3-opencv>=0.0
+# Optional: For handling concurrent futures
+concurrent.futures==3.1.1
 
-pip~=24.0
-wheel~=0.43.0
-gast~=0.5.4
-h5py~=3.11.0
-typing_extensions~=4.11.0
-rich~=13.7.1
-Pygments~=2.18.0
-keras~=3.3.3
-optree~=0.11.0
-packaging~=24.0
-namex~=0.0.8
-mdurl~=0.1.2
-setuptools~=69.5.1
-six~=1.16.0
-certifi~=2024.2.2
-urllib3~=2.2.1
-Markdown~=3.6
-idna~=3.7
-MarkupSafe~=2.1.5
-termcolor~=2.4.0
-flatbuffers~=24.3.25
-wrapt~=1.16.0
-astunparse~=1.6.3
-tensorboard~=2.16.2
-Werkzeug~=3.0.3
+# Optional: Additional libraries for utilities
+pyyaml==6.0
+pandas==1.5.2
