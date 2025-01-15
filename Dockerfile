@@ -1,3 +1,4 @@
+# docker buildx build . --platform linux/amd64,linux/arm64 -t anylogco/sample-data-generator:cpu-test --push
 FROM ubuntu:22.04 as base
 
 WORKDIR /app/Sample-Data-Generator
@@ -25,6 +26,7 @@ ENV VIEW_HELP=false \
     DATA_TYPE=rand \
     PUBLISHER=server \
     DB_NAME=test \
+    TOPIC=test \
     REST_CONN=127.0.0.1:32149 \
     BATCH_SIZE=10 \
     TOTAL_ROWS=10 \
