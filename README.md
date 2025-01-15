@@ -22,38 +22,38 @@ _Kafka_.
 
 ### Options
 ```README.md
-    positional arguments:
-        data_type       data to generate
-        - ping
-        - percentagecpu
-        - rand
-        - r_50
-        - large
-        - car
-        - people
-        - factory
-        publisher       format to publish data
-        - put
-        - post
-        - mqtt
-        - kafka
-        - server
-        - opcua
-        db_name         logical database name
-    :optional arguments:
-        -h, --help                      show this help message and exit
-        --rest-conn     REST_CONN       connection information used for PUT, POST, MQTT and Kafka (example: [user]:[passwd]@[ip]:[port])
-        --batch-size    BATCH_SIZE      number of rows per insert batch
-        --total-rows    TOTAL_ROWS      total rows to insert - if set to 0 then run continuously
-        --sleep         SLEEP           wait time between each row to insert
-        --topic         TOPIC           topic name for POST, MQTT and Kafka
-        --timeout       TIMEOUT         REST timeout
-        --qos           {0,1,2,3}       Quality of Service
-        --service-port  SERVICE_PORT    Server or OPC-UA service port
-        --create-large-data     [CREATE_LARGE_DATA]     Create new data set for large data
-        --num-tables            NUM_TABLES              when creating a large data set, number of tables
-        --num-columns           NUM_COLUMNS             number of columns per
-        --exception             [EXCEPTION]             Whether to print exceptions
+:positional arguments:
+    data_type       data to generate
+    - ping
+    - percentagecpu
+    - rand
+    - r_50
+    - large
+    - car
+    - people
+    - factory
+    publisher       format to publish data
+    - put
+    - post
+    - mqtt
+    - kafka
+    - server
+    - opcua
+    db_name         logical database name
+:optional arguments:
+    -h, --help                      show this help message and exit
+    --rest-conn     REST_CONN       connection information used for PUT, POST, MQTT and Kafka (example: [user]:[passwd]@[ip]:[port])
+    --batch-size    BATCH_SIZE      number of rows per insert batch
+    --total-rows    TOTAL_ROWS      total rows to insert - if set to 0 then run continuously
+    --sleep         SLEEP           wait time between each row to insert
+    --topic         TOPIC           topic name for POST, MQTT and Kafka
+    --timeout       TIMEOUT         REST timeout
+    --qos           {0,1,2,3}       Quality of Service
+    --service-port  SERVICE_PORT    Server or OPC-UA service port
+    --create-large-data     [CREATE_LARGE_DATA]     Create new data set for large data
+    --num-tables            NUM_TABLES              when creating a large data set, number of tables
+    --num-columns           NUM_COLUMNS             number of columns per
+    --exception             [EXCEPTION]             Whether to print exceptions
 ```
 
 ### Sample Calls
