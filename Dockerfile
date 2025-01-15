@@ -32,21 +32,6 @@ ENV VIEW_HELP=false \
     TIMEOUT=30 \
     QOS=0 \
     SERVICE_PORT=8481 \
-    CREATE_LARGE_DATA=falseENV VIEW_HELP=false \
-    DATA_TYPE=rand \
-    PUBLISHER=server \
-    DB_NAME=test \
-    REST_CONN=127.0.0.1:32149 \
-    BATCH_SIZE=10 \
-    TOTAL_ROWS=10 \
-    SLEEP=0.5 \
-    TOPIC=anylog-demo \
-    TIMEOUT=30 \
-    QOS=0 \
-    SERVICE_PORT=8481 \
-    CREATE_LARGE_DATA=false \
-    NUM_TABLES=10 \
-    NUM_COLUMNS=10 \
-    EXCEPTION=false
+    CREATE_LARGE_DATA=false
 
 ENTRYPOINT ["/bin/bash", "/app/main.sh"]
