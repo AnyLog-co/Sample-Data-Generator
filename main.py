@@ -12,6 +12,14 @@ from data_generator.rand_data import data_generator as rand_data
 from data_generator.blob_people_video import  get_data as people_counter
 from data_generator.blobs_factory_images import get_data as image_processing
 
+class CustomHelpFormatter(argparse.HelpFormatter):
+    def format_help(self):
+        # Call the original format_help method
+        help_text = super().format_help()
+        # Add the custom warning message at the end
+        warning = "\nWARNING: data_types of type blob (ex. images and videos) only work with POST, MQTT and Kafka."
+        return help_text + warning
+
 
 def __check_conn_info(conns:str)->str:
     """
@@ -92,7 +100,7 @@ def __publish_data(publisher:str, conn:str, payload:list, topic:str, qos:int=0, 
 
 def main():
     """
-    positional arguments:
+    :positional arguments:
         data_type       data to generate
         - ping
         - percentagecpu
@@ -125,7 +133,7 @@ def main():
         --num-columns           NUM_COLUMNS             number of columns per
         --exception             [EXCEPTION]             Whether to print exceptions
     """
-    parse = argparse.ArgumentParser()
+    parse = argparse.ArgumentParser(formatter_class=CustomHelpFormatter)
     parse.add_argument('data_type', type=str, default='rand', help='data to generate',
                        choices=['ping', 'percentagecpu', 'rand', 'r_50', 'large', 'car', 'people', 'factory'])
     parse.add_argument('publisher', type=str, default='put', help='format to publish data',
@@ -162,7 +170,7 @@ def main():
     if args.publisher == 'server':
         rest_server(db_name=args.db_name, service_port=args.service_port, exception=args.exception)
     elif args.publisher == 'opcua':
-        asyncio.run(run_opcua_server(sleep_rate=args.sleep, db_name=args.db_name))
+        asyncio.run(run_opcua_server(sleep_rate=args.sleep, db_name=args.db_name, port=args.service_port))
 
     payloads = []
     total_rows = 0

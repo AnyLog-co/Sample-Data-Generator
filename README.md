@@ -78,6 +78,75 @@ docker run -it \
 ```
 <img src="sample_server.png" height="75%" width="75%" align="center" />
 
+* OPC-UA 
+```shell
+docker run -it \
+  -p 4840:4840 \
+  -e PUBLISHER=opcua \
+  -e SERVICE_PORT=4840 \
+--rm anylogco/sample-data-generator:latest
+```
+  * Process - under _large_ namespace the number of tables (`ns=2;i=X`) depends on [opcua_describe_data.json](blobs/opcua_describe_data.json).
+While under _network_ there's both _ping_ and percentagecpu data.  
+```anylog
+# view list of namespaces
+AL anylog-node +> get opcua namespace where  url = opc.tcp://127.0.0.1:4840/freeopcua/data-generator 
+
+OPCUA Namespace Table
+Index Namespace URL                
+-----|----------------------------|
+    0|http://opcfoundation.org/UA/|
+    1|urn:freeopcua:python:server |
+    2|large                       |
+    3|network                     |
+    4|rand                        |
+    5|r_50                        |
+
+
+# view columns / tables in a givenn namespace
+AL anylog-node +> get opcua struct where  url = opc.tcp://127.0.0.1:4840/freeopcua/data-generator and node="ns=2;i=2"
+
+[object], (ns=2;n=2, name=table_2, datatype=None)
+  [variable], (ns=2;s=table_2_timestamp, name=timestamp, datatype=VariantType.String)
+  [variable], (ns=2;s=table_2_device_id, name=device_id, datatype=VariantType.String)
+  [variable], (ns=2;s=table_2_column_1, name=column_1, datatype=VariantType.Int64)
+  [variable], (ns=2;s=table_2_column_2, name=column_2, datatype=VariantType.Boolean)
+  [variable], (ns=2;s=table_2_column_3, name=column_3, datatype=VariantType.Double)
+  [variable], (ns=2;s=table_2_column_4, name=column_4, datatype=VariantType.Null)
+  [variable], (ns=2;s=table_2_column_5, name=column_5, datatype=VariantType.Int64)
+
+# Generate get values command for ns=2;i=1
+AL anylog-node +> <get opcua struct where 
+  url=opc.tcp://127.0.0.1:4840/freeopcua/data-generator and 
+  node="ns=2;i=1" and 
+  class = variable and
+  format = get_value and 
+  validate=true>
+
+
+Processing nodes #0 - #999  [                                                  ]
+
+AL anylog-node +> 
+
+<get opcua values where url = opc.tcp://127.0.0.1:4840/freeopcua/data-generator and nodes = ["ns=2;s=table_1_timestamp","ns=2;s=table_1_device_id","ns=2;s=table_1_column_1","ns=2;s=table_1_column_2","ns=2;s=table_1_column_3"
+,"ns=2;s=table_1_column_4","ns=2;s=table_1_column_5"]> 
+
+# View data
+AL anylog-node +> <get opcua values where url = opc.tcp://127.0.0.1:4840/freeopcua/data-generator and nodes = ["ns=2;s=table_1_timestamp","ns=2;s=table_1_device_id","ns=2;s=table_1_column_1","ns=2;s=table_1_column_2","ns=2;s=table_1_column_3"
+,"ns=2;s=table_1_column_4","ns=2;s=table_1_column_5"] and include=all>
+
+OPCUA Nodes values
+id                       name      source_timestamp           server_timestamp status_code value                                
+------------------------|---------|--------------------------|----------------|-----------|------------------------------------|
+ns=2;s=table_1_timestamp|timestamp|2025-01-17 21:22:56.636516|                |Good       |2025-01-17T13:22:56.635006Z         |
+ns=2;s=table_1_device_id|device_id|2025-01-17 21:22:56.636677|                |Good       |fc2fea9a-a85a-4457-8e8b-e9c0b7adc4fe|
+ns=2;s=table_1_column_1 |column_1 |2025-01-17 21:22:56.636805|                |Good       |False                               |
+ns=2;s=table_1_column_2 |column_2 |2025-01-17 21:22:56.636922|                |Good       |                             312.253|
+ns=2;s=table_1_column_3 |column_3 |2025-01-17 21:22:56.637041|                |Good       |                             486.845|
+ns=2;s=table_1_column_4 |column_4 |2025-01-17 21:22:56.637156|                |Good       |                             225.557|
+ns=2;s=table_1_column_5 |column_5 |2025-01-17 21:22:56.637271|                |Good       |VcQBCVzPE                           |
+```
+
 * PUT 
 ```shell
 docker run -it -d \

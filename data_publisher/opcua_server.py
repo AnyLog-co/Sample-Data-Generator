@@ -36,7 +36,7 @@ async def generate_data(hostname: int, db_name: str):
             node="ns=2;i=[TABLE_ID - 1, 2...]" and 
             class = variable and
             format = get_value and 
-            validate=true>         
+            validate=true>     
         """
         data = await configuration_data()
         payload = large_data(data=data, db_name=db_name)
@@ -93,14 +93,14 @@ async def generate_data(hostname: int, db_name: str):
     return payload
 
 
-async def run_opcua_server(sleep_rate: float, db_name: str, port: int = PORT):
+async def run_opcua_server(sleep_rate: float, db_name:str, port:int=PORT):
     server = None
     is_connected = False
-    sleep_rate = 1 / sleep_rate if sleep_rate > 0 else 1
+    sleep_rate = sleep_rate if sleep_rate > 0 else 0.05
+    url= f'opc.tcp://{SERVER}:{port}/freeopcua/data-generator'
     try:
         server = opcua.Server()
-        server.set_endpoint(url=f'opc.tcp://{SERVER}:{port}/freeopcua/data-generator')
-        print(server)
+        server.set_endpoint(url=url)
 
         # Register namespaces in the OPC-UA server
         namespace_idx = {}
@@ -112,8 +112,6 @@ async def run_opcua_server(sleep_rate: float, db_name: str, port: int = PORT):
         # Initialize a dictionary to store the created variables for updating
         created_variables = {}
 
-        print("Adding tables to the address space:")
-
         # Generate and add data for each namespace
         for ns_id, ns_name in NAMESPACES.items():
             payload = await generate_data(hostname=ns_id, db_name=db_name)
@@ -123,8 +121,6 @@ async def run_opcua_server(sleep_rate: float, db_name: str, port: int = PORT):
             idx = namespace_idx[ns_id]
             for table_name, rows in payload.items():
                 # Log the structure of each table's rows before processing
-                print(f"  Processing table: {table_name}, rows: {rows}")
-
                 # Ensure rows is either a list or a single dictionary
                 if isinstance(rows, dict):
                     rows = [rows]  # Wrap single dictionary in a list
@@ -133,7 +129,6 @@ async def run_opcua_server(sleep_rate: float, db_name: str, port: int = PORT):
 
                 # Add table object
                 table_obj = objects.add_object(idx, table_name)
-                print(f"  Added Object: {table_name} with NodeId: ns={idx};s={table_name}")
 
                 for i, row in enumerate(rows):
                     if not isinstance(row, dict):
@@ -145,7 +140,6 @@ async def run_opcua_server(sleep_rate: float, db_name: str, port: int = PORT):
                         # unique_node_id = f"{table_name}_{col_name}_{i}"
                         var = table_obj.add_variable(opcua.ua.NodeId(unique_node_id, idx), col_name, value)
                         var.set_writable()  # Allow clients to write values
-                        print(f"    Added Variable: {col_name} with NodeId: ns={idx};s={unique_node_id}")
 
                         # Store the variable for future updates
                         if table_name not in created_variables:
@@ -156,7 +150,7 @@ async def run_opcua_server(sleep_rate: float, db_name: str, port: int = PORT):
         server.start()
         is_connected = True
         print("Server started. Press Ctrl+C to stop.")
-
+        print(f"Connection information: {url}")
         while True:
             # Fetch new data and update the variables periodically for each namespace
             for ns_id, ns_name in NAMESPACES.items():
@@ -174,7 +168,6 @@ async def run_opcua_server(sleep_rate: float, db_name: str, port: int = PORT):
                                 # Update the existing variable with the new value
                                 var = created_variables[table_name][(i, col_name)]
                                 var.set_value(value)
-                                print(f"Updated Variable: {col_name} with NodeId: ns={idx};s={table_name}_{col_name}_{i}")
 
             # Wait for the next update (e.g., every 2 seconds)
             time.sleep(sleep_rate)
@@ -182,8 +175,7 @@ async def run_opcua_server(sleep_rate: float, db_name: str, port: int = PORT):
     except KeyboardInterrupt:
         print("Shutting down server...")
     except Exception as error:
-        print(f"Failed to connect to OPC-UA against {SERVER}:{port} (Error: {error})")
-        raise
+        raise Exception(f"Failed to connect to OPC-UA against {SERVER}:{port} (Error: {error})")
     finally:
         if server and is_connected is True:
             server.stop()
