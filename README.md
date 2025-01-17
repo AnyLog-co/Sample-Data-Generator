@@ -19,6 +19,7 @@ _Kafka_.
   * concurrent.futures==3.1.1
   * pyyaml==6.0 
   * pandas==1.5.2
+  * opcua>=0.0
 
 ### Options
 ```README.md
@@ -86,7 +87,7 @@ docker run -it \
   -e SERVICE_PORT=4840 \
 --rm anylogco/sample-data-generator:latest
 ```
-  * Process - under _large_ namespace the number of tables (`ns=2;i=X`) depends on [opcua_describe_data.json](blobs/opcua_describe_data.json).
+**Process**: under _large_ namespace the number of tables (`ns=2;i=X`) depends on [opcua_describe_data.json](blobs/opcua_describe_data.json).
 While under _network_ there's both _ping_ and percentagecpu data.  
 ```anylog
 # view list of namespaces
