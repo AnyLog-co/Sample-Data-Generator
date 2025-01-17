@@ -20,7 +20,7 @@ class PlaceholderVariable:
         return f"PlaceholderVariable(value={self.value})"
         # return self.value
 
-def opcua_serialize_data(data, db_name):
+def large_data(data, db_name):
     """Process data to ensure all values are serializable."""
     for table_name, table_data in data.items():
         for column, value in table_data.items():

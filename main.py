@@ -5,7 +5,8 @@ import re
 import time
 
 from data_publisher.rest_server import main as rest_server
-from data_generator.configuration_based_data import describe_data, opcua_serialize_data,configuration_data
+from data_publisher.opcua_server import run_opcua_server
+from data_generator.configuration_based_data import describe_data, large_data, configuration_data
 from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
 from data_generator.rand_data import data_generator as rand_data
 from data_generator.blob_people_video import  get_data as people_counter
@@ -59,7 +60,7 @@ def __generate_data(data_generator:str, db_name:str, last_blob:str=None, excepti
             payload = loop.run_until_complete(configuration_data())
         finally:
             loop.close()
-        payload = opcua_serialize_data(data=payload, db_name=db_name)
+        payload = large_data(data=payload, db_name=db_name)
     elif data_generator == 'rand':
         payload = rand_data(db_name=db_name)
     elif data_generator == 'cars':
@@ -114,7 +115,7 @@ def main():
         --rest-conn     REST_CONN       connection information used for PUT, POST, MQTT and Kafka (example: [user]:[passwd]@[ip]:[port])
         --batch-size    BATCH_SIZE      number of rows per insert batch
         --total-rows    TOTAL_ROWS      total rows to insert - if set to 0 then run continuously
-        --sleep         SLEEP           wait time between each row to insert
+        --sleep         SLEEP           wait time between each row to insert. For OPC-UA the sleep rate is 1/{sleep value}.
         --topic         TOPIC           topic name for POST, MQTT and Kafka
         --timeout       TIMEOUT         REST timeout
         --qos           {0,1,2,3}       Quality of Service
@@ -137,7 +138,7 @@ def main():
     parse.add_argument('--total-rows', type=int, default=10,
                         help='total rows to insert - if set to 0 then run continuously')
     parse.add_argument('--sleep', type=float, default=0.5,
-                       help='wait time between each row to insert')
+                       help='wait time between each row to insert. For OPC-UA the sleep rate is 1/{sleep value}.')
     parse.add_argument('--topic', type=str, default='anylog-demo',
                        help='topic name for POST, MQTT and Kafka')
     parse.add_argument('--timeout', type=float, default=30, help='REST timeout')
@@ -160,7 +161,8 @@ def main():
         describe_data(num_tables=args.num_tables, num_columns=args.num_columns)
     if args.publisher == 'server':
         rest_server(db_name=args.db_name, service_port=args.service_port, exception=args.exception)
-
+    elif args.publisher == 'opcua':
+        asyncio.run(run_opcua_server(sleep_rate=args.sleep, db_name=args.db_name))
 
     payloads = []
     total_rows = 0

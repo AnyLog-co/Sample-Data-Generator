@@ -3,7 +3,7 @@ import asyncio
 from flask import Flask, jsonify
 from concurrent.futures import ThreadPoolExecutor
 
-from data_generator.configuration_based_data import configuration_data,  opcua_serialize_data
+from data_generator.configuration_based_data import configuration_data, large_data
 from data_generator.rand_data import data_generator as rand_data
 from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
 from data_generator.modified_atmosphere_packaging_machine import r_50
@@ -38,7 +38,7 @@ def generate_data(data_generator:str, db_name:str):
             payload = loop.run_until_complete(configuration_data())
         finally:
             loop.close()
-        payload = opcua_serialize_data(payload, db_name=db_name)
+        payload = large_data(payload, db_name=db_name)
     else:
         payload = {}
         if EXCEPTION is True:
