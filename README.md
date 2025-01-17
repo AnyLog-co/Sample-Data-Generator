@@ -88,7 +88,7 @@ docker run -it \
 --rm anylogco/sample-data-generator:latest
 ```
 **Process**: under _large_ namespace the number of tables (`ns=2;i=X`) depends on [opcua_describe_data.json](blobs/opcua_describe_data.json).
-While under _network_ there's both _ping_ and percentagecpu data.  
+While under _network_ there's both _ping_ and _percentagecpu_ data.  
 ```anylog
 # view list of namespaces
 AL anylog-node +> get opcua namespace where  url = opc.tcp://127.0.0.1:4840/freeopcua/data-generator 
