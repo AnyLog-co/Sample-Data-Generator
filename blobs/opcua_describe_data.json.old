@@ -1,0 +1,509 @@
+{
+    "table_1": {
+        "timestamp": {
+            "type": "datetime"
+        },
+        "device_id": {
+            "value": "9542a308-42e5-4f91-967d-8ba485957f5c"
+        },
+        "column_1": {
+            "type": "int",
+            "min": 330,
+            "max": 905
+        },
+        "column_2": {
+            "type": "string",
+            "length": 2
+        },
+        "column_3": {
+            "type": "bool"
+        },
+        "column_4": {
+            "type": "int",
+            "min": 157,
+            "max": 798
+        },
+        "column_5": {
+            "type": "float",
+            "min": 353,
+            "max": 720
+        },
+        "column_6": {
+            "type": "int",
+            "min": 202,
+            "max": 729
+        },
+        "column_7": {
+            "type": "int",
+            "min": 411,
+            "max": 886
+        },
+        "column_8": {
+            "type": "float",
+            "min": 130,
+            "max": 512
+        },
+        "column_9": {
+            "type": "float",
+            "min": 479,
+            "max": 943
+        },
+        "column_10": {
+            "type": "float",
+            "min": 161,
+            "max": 837
+        }
+    },
+    "table_2": {
+        "timestamp": {
+            "type": "datetime"
+        },
+        "device_id": {
+            "value": "a61b743e-47c2-4048-9d5a-754ec78baed2"
+        },
+        "column_1": {
+            "type": "bool"
+        },
+        "column_2": {
+            "type": "float",
+            "min": 142,
+            "max": 911
+        },
+        "column_3": {
+            "type": "string",
+            "length": 7
+        },
+        "column_4": {
+            "type": "string",
+            "length": 3
+        },
+        "column_5": {
+            "type": "float",
+            "min": 358,
+            "max": 942
+        },
+        "column_6": {
+            "type": "float",
+            "min": 13,
+            "max": 979
+        },
+        "column_7": {
+            "type": "int",
+            "min": 278,
+            "max": 646
+        },
+        "column_8": {
+            "type": "int",
+            "min": 476,
+            "max": 771
+        },
+        "column_9": {
+            "type": "string",
+            "length": 7
+        },
+        "column_10": {
+            "type": "bool"
+        }
+    },
+    "table_3": {
+        "timestamp": {
+            "type": "datetime"
+        },
+        "device_id": {
+            "value": "cf3918fd-0f54-4c1c-ab3e-6899fd416153"
+        },
+        "column_1": {
+            "type": "string",
+            "length": 5
+        },
+        "column_2": {
+            "type": "int",
+            "min": 420,
+            "max": 726
+        },
+        "column_3": {
+            "type": "float",
+            "min": 41,
+            "max": 546
+        },
+        "column_4": {
+            "type": "float",
+            "min": 142,
+            "max": 647
+        },
+        "column_5": {
+            "type": "int",
+            "min": 481,
+            "max": 609
+        },
+        "column_6": {
+            "type": "int",
+            "min": 174,
+            "max": 710
+        },
+        "column_7": {
+            "type": "string",
+            "length": 5
+        },
+        "column_8": {
+            "type": "bool"
+        },
+        "column_9": {
+            "type": "int",
+            "min": 278,
+            "max": 928
+        },
+        "column_10": {
+            "type": "bool"
+        }
+    },
+    "table_4": {
+        "timestamp": {
+            "type": "datetime"
+        },
+        "device_id": {
+            "value": "ff4eb56b-fae9-47f3-83f5-60302cbf24e5"
+        },
+        "column_1": {
+            "type": "string",
+            "length": 5
+        },
+        "column_2": {
+            "type": "string",
+            "length": 7
+        },
+        "column_3": {
+            "type": "string",
+            "length": 5
+        },
+        "column_4": {
+            "type": "int",
+            "min": 251,
+            "max": 616
+        },
+        "column_5": {
+            "type": "string",
+            "length": 1
+        },
+        "column_6": {
+            "type": "string",
+            "length": 6
+        },
+        "column_7": {
+            "type": "string",
+            "length": 8
+        },
+        "column_8": {
+            "type": "float",
+            "min": 41,
+            "max": 687
+        },
+        "column_9": {
+            "type": "bool"
+        },
+        "column_10": {
+            "type": "string",
+            "length": 3
+        }
+    },
+    "table_5": {
+        "timestamp": {
+            "type": "datetime"
+        },
+        "device_id": {
+            "value": "ea0e81a3-a6a8-4d44-b113-2df9224a4386"
+        },
+        "column_1": {
+            "type": "bool"
+        },
+        "column_2": {
+            "type": "string",
+            "length": 2
+        },
+        "column_3": {
+            "type": "int",
+            "min": 206,
+            "max": 838
+        },
+        "column_4": {
+            "type": "bool"
+        },
+        "column_5": {
+            "type": "float",
+            "min": 237,
+            "max": 853
+        },
+        "column_6": {
+            "type": "float",
+            "min": 390,
+            "max": 930
+        },
+        "column_7": {
+            "type": "float",
+            "min": 290,
+            "max": 932
+        },
+        "column_8": {
+            "type": "bool"
+        },
+        "column_9": {
+            "type": "bool"
+        },
+        "column_10": {
+            "type": "float",
+            "min": 272,
+            "max": 896
+        }
+    },
+    "table_6": {
+        "timestamp": {
+            "type": "datetime"
+        },
+        "device_id": {
+            "value": "40f57456-6e92-4209-bae9-0bafee85736a"
+        },
+        "column_1": {
+            "type": "string",
+            "length": 3
+        },
+        "column_2": {
+            "type": "float",
+            "min": 133,
+            "max": 564
+        },
+        "column_3": {
+            "type": "int",
+            "min": 281,
+            "max": 535
+        },
+        "column_4": {
+            "type": "float",
+            "min": 289,
+            "max": 623
+        },
+        "column_5": {
+            "type": "bool"
+        },
+        "column_6": {
+            "type": "string",
+            "length": 6
+        },
+        "column_7": {
+            "type": "int",
+            "min": 281,
+            "max": 725
+        },
+        "column_8": {
+            "type": "int",
+            "min": 186,
+            "max": 809
+        },
+        "column_9": {
+            "type": "string",
+            "length": 1
+        },
+        "column_10": {
+            "type": "bool"
+        }
+    },
+    "table_7": {
+        "timestamp": {
+            "type": "datetime"
+        },
+        "device_id": {
+            "value": "faba291f-d015-4268-8bfa-7228cfe0cce1"
+        },
+        "column_1": {
+            "type": "bool"
+        },
+        "column_2": {
+            "type": "float",
+            "min": 232,
+            "max": 873
+        },
+        "column_3": {
+            "type": "float",
+            "min": 151,
+            "max": 970
+        },
+        "column_4": {
+            "type": "int",
+            "min": 465,
+            "max": 774
+        },
+        "column_5": {
+            "type": "bool"
+        },
+        "column_6": {
+            "type": "int",
+            "min": 292,
+            "max": 617
+        },
+        "column_7": {
+            "type": "string",
+            "length": 8
+        },
+        "column_8": {
+            "type": "bool"
+        },
+        "column_9": {
+            "type": "float",
+            "min": 181,
+            "max": 545
+        },
+        "column_10": {
+            "type": "int",
+            "min": 264,
+            "max": 613
+        }
+    },
+    "table_8": {
+        "timestamp": {
+            "type": "datetime"
+        },
+        "device_id": {
+            "value": "8acbdb32-85c6-4526-9418-02060e2299ce"
+        },
+        "column_1": {
+            "type": "bool"
+        },
+        "column_2": {
+            "type": "string",
+            "length": 3
+        },
+        "column_3": {
+            "type": "int",
+            "min": 232,
+            "max": 717
+        },
+        "column_4": {
+            "type": "int",
+            "min": 193,
+            "max": 547
+        },
+        "column_5": {
+            "type": "string",
+            "length": 3
+        },
+        "column_6": {
+            "type": "string",
+            "length": 8
+        },
+        "column_7": {
+            "type": "int",
+            "min": 169,
+            "max": 946
+        },
+        "column_8": {
+            "type": "float",
+            "min": 200,
+            "max": 660
+        },
+        "column_9": {
+            "type": "float",
+            "min": 247,
+            "max": 979
+        },
+        "column_10": {
+            "type": "int",
+            "min": 369,
+            "max": 734
+        }
+    },
+    "table_9": {
+        "timestamp": {
+            "type": "datetime"
+        },
+        "device_id": {
+            "value": "31608426-a0e8-4cbe-919b-90956b8f2f2d"
+        },
+        "column_1": {
+            "type": "bool"
+        },
+        "column_2": {
+            "type": "string",
+            "length": 3
+        },
+        "column_3": {
+            "type": "int",
+            "min": 380,
+            "max": 811
+        },
+        "column_4": {
+            "type": "bool"
+        },
+        "column_5": {
+            "type": "int",
+            "min": 266,
+            "max": 952
+        },
+        "column_6": {
+            "type": "int",
+            "min": 128,
+            "max": 880
+        },
+        "column_7": {
+            "type": "float",
+            "min": 107,
+            "max": 996
+        },
+        "column_8": {
+            "type": "float",
+            "min": 390,
+            "max": 834
+        },
+        "column_9": {
+            "type": "float",
+            "min": 86,
+            "max": 520
+        },
+        "column_10": {
+            "type": "bool"
+        }
+    },
+    "table_10": {
+        "timestamp": {
+            "type": "datetime"
+        },
+        "device_id": {
+            "value": "9184c8e4-5649-4271-bb6c-708981fd0d08"
+        },
+        "column_1": {
+            "type": "bool"
+        },
+        "column_2": {
+            "type": "int",
+            "min": 464,
+            "max": 871
+        },
+        "column_3": {
+            "type": "bool"
+        },
+        "column_4": {
+            "type": "int",
+            "min": 259,
+            "max": 502
+        },
+        "column_5": {
+            "type": "string",
+            "length": 5
+        },
+        "column_6": {
+            "type": "int",
+            "min": 396,
+            "max": 874
+        },
+        "column_7": {
+            "type": "bool"
+        },
+        "column_8": {
+            "type": "bool"
+        },
+        "column_9": {
+            "type": "bool"
+        },
+        "column_10": {
+            "type": "bool"
+        }
+    }
+}
