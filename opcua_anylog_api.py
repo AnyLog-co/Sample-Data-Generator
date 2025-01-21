@@ -1,7 +1,6 @@
 import argparse
 import requests
 
-
 NAMESPACE = {
     "large": 2,
     "ping": [3, 1],
@@ -15,7 +14,6 @@ def rest_command(conn:str, cmd_type:str, command:str, struct_attributes:str=None
         "command": command.replace("\n", "").replace("<", "").replace(">", "").replace("\r", ""),
         "User-Agent": "AnyLog/1.23"
     }
-
     output = None
     try:
         if cmd_type.lower() == 'get':
@@ -35,44 +33,66 @@ def rest_command(conn:str, cmd_type:str, command:str, struct_attributes:str=None
         elif 'get opcua values' in command:
             print(headers['command'])
             output = r.text
-        else:
+        elif 'run opcua client' in r.text:
             rest_command(conn=conn, cmd_type='POST', command=r.text)
 
     return output
 
 def execute_process(conn:str, namespace:str, opcua_conn:str, struct_class:str, struct_format:str, struct_frequency,
-                    table_count:int, disable_validate:bool, struct_attributes:str):
-    if namespace != 'large':
-        index = NAMESPACE[namespace][1]
-        namespace = NAMESPACE[namespace][0]
-    else:
-        namespace = NAMESPACE[namespace]
-        index = "%s"
-
-    node = f'"ns={namespace};i={index}"'
+                    dbms:str, table_count:int, disable_validate:bool, struct_attributes:str):
 
     command = f"""<get opcua struct where
       url = opc.tcp://{opcua_conn}/freeopcua/data-generator and
-      node={node} and
+      node=%s and
+      dbms={dbms} and
+      table=%s and
       class = {struct_class} and
       format = {struct_format} and
       frequency = {struct_frequency} and
       validate = {str(disable_validate).lower()}>
     """
-    if namespace == 2:
+
+    if namespace == 2 or namespace == 'large':
+        index = "%s"
+        namespace = NAMESPACE[namespace]
+        node = f'"ns={namespace};i={index}"'
+
         for id in range(1, table_count+1):
-            output = rest_command(conn=conn, cmd_type='GET', command=command % id, struct_attributes=struct_attributes)
+            output = rest_command(conn=conn, cmd_type='GET', command=command % (node % id, f'table_{id}'), struct_attributes=struct_attributes)
             if struct_format == 'get_value':
                 print(output)
+    elif namespace == 'networking':
+        for space in ['ping', 'percentagecpu']:
+            execute_process(conn=conn, namespace=space, opcua_conn=opcua_conn, struct_class=struct_class,
+                            struct_format=struct_format, struct_frequency=struct_frequency, dbms=dbms,
+                            table_count=table_count, disable_validate=disable_validate,
+                            struct_attributes=struct_attributes)
     else:
-        output = rest_command(conn=conn, cmd_type='GET', command=command, struct_attributes=struct_attributes)
-    if struct_format == 'get_value':
-        print(output)
+        if namespace == 'ping':
+            node = f'"ns=3;i=1"'
+            table_name = 'ping_sensor'
+        elif namespace == 'percentagecpu':
+            node = f'"ns=3;i=2"'
+            table_name = 'percentagecpu_sensor'
+        else:
+            index = NAMESPACE[namespace][1]
+            namespace = NAMESPACE[namespace][0]
+            node = f'"ns={namespace};i={index}"'
+            table_name = None
+            for key, value in NAMESPACE.items():
+                if isinstance(value, list)  and value[0] == namespace:
+                    table_name = key
+                    break
+
+        output = rest_command(conn=conn, cmd_type='GET', command=command % (node, table_name), struct_attributes=struct_attributes)
+        if struct_format == 'get_value':
+            print(output)
 
 
 def main():
     namespace_options = list(NAMESPACE.keys())
     namespace_options.append('all')
+    namespace_options.append('networking')
     parse = argparse.ArgumentParser()
     parse.add_argument('conn',       type=str, default='127.0.0.1:32149', help='REST connection information')
     parse.add_argument('db_name',    type=str, default='new_company',     help='logical database name')
@@ -95,13 +115,13 @@ def main():
     if args.namespace == 'all':
         for namespace in NAMESPACE:
             execute_process(namespace=namespace, conn=args.conn, opcua_conn=args.opcua_conn, struct_class=args.struct_class,
-                            struct_format=args.struct_format, struct_frequency=args.struct_frequency,
+                            struct_format=args.struct_format, struct_frequency=args.struct_frequency, dbms=args.db_name,
                             table_count=args.table_count, disable_validate=args.struct_disable_validate,
                             struct_attributes=args.struct_attributes)
     else:
         execute_process(namespace=args.namespace, conn=args.conn, opcua_conn=args.opcua_conn, struct_class=args.struct_class,
-                        struct_format=args.struct_format, struct_frequency=args.struct_frequency,
-                        disable_validate=args.struct_disable_validate, struct_attributes=args.struct_attributes)
+                        table_count=args.table_count, struct_format=args.struct_format, struct_frequency=args.struct_frequency,
+                        dbms=args.db_name, disable_validate=args.struct_disable_validate, struct_attributes=args.struct_attributes)
 
 
 if __name__ == '__main__':
