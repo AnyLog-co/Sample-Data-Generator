@@ -7,7 +7,7 @@ from data_generator.rand_data import data_generator as rand_data
 from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
 from data_generator.modified_atmosphere_packaging_machine import r_50
 
-SERVER = '127.0.0.1'
+SERVER = '0.0.0.0'
 PORT = 4840
 
 NAMESPACES = {
