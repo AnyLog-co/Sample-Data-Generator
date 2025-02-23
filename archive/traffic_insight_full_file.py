@@ -8,13 +8,13 @@ LOCATIONS = {
         'camera': '3e04896e-a28f-46f0-b481-6fe7370400a8',
         'location': (37.373653, -121.927853),
         'intersection': '101 N / 85 E',
-        'server': '127.0.0.1:32159'
+        'server': '23.92.31.110:32149'
     },
     'San Francisco': {
         'camera': 'f5de1578-ec3c-4ea5-92f5-b6031c143b93',
         'location': (37.767880, -122.405473),
         'intersection': '101 N / 80 E',
-        'server': '127.0.0.1:32149'
+        'server': '23.92.31.110:32149'
     }
 }
 
@@ -58,9 +58,9 @@ def __put_data(conn:str, payload:dict):
 
 
 def generate_traffic_data(exception:bool=False)->list:
-    if os.path.isfile('data/fleet_command.traffic_data.0.json'): 
+    if os.path.isfile('nvidia_demo/fleet_command.traffic_data.0.json'):
         try: 
-            with open('data/fleet_command.traffic_data.0.json', 'r') as f: 
+            with open('nvidia_demo/fleet_command.traffic_data.0.json', 'r') as f:
                 try: 
                     for line in f.readlines(): 
                         dict_line = json.loads(line)

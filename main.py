@@ -71,7 +71,7 @@ def __generate_data(data_generator:str, db_name:str, last_blob:str=None, excepti
         payload = large_data(data=payload, db_name=db_name)
     elif data_generator == 'rand':
         payload = rand_data(db_name=db_name)
-    elif data_generator == 'cars':
+    elif data_generator == 'car':
         from data_generator.blobs_car_video import car_counting
         payload, last_blob = car_counting(db_name=db_name, last_blob=last_blob, exception=exception)
     elif data_generator == 'people':
@@ -176,10 +176,10 @@ def main():
     total_rows = 0
     last_blob = None
     while True:
-        conn = random.choice(list(args.conn.keys()))
-        auth = args.conn[conn]
+        conn = random.choice(list(args.rest_conn.keys()))
+        auth = args.rest_conn[conn]
 
-        payload, last_blob = __generate_data(data_generator=args.data_generator, db_name=args.db_name,
+        payload, last_blob = __generate_data(data_generator=args.data_type, db_name=args.db_name,
                                              last_blob=last_blob, exception=args.exception)
 
         payloads.append(payload)
