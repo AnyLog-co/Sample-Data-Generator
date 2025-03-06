@@ -1,8 +1,10 @@
 import asyncio
 import argparse
-
+import os
 from data_generator.opcua_data_gen import describe_data
 from data_publisher.opcua_server import run_opcua_server
+
+DATA_FILE = os.path.join(os.path.dirname(__file__).split("data_generator")[0], "blobs", "opcua_describe_data.json")
 
 def main():
     parser = argparse.ArgumentParser()
@@ -16,7 +18,7 @@ def main():
     parser.add_argument('--show-quality', type=bool, const=True, default=False, help='Quality (True/False) per numeric column')
     args = parser.parse_args()
 
-    if args.create_data_size is True:
+    if args.create_data_size is True or not os.path.isfile(DATA_FILE):
         describe_data(num_tables=args.num_tables, num_columns=args.num_columns, include_quality=args.show_quality)
 
     asyncio.run(run_opcua_server(sleep_rate=args.sleep_rate, db_name=args.db_name))

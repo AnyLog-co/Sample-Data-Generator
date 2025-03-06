@@ -15,3 +15,4 @@ kafka-python>=0.0
 tensorflow>=0.0
 numpy>=0.0
 py3-opencv>=0.0
+opcua>=0.0
