@@ -64,19 +64,19 @@ def __generate_data(data_generator:str, db_name:str, last_blob=None, is_aggregat
 
 def __publish_data(publisher:str, conn:str, payload:list, topic:str, qos:int=0, auth:tuple=(), timeout:float=30,
                    exception:bool=False):
-    print(payload)
-    # if publisher == 'put':
-    #     from data_publisher.publisher_rest import publish_via_put
-    #     publish_via_put(conn=conn, payload=payload, auth=auth, timeout=timeout, exception=exception)
-    # elif publisher == 'post':
-    #     from data_publisher.publisher_rest import publish_via_post
-    #     publish_via_post(conn=conn, payload=payload, topic=topic, auth=auth, timeout=timeout, exception=exception)
-    # elif publisher == 'mqtt':
-    #     from data_publisher.publisher_mqtt import publish_mqtt
-    #     publish_mqtt(conn=conn, payload=payload, topic=topic, qos=qos, auth=auth, exception=exception)
-    # elif publisher == 'kafka':
-    #     from data_publisher.publisher_kafka import publish_kafka
-    #     publish_kafka(conn=conn, payload=payload, topic=topic, auth=auth, exception=exception)
+
+    if publisher == 'put':
+        from data_publisher.publisher_rest import publish_via_put
+        publish_via_put(conn=conn, payload=payload, auth=auth, timeout=timeout, exception=exception)
+    elif publisher == 'post':
+        from data_publisher.publisher_rest import publish_via_post
+        publish_via_post(conn=conn, payload=payload, topic=topic, auth=auth, timeout=timeout, exception=exception)
+    elif publisher == 'mqtt':
+        from data_publisher.publisher_mqtt import publish_mqtt
+        publish_mqtt(conn=conn, payload=payload, topic=topic, qos=qos, auth=auth, exception=exception)
+    elif publisher == 'kafka':
+        from data_publisher.publisher_kafka import publish_kafka
+        publish_kafka(conn=conn, payload=payload, topic=topic, auth=auth, exception=exception)
 
 def main():
     parser = argparse.ArgumentParser()
