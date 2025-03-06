@@ -39,14 +39,15 @@ def __generate_examples():
     print(output)
 
 
-def __generate_data(data_generator:str, db_name:str, last_blob=None, tolerance_level:float=0, exception:bool=False):
+def __generate_data(data_generator:str, db_name:str, last_blob=None, is_aggregated:bool=False, tolerance_level:float=0,
+                    exception:bool=False):
     payload = {}
     if data_generator == 'ping':
         payload = ping_sensor(db_name=db_name)
     elif data_generator == 'percentagecpu':
         payload = percentagecpu_sensor(db_name=db_name)
     elif data_generator == 'rand':
-        payload, last_blob = rand_data(db_name=db_name, last_value=last_blob, tolerance_level=tolerance_level)
+        payload, last_blob = rand_data(db_name=db_name, is_aggregated=is_aggregated, last_value=last_blob, tolerance_level=tolerance_level)
     elif data_generator == 'cars':
         from data_generator.blobs_car_video import car_counting
         payload, last_blob = car_counting(db_name=db_name, last_blob=last_blob, exception=exception)
@@ -60,18 +61,19 @@ def __generate_data(data_generator:str, db_name:str, last_blob=None, tolerance_l
 
 def __publish_data(publisher:str, conn:str, payload:list, topic:str, qos:int=0, auth:tuple=(), timeout:float=30,
                    exception:bool=False):
-    if publisher == 'put':
-        from data_publisher.publisher_rest import publish_via_put
-        publish_via_put(conn=conn, payload=payload, auth=auth, timeout=timeout, exception=exception)
-    elif publisher == 'post':
-        from data_publisher.publisher_rest import publish_via_post
-        publish_via_post(conn=conn, payload=payload, topic=topic, auth=auth, timeout=timeout, exception=exception)
-    elif publisher == 'mqtt':
-        from data_publisher.publisher_mqtt import publish_mqtt
-        publish_mqtt(conn=conn, payload=payload, topic=topic, qos=qos, auth=auth, exception=exception)
-    elif publisher == 'kafka':
-        from data_publisher.publisher_kafka import publish_kafka
-        publish_kafka(conn=conn, payload=payload, topic=topic, auth=auth, exception=exception)
+    print(payload)
+    # if publisher == 'put':
+    #     from data_publisher.publisher_rest import publish_via_put
+    #     publish_via_put(conn=conn, payload=payload, auth=auth, timeout=timeout, exception=exception)
+    # elif publisher == 'post':
+    #     from data_publisher.publisher_rest import publish_via_post
+    #     publish_via_post(conn=conn, payload=payload, topic=topic, auth=auth, timeout=timeout, exception=exception)
+    # elif publisher == 'mqtt':
+    #     from data_publisher.publisher_mqtt import publish_mqtt
+    #     publish_mqtt(conn=conn, payload=payload, topic=topic, qos=qos, auth=auth, exception=exception)
+    # elif publisher == 'kafka':
+    #     from data_publisher.publisher_kafka import publish_kafka
+    #     publish_kafka(conn=conn, payload=payload, topic=topic, auth=auth, exception=exception)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -133,6 +135,7 @@ def main():
         auth = conns[conn]
 
         payload, last_blob = __generate_data(data_generator=args.data_generator, db_name=args.db_name,
+                                             is_aggregated=args.is_aggregated, tolerance_level=args.tolerance_level,
                                              last_blob=last_blob, exception=args.exception)
         payloads.append(payload)
         if len(payloads) == args.batch_size or (args.total_rows <= len(payloads) + total_rows and args.total_rows != 0):
