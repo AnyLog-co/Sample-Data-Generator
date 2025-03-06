@@ -6,10 +6,11 @@ from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
 from data_generator.rand_data import data_generator as rand_data
 from data_generator.blob_people_video import  get_data as people_counter
 from data_generator.blobs_factory_images import get_data as image_processing
+from data_generator.r_50 import r_50
 
 def __check_data_generators(data_generators:str):
     for data_gen in data_generators.split(","):
-        if data_gen not in ['rand', 'ping', 'percentagecpu', 'cars', 'people', 'images']:
+        if data_gen not in ['rand', 'ping', 'percentagecpu', 'cars', 'people', 'images', 'r_50']:
             raise argparse.ArgumentError(f"Invalid data type {data_gen}")
     return data_generators
 
@@ -48,6 +49,8 @@ def __generate_data(data_generator:str, db_name:str, last_blob=None, is_aggregat
         payload = percentagecpu_sensor(db_name=db_name)
     elif data_generator == 'rand':
         payload, last_blob = rand_data(db_name=db_name, is_aggregated=is_aggregated, last_value=last_blob, tolerance_level=tolerance_level)
+    elif data_generator == 'r_50':
+        payload = r_50(db_name=db_name)
     elif data_generator == 'cars':
         from data_generator.blobs_car_video import car_counting
         payload, last_blob = car_counting(db_name=db_name, last_blob=last_blob, exception=exception)
