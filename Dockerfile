@@ -1,31 +1,36 @@
-FROM python:3.9-alpine as base
+FROM python:3.12-alpine as base
 
-WORKDIR /app
-RUN mkdir -p /app/Sample-Data-Generator/blobs \
-    /app/Sample-Data-Generator/blobs/car_video \
-    /app/Sample-Data-Generator/blobs/factory_images \
-    /app/Sample-Data-Generator/blobs/people_video \
-    /app/Sample-Data-Generator/blobs/models \
-    /app/Sample-Data-Generator/data_generator \
-    /app/Sample-Data-Generator/data_publisher
+WORKDIR /app/Sample-Data-Generator
 
-COPY blobs/car_video /app/Sample-Data-Generator/blobs/car_video
-COPY blobs/factory_images /app/Sample-Data-Generator/blobs/factory_images
-COPY blobs/people_video /app/Sample-Data-Generator/blobs/people_video
-COPY blobs/models /app/Sample-Data-Generator/blobs/models
-COPY blobs/factory_images.json /app/Sample-Data-Generator/blobs/factory_images.json
+# Create necessary directories in a single command to optimize layer caching
+RUN mkdir -p blobs/car_video \
+             blobs/factory_images \
+             blobs/people_video \
+             blobs/models \
+             data_generator \
+             data_publisher
 
-COPY data_generator/* /app/Sample-Data-Generator/data_generator
-COPY data_publisher/* /app/Sample-Data-Generator/data_publisher
-COPY requirements.txt /app/Sample-Data-Generator/requirements.txt
-COPY data_generator.py /app/Sample-Data-Generator/data_generator.py
-COPY data_generator.sh /app/Sample-Data-Generator/data_generator.sh
+# Copy necessary files and directories in a structured manner
+COPY blobs/car_video blobs/car_video
+COPY blobs/factory_images blobs/factory_images
+COPY blobs/people_video blobs/people_video
+COPY blobs/models blobs/models
+COPY blobs/factory_images.json blobs/factory_images.json
 
-RUN apk update && apk upgrade && \
-    apk add bash python3 python3-dev py3-pip && \
-    python3 -m pip install --upgrade pip && \
-    python3 -m pip install --upgrade requirements
+COPY data_generator/ data_generator/
+COPY data_publisher/ data_publisher/
+COPY requirements.txt requirements.txt
+COPY data_generator.py data_generator.py
+COPY data_generator.sh data_generator.sh
+
+# Optimize package installation
+RUN apk add --no-cache bash python3-dev py3-pip
+RUN python3 -m pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt || true
 
 FROM base AS deployment
-#ENTRYPOINT ["/bin/bash"]
-ENTRYPOINT bash /app/Sample-Data-Generator/data_generator.sh
+
+# Ensure script has execution permissions
+RUN chmod +x data_generator.sh
+
+ENTRYPOINT ["/bin/bash", "data_generator.sh"]

@@ -6,20 +6,23 @@ The _Sample Data Generator_ is used to insert data into AnyLog using REST (_PUT_
 * Options
 ```text
 positional arguments:
-  data_generator    data to generate        {rand,ping,percentagecpu,cars,people,images}
-  conn              connection information (example: [user]:[passwd]@[ip]:[port])
-  publisher         format to publish data  {put,post,mqtt,kafka}
-options:
-  -h, --help                    show this help message and exit
-  --batch-size  BATCH_SIZE      number of rows per insert batch                             [default: 10]
-  --total-rows  TOTAL_ROWS      total rows to insert - if set to 0 then run continuously    [default: 10]
-  --sleep       SLEEP           wait time between each row to insert                        [default: 0.5]
-  --db-name     DB_NAME         logical database name                                       [default: test]
-  --topic       TOPIC           topic name for POST, MQTT and Kafka                         [default: anylog-demo]
-  --timeout     TIMEOUT         REST timeout                                                [default: 30]
-  --qos         QOS             Quality of Service      {0,1,2,3}                           [default: 0] 
-  --exception   [EXCEPTION]     Whether to print exceptions                                 [default: false]
-  --examples    [EXAMPLES]      print example calls and sample data                         [default: false] 
+  data_generator          Data to generate  {rand, ping, percentagecpu, cars, people, images}
+  conn                    Connection information (example: [user]:[passwd]@[ip]:[port])
+  publisher               Format to publish data  {put, post, mqtt, kafka}
+
+optional arguments:
+  -h, --help              Show this help message and exit
+  --batch-size BATCH_SIZE Number of rows per insert batch                            [default: 10]
+  --total-rows TOTAL_ROWS Total rows to insert - if set to 0, runs continuously      [default: 10]
+  --sleep SLEEP           Wait time (seconds) between each row insertion            [default: 0.5]
+  --db-name DB_NAME       Logical database name                                      [default: test]
+  --topic TOPIC           Topic name for POST, MQTT, and Kafka                       [default: anylog-demo]
+  --timeout TIMEOUT       REST timeout (seconds)                                     [default: 30]
+  --qos QOS               Quality of Service  {0,1,2,3}                              [default: 0] 
+  --exception [EXCEPTION] Whether to print exceptions                                [default: false]
+  --is-aggregated        Allow static values for random data                         [default: false]
+  --tolerance-level      Accepted tolerance percent level for aggregated values      [default: 0]
+  --examples [EXAMPLES]   Print example calls and sample data                        [default: false] 
 ```
 
 * Sample REST _PUT_
