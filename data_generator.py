@@ -39,14 +39,14 @@ def __generate_examples():
     print(output)
 
 
-def __generate_data(data_generator:str, db_name:str, last_blob:str=None, exception:bool=False):
+def __generate_data(data_generator:str, db_name:str, last_blob=None, tolerance_level:float=0, exception:bool=False):
     payload = {}
     if data_generator == 'ping':
         payload = ping_sensor(db_name=db_name)
     elif data_generator == 'percentagecpu':
         payload = percentagecpu_sensor(db_name=db_name)
     elif data_generator == 'rand':
-        payload = rand_data(db_name=db_name)
+        payload, last_blob = rand_data(db_name=db_name, last_value=last_blob, tolerance_level=tolerance_level)
     elif data_generator == 'cars':
         from data_generator.blobs_car_video import car_counting
         payload, last_blob = car_counting(db_name=db_name, last_blob=last_blob, exception=exception)
@@ -90,6 +90,8 @@ def main():
     parser.add_argument('--qos', type=int, choices=list(range(0, 4)), default=0, help='Quality of Service')
     parser.add_argument('--exception', type=bool,  nargs='?', const=True, default=False,
                         help='Whether to print exceptions')
+    parser.add_argument('--is-aggregated', type=bool, nargs='?', const=True, default=False, help='For rand data, allow to have static values')
+    parser.add_argument('--tolerance-level', type=float, default=0, help='for aggregated values, accepted tolerance percent level')
     parser.add_argument('--examples', type=str, nargs='?', const=True, default=False, help='print example calls and sample data')
     args = parser.parse_args()
 
@@ -138,6 +140,7 @@ def main():
                            auth=auth, timeout=args.timeout, exception=args.exception)
             total_rows += len(payloads)
             payloads = []
+            last_blob = None
 
         if total_rows >= args.total_rows:
             exit(1)
