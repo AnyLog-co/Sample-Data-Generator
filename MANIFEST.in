@@ -1,5 +1,0 @@
-include blobs/*.json
-recursive-include blobs/people_video *.mp4
-recursive-include blobs/car_video *.mp4
-recursive-include blobs/factory_images *.jpeg *.png
-recursive-include blobs/models *.tflite
