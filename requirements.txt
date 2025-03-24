@@ -7,12 +7,12 @@
 # uuid
 
 # -- publishing packages --
-requests>=0.0
+requests==2.32.3
 paho-mqtt==1.5.1
-kafka-python>=0.0
+kafka-python==2.0.6
 
 # -- AI / cars data --
 tensorflow>=0.0
-numpy>=0.0
-py3-opencv>=0.0
-opcua>=0.0
+numpy==2.2.3
+opencv-python-headless>=4.10.0.84
+opcua==0.98.13

@@ -1,5 +1,5 @@
 # Use Python 3.12 Alpine as the base image
-FROM python:3.12-alpine AS base
+FROM python:3.11-slim AS base
 
 # Set the working directory for the application
 WORKDIR /app/Sample-Data-Generator
@@ -27,9 +27,10 @@ COPY data_generator_opcua.py data_generator_opcua.py
 COPY data_generator_opcua.sh data_generator_opcua.sh
 
 # Install dependencies and optimize package installation
-RUN apk add --no-cache bash python3-dev py3-pip && \
-    python3 -m pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt || true
+RUN apt-get -y update && apt-get -y upgrade
+RUN apt-get install -y --no-install-recommends bash vim wget git python3-dev python3-pip
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade -r requirements.txt
 
 # Ensure scripts have execution permissions
 RUN chmod +x /app/Sample-Data-Generator/*.sh

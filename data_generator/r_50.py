@@ -28,7 +28,7 @@ def r_50(db_name:str):
     return {
         "dbms": db_name,
         "table": "r_50",
-        "ts": create_timestamp(),
+        "ts": [create_timestamp()],
         "SealStage": [SealStage],
         "Cyc/Min": [round(random.uniform(20.0, 60.0), 2)],
         "BatchCount": [BatchCount],
