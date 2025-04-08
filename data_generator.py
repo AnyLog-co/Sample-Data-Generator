@@ -97,7 +97,7 @@ def main():
                         help='Whether to print exceptions')
     parser.add_argument('--is-aggregated', type=bool, nargs='?', const=True, default=False, help='For rand data, allow to have static values')
     parser.add_argument('--tolerance-level', type=float, default=0, help='for aggregated values, accepted tolerance percent level')
-    parser.add_argument('--examples', type=str, nargs='?', const=True, default=False, help='print example calls and sample data')
+    parser.add_argument('--examples', type=bool, nargs='?', const=True, default=False, help='print example calls and sample data')
     args = parser.parse_args()
 
     conns = __extract_conn(conn_info=args.conn)

@@ -15,13 +15,13 @@ def main():
     parser.add_argument('--create-data-size', type=bool, nargs='?', const=True, default=False, help='create data size for larger data set')
     parser.add_argument('--num-tables', type=int, default=20, help='number of tables for large data')
     parser.add_argument('--num-columns', type=int, default=100, help='total number of columns per table')
-    parser.add_argument('--show-quality', type=bool, const=True, default=False, help='Quality (True/False) per numeric column')
+    parser.add_argument('--show-quality', type=bool, nargs='?', const=True, default=False, help='Quality (True/False) per numeric column')
     args = parser.parse_args()
 
     if args.create_data_size is True or not os.path.isfile(DATA_FILE):
         describe_data(num_tables=args.num_tables, num_columns=args.num_columns, include_quality=args.show_quality)
 
-    asyncio.run(run_opcua_server(sleep_rate=args.sleep_rate, db_name=args.db_name))
+    asyncio.run(run_opcua_server(sleep_rate=args.sleep, db_name=args.db_name))
 
 
 if __name__ == '__main__':
