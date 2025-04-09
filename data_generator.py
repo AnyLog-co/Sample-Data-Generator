@@ -1,18 +1,11 @@
 import argparse
+import datetime
+
+import requests
 import random
-import time
-
-from data_generator.ping_percentagecpu import ping_sensor, percentagecpu_sensor
-from data_generator.rand_data import data_generator as rand_data
-from data_generator.blob_people_video import  get_data as people_counter
-from data_generator.blobs_factory_images import get_data as image_processing
-from data_generator.r_50 import r_50
-
-def __check_data_generators(data_generators:str):
-    for data_gen in data_generators.split(","):
-        if data_gen not in ['rand', 'ping', 'percentagecpu', 'cars', 'people', 'images', 'r_50']:
-            raise argparse.ArgumentError(f"Invalid data type {data_gen}")
-    return data_generators
+import json
+from string import ascii_letters
+from publisher_mqtt import publish_mqtt
 
 def __extract_conn(conn_info:str)->(str, tuple):
     conns = {}
@@ -25,135 +18,93 @@ def __extract_conn(conn_info:str)->(str, tuple):
     return conns
 
 
-def __generate_examples():
-    from data_generator.support import serialize_data
+def get_columns(table_name:str):
+    try:
+        response = requests.get(url='http://23.239.12.151:32349',
+                                headers={'command': f'get columns where dbms=cos and table={table_name} and format=json',
+                                         'User-Agent': 'AnyLog/1.23'})
+        response.raise_for_status()
+    except Exception as error:
+        raise Exception(f"Failed to communicage against 23.239.12.151:32349 (Error: {error})")
+    else:
+        columns = response.json()
+        for column in ['row_id', 'insert_timestamp', 'tsd_name', 'tsd_id', 'tsd_info']:
+            if column in columns:
+                del  columns[column]
+    return columns
 
-    output = "Sample Values:"
-    output += f"\n\t{serialize_data(rand_data(db_name='test'))}"
-    output += f"\n\t{serialize_data(ping_sensor(db_name='test'))}"
-    output += f"\n\t{serialize_data(percentagecpu_sensor(db_name='test'))}"
-    output += "\n\nSample Calls"
-    output += "\n\tSending data to MQTT: python3 ~/Sample-Data-Generator/data_generator.py rand anyloguser:mqtt4AnyLog!@localhost:1883 mqtt --topic test --exception"
-    output += "\n\tSending data to Kafka: python3 ~/Sample-Data-Generator/data_generator.py rand 35.188.2.231:9092 kafka --topic test --exception"
-    output += "\n\tSending data via REST POST: python3 ~/Sample-Data-Generator/data_generator.py rand 127.0.0.1:32149 post --topic test --exception"
-    output += "\n\tSending data via REST PUT: python3 ~/Sample-Data-Generator/data_generator.py rand 127.0.0.1:32149 put --exception"
-    print(output)
+def data_generator(db_name:str, table_name:str, columns:str):
+    payload = {'dbms': db_name, 'table': table_name}
+    for column in columns:
+        if 'int' == columns[column]:
+            payload[column] = random.randint(1000, 10000)
+        elif 'float' == columns[column]:
+            payload[column] = random.random() * 1000
+        elif 'decimal' == columns[column]:
+            payload[column] = round(random.random() * 1000, 2)
+        elif 'bool' in columns[column]:
+            payload[column] = random.choice([True, False])
+        elif 'timestamp' in columns[column]:
+            payload[column] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+        elif 'char' in columns[column]:
+            payload[column] = ''
+            for i in range(int(columns[column].split('(')[-1].split(')')[0])):
+                payload[column] += random.choice(ascii_letters)
 
+    return payload
 
-def __generate_data(data_generator:str, db_name:str, last_blob=None, is_aggregated:bool=False, tolerance_level:float=0,
-                    exception:bool=False):
-    payload = {}
-    if data_generator == 'ping':
-        payload = ping_sensor(db_name=db_name)
-    elif data_generator == 'percentagecpu':
-        payload = percentagecpu_sensor(db_name=db_name)
-    elif data_generator == 'rand':
-        payload, last_blob = rand_data(db_name=db_name, is_aggregated=is_aggregated, last_value=last_blob, tolerance_level=tolerance_level)
-    elif data_generator == 'r_50':
-        payload = r_50(db_name=db_name)
-    elif data_generator == 'cars':
-        from data_generator.blobs_car_video import car_counting
-        payload, last_blob = car_counting(db_name=db_name, last_blob=last_blob, exception=exception)
-    elif data_generator == 'people':
-        payload, last_blob = people_counter(db_name=db_name, last_blob=last_blob, exception=exception)
-    elif data_generator == 'images':
-        payload, last_blob = image_processing(db_name=db_name, last_blob=last_blob, exception=exception)
-
-    return payload, last_blob
-
-
-def __publish_data(publisher:str, conn:str, payload:list, topic:str, qos:int=0, auth:tuple=(), timeout:float=30,
-                   exception:bool=False):
-
-    if publisher == 'put':
-        from data_publisher.publisher_rest import publish_via_put
-        publish_via_put(conn=conn, payload=payload, auth=auth, timeout=timeout, exception=exception)
-    elif publisher == 'post':
-        from data_publisher.publisher_rest import publish_via_post
-        publish_via_post(conn=conn, payload=payload, topic=topic, auth=auth, timeout=timeout, exception=exception)
-    elif publisher == 'mqtt':
-        from data_publisher.publisher_mqtt import publish_mqtt
-        publish_mqtt(conn=conn, payload=payload, topic=topic, qos=qos, auth=auth, exception=exception)
-    elif publisher == 'kafka':
-        from data_publisher.publisher_kafka import publish_kafka
-        publish_kafka(conn=conn, payload=payload, topic=topic, auth=auth, exception=exception)
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('data_generator', type=__check_data_generators, default='rand',
-                        help='data to generate')
-    parser.add_argument('conn', type=str, default='127.0.0.1:32149',
-                        help='connection information (example: [user]:[passwd]@[ip]:[port])')
-    parser.add_argument('publisher', type=str, default='put',
-                        choices=['put', 'post', 'mqtt', 'kafka'], help='format to publish data')
-    parser.add_argument('--batch-size', type=int, default=10, help='number of rows per insert batch')
-    parser.add_argument('--total-rows', type=int, default=10, help='total rows to insert - if set to 0 then run continuously')
-    parser.add_argument('--sleep', type=float, default=0.5, help='wait time between each row to insert')
-    parser.add_argument('--db-name', type=str, default='test', help='logical database name')
-    parser.add_argument('--topic', type=str, default='anylog-demo', help='topic name for POST, MQTT and Kafka')
-    parser.add_argument('--timeout', type=float, default=30, help='REST timeout')
-    parser.add_argument('--qos', type=int, choices=list(range(0, 4)), default=0, help='Quality of Service')
-    parser.add_argument('--exception', type=bool,  nargs='?', const=True, default=False,
-                        help='Whether to print exceptions')
-    parser.add_argument('--is-aggregated', type=bool, nargs='?', const=True, default=False, help='For rand data, allow to have static values')
-    parser.add_argument('--tolerance-level', type=float, default=0, help='for aggregated values, accepted tolerance percent level')
-    parser.add_argument('--examples', type=bool, nargs='?', const=True, default=False, help='print example calls and sample data')
-    args = parser.parse_args()
+    parse = argparse.ArgumentParser()
+    parse.add_argument('conn',          type=str,   default=None, help='MQTT IP:Port')
+    parse.add_argument('--db-name',     type=str,   default=None, help='logical database name')
+    parse.add_argument('--max-size',    type=float, default=1.0, help='maximum size in MB')  # <-- CHANGED
+    parse.add_argument('--size-type',   type=str,   default='MB', choices=['MB', 'GB', 'rows'], help='max size type')
+    parse.add_argument('--batch-size',  type=int,   default=10, help='batch size')
+    parse.add_argument('--qos',         type=int,   default=0,  choices=[0, 1, 2], help='Quality of serivce')
+    parse.add_argument('--topic',       type=str,   default=None, help='MQTT topic')
+    args = parse.parse_args()
+
+    is_bool = True
+    max_size = 0
+    if args.size_type != 'rows':
+        max_size = args.max_size * 1024 * 1024  # Convert MB to bytes
+        if args.size_type == 'GB':
+            max_size *= 1024 # Convert MB to GB to bytes
 
     conns = __extract_conn(conn_info=args.conn)
-
-    data_generators = list(args.data_generator.split(","))
-    status = True
-    error_msg = ""
-    if len(data_generators) > 1:
-        for x in data_generators:
-            if x in ['cars', 'people', 'images']:
-                if f"blobs  not supported with other data generators" not in error_msg:
-                    error_msg += "Blobs  not supported with other data generators\n"
-                    status = False
-        if args.publisher != 'put':
-            error_msg += f"Multiple data generator types require put publishing type"
-            status = False
-    if status is False:
-        print(error_msg)
-        exit(1)
-
+    tables = {}
     total_rows = 0
+    total_size = 0
     payloads = []
+    run_time =
 
-    if args.data_generator in ['cars', 'people', 'images'] and args.publisher == 'put':
-        print(f"Data generator for blobs ({args.data_generator} cannot use PUT as a processing option")
-        exit(1)
+    for table in ['pp_pm', 'wp_digital', 'wp_analog', 'wwp_digital', 'wwp_analog']:
+        tables[table] = get_columns(table)
 
-    if args.examples:
-        __generate_examples()
-        exit(1)
-
-    last_blob = None
-
-
-    while True:
+    while is_bool is True:
         conn = random.choice(list(conns.keys()))
-        data_generator = random.choice(data_generators)
         auth = conns[conn]
+        table_name = random.choice(list(tables.keys()))
 
-        payload, last_blob = __generate_data(data_generator=args.data_generator, db_name=args.db_name,
-                                             is_aggregated=args.is_aggregated, tolerance_level=args.tolerance_level,
-                                             last_blob=last_blob, exception=args.exception)
+        payload = data_generator(db_name=args.db_name, table_name=table_name, columns=tables[table])
         payloads.append(payload)
-        if len(payloads) == args.batch_size or (args.total_rows <= len(payloads) + total_rows and args.total_rows != 0):
-            __publish_data(publisher=args.publisher, conn=conn, payload=payloads, topic=args.topic, qos=args.qos,
-                           auth=auth, timeout=args.timeout, exception=args.exception)
-            total_rows += len(payloads)
-            payloads = []
-            last_blob = None
 
-        if total_rows >= args.total_rows:
-            exit(1)
-        time.sleep(args.sleep)
+        total_rows += len(payloads)
+        total_size += sum(len(json.dumps(p).encode('utf-8')) for p in payloads)
+
+        # Calculate total size of the payloads in bytes
+        if len(payloads) == args.batch_size and ((args.size_type != 'rows' and total_size >= max_size) or (total_size >= max_size)) :
+            print(payloads)  # Replace with MQTT call
+            run_time += publish_mqtt(conn=conn, auth=auth, payload=payloads, topic=args.topic, qos=args.qos)
+        if total_size >= max_size:
+            is_bool = False
+
+    if args.size_type == 'rows':
+        print(f"Total Run Time: {run_time} | Total Rows: {total_rows} | Insert Rows/sec: {total_rows/run_time}")
+    else:
+        print(f"Total Run Time: {run_time} | Total Size: {total_size}{args.size_type} | Insert {args.size_type}/sec: {total_size / run_time}")
 
 
 if __name__ == '__main__':
     main()
-
-
