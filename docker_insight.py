@@ -6,6 +6,7 @@ import docker
 import json
 import requests
 import logging
+import socket
 
 from docker.errors import DockerException
 
@@ -26,6 +27,8 @@ try:
     CLIENT = docker.from_env()
 except DockerException as e:
     raise DockerException(f"❌ Docker client failed to connect: {e}")
+
+HOSTNAME = socket.gethostname()
 
 
 def get_readable_io(io_stats):
@@ -57,6 +60,7 @@ def get_data():
 
         for row in processes:
             container_data = {
+                'hostname': HOSTNAME,
                 'container': container.name,
                 'created': created_time.isoformat(),
                 'timestamp': timestamp.isoformat(),
