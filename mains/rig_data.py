@@ -70,7 +70,7 @@ def main(method:str, conn, db_name:str="test", rig_ids:list|None=None, iteration
 
         if method.upper() == "MQTT":
             conn.publish_data(topic="rig-data", payload=payload)
-        else:
+        elif method.upper() in ["POST", "PUT"]:
             headers = {
                 **({
                        "type": "json",
@@ -86,6 +86,8 @@ def main(method:str, conn, db_name:str="test", rig_ids:list|None=None, iteration
                 "Content-Type": "text/plain"
             }
             conn.publish_data(headers=headers, payload=json.dumps(payload), method=method.upper())
+        else:
+            raise ValueError(f"Invalid publishing method {method.upper()} for wind turbine")
 
         counter += 1
         if 0 < iterations <= counter:

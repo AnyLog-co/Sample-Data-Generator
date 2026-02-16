@@ -1,6 +1,9 @@
+import ast
 import json
 import requests
 from bs4 import BeautifulSoup
+import locale
+
 
 from source.rest_calls import RestClient
 # from rest_calls import  RestClient
@@ -87,12 +90,12 @@ def get_files_by_url(url:str)->list:
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
         links = [a.get("href") for a in soup.find_all("a")]
-        return [link for link in links if link and  link.endswith(".csv" or ".json")]
+        return [link for link in links if link and  (link.endswith(".csv") or link.endswith(".json"))]
     except Exception as error:
         raise Exception(f"Failed to access data files {url} (Error: {error})")
 
 
-def read_url_content(url:str, row_id:int=0)->dict:
+def read_url_content(url:str, row_id:int=0, encoding:str=None)->dict:
     """
     Read content based on the URL
     :args:
@@ -101,17 +104,31 @@ def read_url_content(url:str, row_id:int=0)->dict:
     :return:
         content based on row_id
     """
+    raw_content = {}
+    content = {}
     try:
         response = requests.get(url, timeout=30)
         response.raise_for_status()
-        content = {}
         if url.endswith('csv'):
             headers = response.text.split("\n")[0].split(",")
             row = response.text.split("\n")[row_id+1].split(",")
             for index in range(len(headers)):
-                content[headers[index]] = row[index]
-        elif url.endswith('.json'):
-            content = response.json()[row_id]
+                raw_content[headers[index]] = row[index]
+        elif url.endswith('.json') and encoding:
+            locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')  # Linux / Mac
+            text = response.content.decode(encoding)
+            rows = [json.loads(line) for line in text.splitlines() if line.strip()]
+            raw_content = rows[row_id]
     except Exception as error:
         raise Exception(f"Failed to content in {url} (Error: {error})")
+    for key, value in raw_content.items():
+        try:
+            value =  locale.atof(value)
+        except Exception:
+            pass
+        try:
+            content[key.strip()] = ast.literal_eval(value)
+        except:
+            content[key.strip()] = value
+
     return content
