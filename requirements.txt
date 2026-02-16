@@ -1,0 +1,8 @@
+# -- publishing packages --
+requests>=0.0
+paho-mqtt>=0.0
+asyncua>=0.0
+# kafka-python==2.0.6
+
+# pip install --force-reinstall --no-binary :all: cffi
+# pip install --force-reinstall cryptography

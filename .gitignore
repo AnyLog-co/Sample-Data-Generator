@@ -1,0 +1,11 @@
+.DS_Store
+.idea/
+*.swp
+*/__pycache__/
+source/__pycache__/_
+__pycache__/
+sample_data/
+.idea/
+data/ 
+venv/
+venv-*/
