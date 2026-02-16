@@ -1,4 +1,7 @@
 import json
+import requests
+from bs4 import BeautifulSoup
+
 from source.rest_calls import RestClient
 # from rest_calls import  RestClient
 
@@ -69,3 +72,46 @@ def get_policy_id(client:RestClient, policy_type:str, name:str, **kwargs):
     response = client.get_data(headers)
 
     return None if response == '[]' else response
+
+
+def get_files_by_url(url:str)->list:
+    """
+    Get list of CSV files for Rig data
+    :params:
+        url:str - RIG files url path
+    :return:
+        list of files
+    """
+    try:
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+        links = [a.get("href") for a in soup.find_all("a")]
+        return [link for link in links if link and  link.endswith(".csv" or ".json")]
+    except Exception as error:
+        raise Exception(f"Failed to access data files {url} (Error: {error})")
+
+
+def read_url_content(url:str, row_id:int=0)->dict:
+    """
+    Read content based on the URL
+    :args:
+        url:str - URL address
+        row_id:int - index to get row
+    :return:
+        content based on row_id
+    """
+    try:
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+        content = {}
+        if url.endswith('csv'):
+            headers = response.text.split("\n")[0].split(",")
+            row = response.text.split("\n")[row_id+1].split(",")
+            for index in range(len(headers)):
+                content[headers[index]] = row[index]
+        elif url.endswith('.json'):
+            content = response.json()[row_id]
+    except Exception as error:
+        raise Exception(f"Failed to content in {url} (Error: {error})")
+    return content

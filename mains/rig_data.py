@@ -1,14 +1,16 @@
-import csv
 import datetime
 import json
-import os
 import time
+import posixpath
 
 from source.mappings import RIG_INFO
+from source.support import get_files_by_url
+from source.support import read_url_content
 
-DATA_DIR = os.path.join(__file__.split("data_generator")[0], "data", "rig-data")
-if not os.path.isdir(DATA_DIR):
-    raise NotADirectoryError(f"Failed to locate data directory {DATA_DIR}")
+
+DATA_DIR = "http://45.33.11.32/Sample-Data/rig-data/"
+RIG_FILES = get_files_by_url(url=DATA_DIR)
+
 
 def __check_rigs(rig_ids:list):
     # check if user input is valid and file(s) exist
@@ -20,9 +22,12 @@ def __check_rigs(rig_ids:list):
         rig_ids = list(RIG_INFO.keys())
 
     for rig_id in rig_ids:
-        file_path = os.path.join(DATA_DIR, RIG_INFO[rig_id].get("file"))
-        if not os.path.isfile(file_path):
-            raise FileNotFoundError(f"Failed to locate {file_path}")
+        if rig_id in RIG_INFO:
+            file_name = RIG_INFO.get(rig_id).get("file")
+            if file_name not in RIG_FILES:
+                raise FileNotFoundError(f"Failed to locate {posixpath.join(DATA_DIR, file_name)}")
+        else:
+            raise ValueError(f"Invalid rig {rig_id} in rig options")
 
     return rig_ids
 
@@ -50,15 +55,9 @@ def main(method:str, conn, db_name:str="test", rig_ids:list|None=None, iteration
     while is_active:
         payload = []
         for rig_id in  rig_ids:
-            file_path = os.path.join(DATA_DIR, RIG_INFO[rig_id].get("file"))
-            # read file
-            try:
-                with open(file_path, mode='r', encoding="utf-8-sig") as f:
-                    data = list(csv.DictReader(f, delimiter=','))
-                    payload.append(data[line_count])
-            except Exception as error:
-                raise Exception(f"Failed to read content from {full_path} (Error: {error})")
-
+            if RIG_INFO[rig_id].get("file") in RIG_FILES:
+                file_path = posixpath.join(DATA_DIR, RIG_INFO[rig_id].get("file"))
+                payload.append(read_url_content(file_path, line_count))
         line_count += 1
         if line_count >= 360:
             line_count = 0
@@ -93,3 +92,7 @@ def main(method:str, conn, db_name:str="test", rig_ids:list|None=None, iteration
             is_active = False
         else:
             time.sleep(sleep)
+
+
+if __name__ == "__main__":
+    main(method="POST", conn="test", db_name= "test", rig_ids=None, iterations=10, sleep=10)
