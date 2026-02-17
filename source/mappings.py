@@ -115,3 +115,88 @@ WIND_TURBINE_TABLES = {
         "nacelle_position": "Gondelposition [°]"
     }
 }
+
+
+VESSEL_INFO = {
+    "anotherpeak-tier1": {
+        "file_id": "vessel.json",
+        "tables": {
+            "battery_telemetry": [
+                "batteryStateOfChargePercent",
+                "hvBatteryCapacity",
+                "hvBatteryType",
+                "lvBattery*",
+                "currentBatteryPower",
+                "maxBatteryPower",
+                "timeBattery",
+                "timeToFullMinute",
+                "starterBatteryVoltage"
+                "starterBatteryVoltagePercent"
+            ],
+            "navigation_telemetry": [
+                "currentPositionLatitude",
+                "currentPositionLongitude",
+                "speedOverGround",
+                "speedOverGroundFixed",
+                "speedThroughWater",
+                "heading*",
+                "distance*",
+                "trip",
+                "sogValid"
+            ],
+            "charger_telemetry": [
+                "acChargerPowerPercent",
+                "portAcCharger*",
+                "stbdAcCharger*",
+                "elPtx*",
+                "dcac*",
+                "dcdc*",
+                "regeneration*"
+            ],
+            "engine_telemetry": [
+            "motor*",
+            "rpm*",
+            "throttle*",
+            "drive*",
+            "powerBalance",
+            "maxPower",
+            "maxSpeed",
+            "selectSystemMode",
+            "vesselState",
+            "systemState"
+        ],
+        },
+    },
+    "anotherpeak-tier2": {
+        "file_id": "ID_65.json",
+        "tables": {
+            "ac_power_telemetry": [
+                "gActAcCurrent",
+                "gActAcVoltage",
+                "gActAcFrequency",
+                "gCommandAcCurrentLimitPP",
+                "gMaxDcPower",
+                "gParamMaxAcCurrentPP"
+            ],
+            "dc_power_telemetry": [
+                "gActDcPower",
+                "gActDcVoltage",
+                "gCommandDcPowerLimit",
+                "gCommandMaxDcVoltage"
+            ],
+            "thermal_telemetry": [
+                "gActElectronicTemperature",
+                "gCoolingPolicy"
+            ],
+            "control_state": [
+            "gCommand",
+            "gState",
+            "gWake",
+            "gIsSlave",
+            "gError",
+            "gDisableReason",
+            "gSimConnectedPhaseCount"
+        ]
+        }
+    }
+}
