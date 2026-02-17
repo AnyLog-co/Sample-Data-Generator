@@ -1,5 +1,6 @@
 import datetime
 import json
+import time
 import posixpath
 
 from source.mappings import VESSEL_INFO
@@ -33,6 +34,7 @@ def main(method:str, conn, db_name:str="test", vessel_sides:list|None=None, iter
     vessel_sides = __check_vessels(vessel_sides=vessel_sides)
 
     while is_active:
+        line_count = 0
         payload = {key: [] for key in VESSEL_INFO.keys()}
         for vessel_side in vessel_sides:
             for fname in VESSEL_FILES:
@@ -67,6 +69,7 @@ def main(method:str, conn, db_name:str="test", vessel_sides:list|None=None, iter
         if 0 < iterations <= counter:
             is_active = False
         else:
+            line_count += 1
             time.sleep(sleep)
 
         # print(json.dumps(payload, indent=2))

@@ -104,6 +104,7 @@ def read_url_content(url:str, row_id:int=0, encoding:str=None)->dict:
     :return:
         content based on row_id
     """
+    print("test")
     raw_content = {}
     content = {}
     try:
@@ -123,9 +124,7 @@ def read_url_content(url:str, row_id:int=0, encoding:str=None)->dict:
             try:
                 raw_content = response.json()
             except:
-                raw_content = response.text.split("\n")[row_id]
-                raw_content = raw_content.split(": ", 1)[-1]
-                raw_content = json.loads(raw_content.strip())
+                raw_content = json.loads(response.text.split("\n")[row_id])
     except Exception as error:
         raise Exception(f"Failed to content in {url} (Error: {error})")
     for key, value in raw_content.items():

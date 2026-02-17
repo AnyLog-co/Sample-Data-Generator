@@ -7,6 +7,7 @@ from source.support import extract_credentials
 
 from mains.random_data import main as rand_data
 from mains.rig_data import main as rig_data
+from mains.wind_turbine import main as wind_turbine
 
 from source.mappings import RIG_INFO
 
@@ -110,9 +111,10 @@ def main():
                  sleep=args.sleep)
     elif args.data == "rig":
         rig_data(method=args.publish_format.upper(), conn=conn, db_name=args.db_name, iterations=args.repeat,
-                 sleep=args.sleep)
-
-
+                 rig_ids=args.rig_ids, sleep=args.sleep)
+    elif args.data == "wind-turbine":
+        wind_turbine(method=args.publish_format.upper(), conn=conn, db_name=args.db_name, iterations=args.repeat,
+                     turbine_ids=args.turbine_id, sleep=args.sleep)
 
 
 if __name__ == "__main__":
