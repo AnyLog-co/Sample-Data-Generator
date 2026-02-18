@@ -25,3 +25,14 @@ class RestClient:
         except Exception:
             return response.text
 
+
+
+def get_file_content(url:str=None, timeout:float=30):
+    response = None
+    try:
+        response = requests.get(url=url, timeout=timeout)
+        response.raise_for_status()
+    except Exception as error:
+        raise Exception(f"Failed to get content from {url} (Error: {error})")
+
+    return response

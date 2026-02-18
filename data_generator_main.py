@@ -5,9 +5,9 @@ from source.opcua import OpcuaServer
 from source.rest_calls import RestClient
 from source.support import extract_credentials
 
-from mains.random_data import main as rand_data
-from mains.rig_data import main as rig_data
-from mains.wind_turbine import main as wind_turbine
+from source.southbound.random_data import main as rand_data
+from data_generators.rig_data import main as rig_data
+from data_generators.wind_turbine import main as wind_turbine
 
 from source.mappings import RIG_INFO
 

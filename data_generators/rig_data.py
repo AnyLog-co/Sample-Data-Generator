@@ -12,24 +12,6 @@ DATA_DIR = "http://45.33.11.32/Sample-Data/rig-data/"
 RIG_FILES = get_files_by_url(url=DATA_DIR)
 
 
-def __check_rigs(rig_ids:list):
-    # check if user input is valid and file(s) exist
-    if rig_ids:
-        for rig_id in rig_ids:
-            if rig_id not in RIG_INFO:
-                raise ValueError(f"Invalid rig {rig_id} in rig options")
-    else:
-        rig_ids = list(RIG_INFO.keys())
-
-    for rig_id in rig_ids:
-        if rig_id in RIG_INFO:
-            file_name = RIG_INFO.get(rig_id).get("file")
-            if file_name not in RIG_FILES:
-                raise FileNotFoundError(f"Failed to locate {posixpath.join(DATA_DIR, file_name)}")
-        else:
-            raise ValueError(f"Invalid rig {rig_id} in rig options")
-
-    return rig_ids
 
 def __update_rows(row:dict):
     row.pop("rig_name", None)
@@ -71,20 +53,7 @@ def main(method:str, conn, db_name:str="test", rig_ids:list|None=None, iteration
         if method.upper() == "MQTT":
             conn.publish_data(topic="rig-data", payload=payload)
         elif method.upper() in ["POST", "PUT"]:
-            headers = {
-                **({
-                       "type": "json",
-                       "dbms": db_name,
-                       "table": "rig_data",
-                       "mode": "streaming"
-                   } if method.upper() == "PUT" else {}),
-                **({
-                       "command": "data",
-                       "topic": "rig-data",
-                   } if method.upper() == "POST" else {}),
-                "User-Agent": "AnyLog/1.23",
-                "Content-Type": "text/plain"
-            }
+
             conn.publish_data(headers=headers, payload=json.dumps(payload), method=method.upper())
         else:
             raise ValueError(f"Invalid publishing method {method.upper()} for wind turbine")

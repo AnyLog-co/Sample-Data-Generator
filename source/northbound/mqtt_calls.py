@@ -1,6 +1,6 @@
 import json
-
 import paho.mqtt.client as mqtt
+from typing import List
 
 class MqttClient:
     def __init__(self, host:str, port:int, user:str=None, password:str=None, timeout:int=60):
@@ -45,7 +45,7 @@ class MqttClient:
             except Exception as error:
                 raise Exception(f"Failed to disconnect from MQTT against {self.host}:{self.port} (Error: {error})")
 
-    def publish_data(self, topic:str, payload:str):
+    def publish_data(self, topic:str, payload:str|dict|List[dict]):
         """
         Publish content (payload) to a given topic
         :args:

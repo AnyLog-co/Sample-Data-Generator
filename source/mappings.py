@@ -1,3 +1,19 @@
+CONFIGS = {
+    "rig": {
+        "url": "http://45.33.11.32/Sample-Data/rig-data",
+        "topic": "rig-data"
+    },
+    "vessel": {
+        "url": "http://45.33.11.32/Sample-Data/rig-data",
+        "topic": "rig-data"
+    },
+    "wind-turbine": {
+        "url": "http://45.33.11.32/Sample-Data/wind-turbine/",
+        "topic": "wind-turbine"
+    }
+}
+
+
 RIG_INFO = {
     1: {
         'file': 'drilling_data_RIG-TX-001.csv',

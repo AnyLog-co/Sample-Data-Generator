@@ -9,7 +9,7 @@ from source.support import read_chunks
 
 
 # Get Directory
-DATA_DIR = os.path.join(os.path.dirname(__file__).split("mains")[0], "data", "proveit-data")
+DATA_DIR = os.path.join(os.path.dirname(__file__).split("southbound")[0], "data", "proveit-data")
 if not DATA_DIR:
     raise NotADirectoryError(f"Failed to locate directory {DATA_DIR}")
 
