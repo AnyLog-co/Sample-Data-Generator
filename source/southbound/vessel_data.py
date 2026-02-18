@@ -1,4 +1,3 @@
-import datetime
 import posixpath
 import time
 
