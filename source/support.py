@@ -127,4 +127,9 @@ def read_turbine_data(url:str, row_id:int)->dict|None:
     return content
 
 
-
+def timestamp_calculator(timestamp:datetime.datetime, offset:float, id_index:int):
+    try:
+        timestamp += datetime.timedelta(seconds=offset*id_index)
+        return timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f')
+    except Exception as error:
+        raise Exception(f"Failed to calculate timestamp (Error: {error})")

@@ -1,3 +1,4 @@
+import datetime
 import posixpath
 import time
 
@@ -5,6 +6,7 @@ from typing import Optional, Dict
 from source.policies.mappings import RIG_INFO
 from source.support import get_files_by_url
 from source.support import read_csv_content
+from source.support import timestamp_calculator
 
 from source.northbound.publish_data import publish_data
 from source.northbound.rest_calls import RestClient
@@ -51,7 +53,7 @@ def _check_rigs(rig_ids:list[str]|str)->list:
     return rig_ids
 
 
-def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:list[str]|str=None, iterations:int=10,
+def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topics:list[str]|str=None, iterations:int=10,
          sleep:float=10, offset_sleep:float=0.5):
     """
     main for publishing rig data
@@ -84,18 +86,20 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
 
     while is_active:
         payload = []
-        for rig_id, file_path in rig_paths.items():
+        timestamp = datetime.datetime.now(tz=datetime.timezone.utc)
+        for id_index, (rig_id, file_path) in enumerate(rig_paths.items()):
             if line_counts[rig_id] is not None:
                 row = read_csv_content(file_path, row_id=line_counts[rig_id])
+                row["timestamp"] = timestamp_calculator(timestamp=timestamp, offset=offset_sleep, id_index=id_index)
                 if row:
                     if method in ["MQTT", "POST"]:
                         row["dbms"] = db_name
                         row["table"] = TABLE
 
                     payload.append(row)
-                    line_counts[rig_id] += 1
-                    if len(rig_ids) > 1:
-                        time.sleep(offset_sleep)
+                    # line_counts[rig_id] += 1
+                    # if len(rig_ids) > 1:
+                    #     time.sleep(offset_sleep)
                 else:
                     line_counts[rig_id] = None
 

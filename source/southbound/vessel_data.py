@@ -1,7 +1,7 @@
 import posixpath
 import time
 
-from typing import Optional, Dict
+from typing import  Dict
 from source.support import get_files_by_url
 from source.support import read_json_content
 
@@ -44,7 +44,7 @@ def _check_vessels(vessel_ids:list[str]|str)->list:
 
 
 
-def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:list[str]|str=None, iterations:int=10,
+def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topics:list[str]|str=None, iterations:int=10,
          sleep:float=10, offset_sleep:float=0.5):
     """
     main for publishing rig data

@@ -2,7 +2,6 @@ import argparse
 
 from source.northbound.mqtt_calls import MqttClient
 from source.northbound.rest_calls import RestClient
-from source.northbound.opcua import OpcuaServer
 from source.support import extract_credentials
 from source.southbound.random_data import main as rand_data
 from source.southbound.rig_data import main as rig_data
@@ -155,12 +154,12 @@ def main():
     conn = None
     if args.publish_format != "PRINT":
         if not args.conn:
-            raise argparse.ArgumentError(f"publishing format {args.publish_format} requires missing connection information")
+            raise argparse.ArgumentError(argument=None, message=f"publishing format {args.publish_format} requires missing connection information")
         broker, port, user, password = extract_credentials(args.conn)
         if args.publish_format in ["POST", "PUT"]:
             conn = RestClient(conn=f"{broker}:{port}", auth=(user, password), timeout=args.timeout)
         elif args.publish_format == "MQTT":
-            conn = MqttClient(broker=broker, port=port, user=user, password=password, timeout=args.timeout)
+            conn = MqttClient(host=broker, port=port, user=user, password=password, timeout=args.timeout)
 
     if args.data == "random":
         rand_data(method=args.publish_format, conn=conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)

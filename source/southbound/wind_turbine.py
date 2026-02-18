@@ -10,6 +10,7 @@ from source.northbound.publish_data import publish_data
 from source.northbound.rest_calls import RestClient
 from source.northbound.mqtt_calls import MqttClient
 from source.policies.mappings import WIND_TURBINE_TABLES
+from  source.support import timestamp_calculator
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/wind-turbine/"
 TURBINE_FILES = get_files_by_url(url=DATA_DIR)
@@ -47,12 +48,14 @@ def _check_turbines(turbine_ids:list[int]|str)->list:
 
     return turbine_ids
 
-def _turbine_translate(content:dict)->dict:
+def _turbine_translate(content:dict, timestamp:datetime.datetime, offset_sleep:float, id_index:int)->dict:
     updated_content = {}
     for table in WIND_TURBINE_TABLES:
         for key, value in WIND_TURBINE_TABLES[table].items():
             if key == "timestamp":
-                updated_content[key] = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")
+                updated_content[key] =  timestamp_calculator(timestamp=timestamp, offset=offset_sleep,
+                                                             id_index=id_index)
+                # datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")
             elif content.get(value):
                 updated_content[key] = content.get(value)
     return updated_content
@@ -90,7 +93,8 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
 
     while is_active:
         payload = []
-        for turbine_id, file_path in turbine_paths.items():
+        timestamp = datetime.datetime.now(tz=datetime.timezone.utc)
+        for id_index, (turbine_id, file_path) in enumerate(turbine_paths.items()):
             if line_counts[turbine_id] is not None:
                 row = read_turbine_data(file_path, row_id=line_counts[turbine_id])
 
@@ -99,10 +103,11 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
                         row["dbms"] = db_name
                         row["table"] = TABLE
 
-                    payload.append(_turbine_translate(content=row))
+                    payload.append(_turbine_translate(content=row, timestamp=timestamp, offset_sleep=offset_sleep,
+                                                      id_index=id_index))
                     line_counts[turbine_id] += 1
-                    if len(turbine_ids) > 1:
-                        time.sleep(offset_sleep)
+                    # if len(turbine_ids) > 1:
+                    #     time.sleep(offset_sleep)
                 else:
                     line_counts[turbine_id] = None
 
