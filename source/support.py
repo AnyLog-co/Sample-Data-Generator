@@ -1,9 +1,10 @@
 import ast
 import datetime
+import json
+import locale
 
 from bs4 import BeautifulSoup
 from source.northbound.rest_calls import get_file_content
-
 
 def extract_credentials(credentials:str):
     """
@@ -77,5 +78,35 @@ def read_csv_content(url:str, row_id:int=0)->dict|None:
                 content[key.strip()] = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     return content
+
+
+
+def read_turbine_data(url:str, row_id:int)->dict|None:
+    response = get_file_content(url=url, timeout=30)
+    raw_content = {}
+    content = None
+    if response:
+        try:
+            locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')  # Linux / Mac
+            text = response.content.decode("utf-8-sig")
+            rows = [json.loads(line) for line in text.splitlines() if line.strip()]
+            raw_content = rows[row_id]
+        except IndexError:
+            raw_content = None
+
+    if raw_content:
+        content = {}
+        for key, value in raw_content.items():
+            try:
+                value = locale.atof(value)
+            except Exception:
+                pass
+            try:
+                content[key.strip()] = ast.literal_eval(value)
+            except:
+                content[key.strip()] = value
+
+    return content
+
 
 

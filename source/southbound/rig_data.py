@@ -26,7 +26,12 @@ def _check_rigs(rig_ids:list[str]|str)->list:
         list of rigs
     """
     if isinstance(rig_ids, str):
-        rig_ids = rig_ids.split(",")
+        try:
+            rig_ids = [int(rig_id) for rig_id in rig_ids.split(",")]
+        except Exception as error:
+            raise TypeError(f"Rig ID is of wrong type; should be numeric - Options: {', '.join(map(str,list(RIG_INFO.keys())))} (Error: {error})")
+
+
     # check if user input is valid and file(s) exist
     if rig_ids:
         for rig_id in rig_ids:
@@ -107,5 +112,5 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
             time.sleep(sleep)
 
 
-# if __name__ == "__main__":
-#     main(method="POST", conn=None, db_name="rig_db", publish_topics=None, iterations=5)
+if __name__ == "__main__":
+    main(method="POST", conn=None, publish_topics="a", db_name="rig_db",  iterations=5)
