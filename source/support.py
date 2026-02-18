@@ -3,6 +3,7 @@ import datetime
 import json
 import locale
 
+import requests
 from bs4 import BeautifulSoup
 from source.northbound.rest_calls import get_file_content
 
@@ -79,6 +80,21 @@ def read_csv_content(url:str, row_id:int=0)->dict|None:
 
     return content
 
+def read_json_content(url:str, row_id:int)->dict|None:
+    response = get_file_content(url=url, timeout=30)
+    raw_content = {}
+    content = None
+    if response:
+        try:
+            raw_content = response.json()[row_id]
+        except requests.JSONDecodeError:
+            raw_content = json.loads(response.text.splitlines()[row_id].split(": ", 1)[-1].strip())
+        except IndexError:
+            raw_content = None
+
+    if raw_content:
+        content = raw_content
+    return content
 
 
 def read_turbine_data(url:str, row_id:int)->dict|None:

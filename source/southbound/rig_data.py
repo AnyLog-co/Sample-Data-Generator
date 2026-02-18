@@ -2,7 +2,7 @@ import posixpath
 import time
 
 from typing import Optional, Dict
-from source.mappings import RIG_INFO
+from source.policies.mappings import RIG_INFO
 from source.support import get_files_by_url
 from source.support import read_csv_content
 

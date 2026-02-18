@@ -1,15 +1,13 @@
 import argparse
 
-from source.mqtt import MqttClient
-from source.opcua import OpcuaServer
-from source.rest_calls import RestClient
+from source.northbound.mqtt_calls import MqttClient
+from source.northbound.rest_calls import RestClient
+from source.northbound.opcua import OpcuaServer
 from source.support import extract_credentials
-
 from source.southbound.random_data import main as rand_data
-from data_generators.rig_data import main as rig_data
-from data_generators.wind_turbine import main as wind_turbine
-
-from source.mappings import RIG_INFO
+from source.southbound.rig_data import main as rig_data
+from source.southbound.wind_turbine import main as wind_turbine
+from source.policies.mappings import RIG_INFO
 
 
 def main():

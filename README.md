@@ -1,5 +1,23 @@
 # Data Generator 
 
+```tree
+├── source
+│   ├── northbound - publish funcctions (POST, PUT, MQTT, OPC-UA)
+│   ├── policies   - uns and `run msg client` policies + commands  
+│   └── southbound - data generators (rand, wind_turbine, rig, vessels, proveit) 
+├── support.py - reusable support functions
+├── data_generator_main.py - data generator main 
+├── uns_policies.py - UNS generator main
+└── mapping_polciies.py - `run msg client` main
+```
+
+**Todo**
+1. northbound data publishing 
+2. ~~southbound data generator~~
+3. `run msg client` per data generator 
+4. `uns` policies generator for each data generator
+
+
 **Data Sets**: 
 * [Random](source/southbound/random_data.py) - timestamp / value logic 
   * PUT 
