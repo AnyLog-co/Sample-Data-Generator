@@ -1,4 +1,5 @@
 from typing import List
+import json
 from source.northbound.mqtt_calls import MqttClient
 from source.northbound.rest_calls import RestClient
 
@@ -21,6 +22,8 @@ def publish_data(method:str, conn:MqttClient|RestClient, payload:dict|List[dict]
         "Content-Type": "text/plain"
     }
 
+    if method == "PRINT":
+        print(json.dumps(payload, indent=2))
     if method == "MQTT":
         conn.publish_data(topic=topic, payload=payload)
     elif method == "PUT":

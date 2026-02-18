@@ -18,7 +18,7 @@ def get_data():
     }
 
 
-def main(method:str, conn, db_name:str="test", iterations:int=10):
+def main(method:str, conn, db_name:str="test", iterations:int=10, sleep:float=10):
     is_active = True
     counter = 0
 

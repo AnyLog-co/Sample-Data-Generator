@@ -68,7 +68,6 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
         is_active:bool
         is_null:bool
     """
-    method = method.upper()
     vessel_ids = _check_vessels(vessel_ids=publish_topics)
     vessel_paths:Dict[str, dict] = {}
     for vessel_id in vessel_ids:

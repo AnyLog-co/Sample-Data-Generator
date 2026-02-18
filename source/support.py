@@ -115,6 +115,8 @@ def read_turbine_data(url:str, row_id:int)->dict|None:
         for key, value in raw_content.items():
             try:
                 value = locale.atof(value)
+                if key == "Anlage":
+                    value = int(value)
             except Exception:
                 pass
             try:

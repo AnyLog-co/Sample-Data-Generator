@@ -81,7 +81,6 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
         is_active:bool
         is_null:bool
     """
-    method = method.upper()
     turbine_ids = _check_turbines(turbine_ids=publish_topics)
     turbine_paths:Dict[str, str] = {turbine_id: posixpath.join(DATA_DIR, f"wind_turbine_{turbine_id}.json") for turbine_id in turbine_ids}
     line_counts:Dict[str, Optional[int]] = {turbine_id: 0 for turbine_id in turbine_ids}

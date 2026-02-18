@@ -75,7 +75,6 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
         is_active:bool
         is_null:bool
     """
-    method = method.upper()
     rig_ids = _check_rigs(rig_ids=publish_topics)
     rig_paths: Dict[str, str] = {rig_id: posixpath.join(DATA_DIR, RIG_INFO[rig_id]["file"]) for rig_id in rig_ids}
     line_counts: Dict[str, Optional[int]] = {rig_id: 0 for rig_id in rig_ids}
