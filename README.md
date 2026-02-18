@@ -12,11 +12,12 @@
 ```
 
 **Todo**
-1. northbound data publishing 
+1. ~~northbound data publishing~~ 
 2. ~~southbound data generator~~
 3. `run msg client` per data generator 
 4. `uns` policies generator for each data generator
-5. documentation
+5. proveit demo (OPC-UA and MQTT) 
+6. documentation
 
 
 **Data Sets**: 

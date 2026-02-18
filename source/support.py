@@ -1,4 +1,5 @@
 import ast
+import copy
 import datetime
 import json
 import locale
@@ -133,3 +134,55 @@ def timestamp_calculator(timestamp:datetime.datetime, offset:float, id_index:int
         return timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f')
     except Exception as error:
         raise Exception(f"Failed to calculate timestamp (Error: {error})")
+
+
+import re
+
+def _to_snake(name: str) -> str:
+    """
+    Convert camelCase or PascalCase to snake_case.
+    Examples:
+        timeBattery -> time_battery
+        maxBatteryPower -> max_battery_power
+        TimeBattery -> time_battery
+    """
+    # Insert underscore before capital letters, except at the start
+    s = re.sub(r'(?<!^)([A-Z])', r'_\1', name)
+    return s.lower()
+
+def mapping_policy_config(content:dict, function=None)->dict:
+    schema = {}
+    for key in content:
+        value = copy.deepcopy(key)
+        if function:
+            key = function(key)
+        if key != "timestamp":
+            if str in content.get(value):
+                schema[key] = {
+                    "type": "string",
+                    "default": "",
+                    "bring": f"[{value}]"
+                }
+            elif bool in content.get(value):
+                schema[key] = {
+                    "type": "bool",
+                    "default": "",
+                    "bring": f"[{value}]"
+                }
+            elif float in content.get(value):
+                schema[key] = {
+                    "type": "float",
+                    "bring": f"[{value}]"
+                }
+            elif int in content.get(value):
+                schema[key] = {
+                    "type": "int",
+                    "bring": f"[{value}]"
+                }
+            else:
+                schema[key] = {
+                    "type": "string",
+                    "default": "",
+                    "bring": f"[{value}]"
+                }
+    return schema

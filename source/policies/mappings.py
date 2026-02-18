@@ -13,6 +13,22 @@ CONFIGS = {
     }
 }
 
+BASE_POLICY = {
+    "mapping": {
+        "id": None,
+        "dbms": "bring [dbms]",
+        "table": "bring [table]",
+        "readings": "",
+        "schema": {
+            "timestamp": {
+                "type": "timestamp",
+                "default": "now()",
+                "bring": "[timestamp]"
+            }
+        }
+    }
+}
+
 
 RIG_INFO = {
     1: {
