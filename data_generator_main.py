@@ -177,7 +177,8 @@ def main():
 
         # Publish vessel DLB only
         python generator.py vessel mqtt --conn 127.0.0.1:32150 --vessel-ids DLB
-    """    parser = argparse.ArgumentParser(description=main.__doc__, formatter_class=argparse.RawTextHelpFormatter)
+    """
+    parser = argparse.ArgumentParser(description=main.__doc__, formatter_class=argparse.RawTextHelpFormatter)
     # parser = argparse.ArgumentParser()
     parser = build_parser(parser=parser)
     args = parser.parse_args()
