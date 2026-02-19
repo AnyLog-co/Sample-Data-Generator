@@ -40,12 +40,41 @@ def get_file_content(url:str=None, timeout:float=30):
 
     return response
 
-def declare_mapping_policy(conn:RestClient, policy:dict):
+def declare_mapping_policy(conn:RestClient, policy:dict, **kwargs)->str|None:
+    """
+    Check whether a policy exists and if not declare policy and extract policy ID
+    can be used for
+        - mapping
+        - uns
+    :argss:
+        conn:RestClient - connection to REST
+        policy:dict - Policy to publish
+        kwargs:dict - arguments for WHERE when checking if policy exists
+    :params:
+        policy_id:str - extract policy ID if exists
+    Args:
+        conn:
+        policy:
+        **kwargs:
+
+    Returns:
+
+    """
     policy_id = policy.get("mapping").get("id")
     get_headers = {
-        "command": f"blockchain get mapping where id={policy_id}",
+        "command": f"blockchain get *",
         "User-Agent": "AnyLog/1.23"
     }
+
+    if kwargs:
+        get_headers["command"] += " where "
+        if policy_id and "id" not in list(kwargs.values()):
+            get_headers["command"] += f' id="{policy_id}" and '
+        for name, var in kwargs.items():
+            get_headers["command"] += f'{name}="{var}" and '
+        get_headers["command"] = get_headers["command"].rsplit(" and ", 1)[0]
+    get_headers["command"] += " bring [*][id]"
+
     publish_headers = {
         "command": "blockchain insert where policy=!new_policy and local=true and master=!ledger_conn",
         "User-Agent": "Anylog/1.23"
@@ -60,6 +89,8 @@ def declare_mapping_policy(conn:RestClient, policy:dict):
         conn.publish_data(headers=publish_headers, payload=new_policy, method="POST")
         response = conn.get_data(headers=get_headers)
         index += 1
+
+    return response
 
 
 def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str, is_rest:bool=True):
