@@ -3,6 +3,7 @@ from source.support import extract_credentials
 from source.northbound.rest_calls import RestClient
 
 from source.policies.rig_mapping import main as rig_mapping
+from source.policies.vessel_mapping import main as vessel_mapping
 
 def main():
     parse = argparse.ArgumentParser()
@@ -29,7 +30,8 @@ def main():
     elif args.data == "rig":
         rig_mapping(conn=conn, broker=args.broker, port=args.port, is_rest=args.is_rest)
     elif args.data == "vessel":
-        pass
+        vessel_mapping(conn=conn, broker=args.broker, port=args.port, is_rest=args.is_rest)
+
 
 if __name__ == "__main__":
     main()

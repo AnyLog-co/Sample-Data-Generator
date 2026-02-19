@@ -66,7 +66,7 @@ def declare_mapping_policy(conn:RestClient, policy:dict, **kwargs)->str|None:
         "User-Agent": "AnyLog/1.23"
     }
 
-    if kwargs:
+    if policy_id or kwargs:
         get_headers["command"] += " where "
         if policy_id and "id" not in list(kwargs.values()):
             get_headers["command"] += f' id="{policy_id}" and '
@@ -93,24 +93,35 @@ def declare_mapping_policy(conn:RestClient, policy:dict, **kwargs)->str|None:
     return response
 
 
-def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str, is_rest:bool=True):
-    check_msg_client = {
-        "command": f"get msg client where topic={topics.split('name=', 1)[-1].split('and', 1)[0].strip()}",
-        "User-Agent": "AnyLog/1.23"
-    }
-    declare_msg_client_header = {
-        "command": f"run msg client where broker={broker} and log=false and topic={topics}",
-        "User-Agent": "AnyLog/1.23"
-    }
+def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str|list, is_rest:bool=True):
+    is_topics = False
+    if not isinstance(topics, list):
+        topics = topics.split(',')
 
-    if broker not in ["rest", "local"] and port:
-        declare_msg_client_header["command"] += f" and port={port}"
-    if broker  == "rest" or is_rest is True:
-        declare_msg_client_header["command"] += f" and user-agent=anylog"
+    for topic in topics:
+        msg_topic = topic.split('name=', 1)[-1].split('and', 1)[0].strip()
+        check_msg_client = {
+            "command": f"get msg client where topic={msg_topic}",
+            "User-Agent": "AnyLog/1.23"
+        }
+        response = conn.get_data(headers=check_msg_client)
+        if not (response.strip() in ["No message client subscriptions", "No such client subscription"]):
+            is_topics = True
+            if len(topics) > 1:
+                print(f"Topic {msg_topic} already defined, cannot define `msg client` for provided topics")
 
-    response = conn.get_data(headers=check_msg_client)
-    if response.strip() in ["No message client subscriptions"]:
-        # print(declare_msg_client_header["command"])
+    if not is_topics:
+        declare_msg_client_header = {
+            "command": f"run msg client where broker={broker} and log=false",
+            "User-Agent": "AnyLog/1.23"
+        }
+        for topic in topics:
+            declare_msg_client_header["command"] += f" and topic={topic}"
+
+
+        if broker not in ["rest", "local"] and port:
+            declare_msg_client_header["command"] += f" and port={port}"
+        if broker  == "rest" or is_rest is True:
+            declare_msg_client_header["command"] += f" and user-agent=anylog"
+
         conn.publish_data(headers=declare_msg_client_header, payload=None, method="POST")
-    else:
-        print(response)

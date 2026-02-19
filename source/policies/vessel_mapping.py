@@ -8,7 +8,10 @@ from source.support import get_files_by_url
 from source.support import read_json_content
 from source.support import mapping_policy_config
 from source.northbound.rest_calls import RestClient
+from source.northbound.rest_calls import declare_mapping_policy
+from source.northbound.rest_calls import declare_msg_client
 from source.support import _to_snake
+
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/vessel-data/"
 VESSEL_FILES = get_files_by_url(url=DATA_DIR)
@@ -16,10 +19,13 @@ VESSEL_FILES = get_files_by_url(url=DATA_DIR)
 TABLE = "vessel_data"
 TOPIC = "vessel-data"
 
-mappings = {}
 
-def main(conn:RestClient|None=None):
+
+def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
+    topics = []
     for tier in VESSEL_INFO:
+        topic = f"(name={tier} and "
+        mappings = []
         rows = []
         content = {}
         for file in VESSEL_FILES:
@@ -38,7 +44,7 @@ def main(conn:RestClient|None=None):
         for table in VESSEL_INFO[tier]["tables"]:
             table_content = {}
             new_policy = copy.deepcopy(BASE_POLICY)
-            new_policy["mapping"]["id"]
+            new_policy["mapping"]["id"] = table.replace('_','-')
             new_policy["mapping"] ["table"] = table
             for sensor in VESSEL_INFO[tier]["tables"][table]:
                 if content.get(sensor):
@@ -50,8 +56,11 @@ def main(conn:RestClient|None=None):
 
             schema = mapping_policy_config(content=table_content, function=_to_snake)
             new_policy["mapping"]["schema"].update(schema)
-            print(json.dumps(new_policy, indent=2))
-            exit(1)
+            policy_id = declare_mapping_policy(conn=conn, policy=new_policy)
+            topic += f" policy={policy_id} and"
+        topics.append(topic.rsplit(" and", 1)[0] + ')')
+
+    declare_msg_client(conn=conn, broker=broker, port=port, topics=topics, is_rest=is_rest)
 
 
 
