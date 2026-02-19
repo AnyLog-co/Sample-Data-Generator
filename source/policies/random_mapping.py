@@ -20,5 +20,5 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
     declare_msg_client(conn=conn, broker=broker, port=port, is_rest=is_rest,
                        topics=f"(name={TOPIC} and policy={policy_id})")
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

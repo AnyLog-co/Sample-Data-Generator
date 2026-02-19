@@ -64,6 +64,6 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
 
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
 
