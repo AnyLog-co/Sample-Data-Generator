@@ -4,11 +4,13 @@ from source.northbound.rest_calls import RestClient
 
 from source.policies.rig_mapping import main as rig_mapping
 from source.policies.vessel_mapping import main as vessel_mapping
+from source.policies.wind_turbine_mapping import main as wind_turbine_mapping
+from source.policies.random_mapping import main as random_mapping
 
 def main():
     parse = argparse.ArgumentParser()
     parse.add_argument("conn", type=str, default=None, help="AnyLog REST connection for post requests")
-    parse.add_argument("data", type=str, default=None, choices=["wind-turbine", "rig", "vessel"],
+    parse.add_argument("data", type=str, default=None, choices=["wind-turbine", "rig", "vessel", "random"],
                        help="Data source to create policies and `msg client` for")
     # parse.add_argument("publish_type", type=str, default=None, choices=["MQTT", "POST"],
     #                    help="Format data will be published")
@@ -26,11 +28,13 @@ def main():
     args.is_rest = True if args.conn == "rest" else args.is_rest
 
     if args.data == "wind-turbine":
-        pass
+        wind_turbine_mapping(conn=conn, broker=args.broker, port=args.port, is_rest=args.is_rest)
     elif args.data == "rig":
         rig_mapping(conn=conn, broker=args.broker, port=args.port, is_rest=args.is_rest)
     elif args.data == "vessel":
         vessel_mapping(conn=conn, broker=args.broker, port=args.port, is_rest=args.is_rest)
+    elif args.data == "random":
+        random_mapping(conn=conn, broker=args.broker, port=args.port, is_rest=args.is_rest)
 
 
 if __name__ == "__main__":

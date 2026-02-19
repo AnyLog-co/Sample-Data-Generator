@@ -7,6 +7,9 @@ from source.support import read_turbine_data
 from source.policies.mappings import BASE_POLICY
 from source.policies.mappings import WIND_TURBINE_TABLES
 from source.support import mapping_policy_config
+from source.northbound.rest_calls import declare_mapping_policy
+from source.northbound.rest_calls import declare_msg_client
+from source.northbound.rest_calls import RestClient
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/wind-turbine/"
 TURBINE_FILES = get_files_by_url(url=DATA_DIR)
@@ -14,8 +17,9 @@ TURBINE_FILES = get_files_by_url(url=DATA_DIR)
 TABLE = "wind_turbine"
 TOPIC = "wind-turbine"
 
-def main():
+def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
     content = {}
+    topics = f"(name={TOPIC} and"
     for fname in TURBINE_FILES:
         file_path = posixpath.join(DATA_DIR, fname)
         for row_id in range(5):
@@ -49,8 +53,12 @@ def main():
 
             schema =  mapping_policy_config(content=table_content)
             new_policy["mapping"]["schema"].update(schema)
-            print(json.dumps(new_policy, indent=2))
-            exit(1)
+            policy_id = declare_mapping_policy(conn=conn, policy=new_policy)
+            topics += f" policy={policy_id} and"
+
+    topics = topics.rsplit(" and", 1)[0] + ')'
+    declare_msg_client(conn=conn, broker=broker, port=port, is_rest=is_rest, topics=topics)
+
 
 if __name__ == "__main__":
     main()

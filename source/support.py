@@ -3,6 +3,8 @@ import copy
 import datetime
 import json
 import locale
+import re
+
 
 import requests
 from bs4 import BeautifulSoup
@@ -136,7 +138,6 @@ def timestamp_calculator(timestamp:datetime.datetime, offset:float, id_index:int
         raise Exception(f"Failed to calculate timestamp (Error: {error})")
 
 
-import re
 
 def _to_snake(name: str) -> str:
     """
