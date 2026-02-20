@@ -1,5 +1,4 @@
 import copy
-import json
 import posixpath
 
 from source.policies.mappings import BASE_POLICY
@@ -22,9 +21,8 @@ TOPIC = "vessel-data"
 
 
 def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
-    topics = []
+    topics = f"(name={TOPIC} and "
     for tier in VESSEL_INFO:
-        topic = f"(name={tier} and "
         mappings = []
         rows = []
         content = {}
@@ -57,9 +55,9 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
             schema = mapping_policy_config(content=table_content, function=_to_snake)
             new_policy["mapping"]["schema"].update(schema)
             policy_id = declare_mapping_policy(conn=conn, policy=new_policy)
-            topic += f" policy={policy_id} and"
-        topics.append(topic.rsplit(" and", 1)[0] + ')')
+            topics += f" policy={policy_id} and"
 
+    topics = topics.rsplit(" and", 1)[0] + ')'
     declare_msg_client(conn=conn, broker=broker, port=port, topics=topics, is_rest=is_rest)
 
 

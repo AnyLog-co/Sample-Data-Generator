@@ -60,7 +60,11 @@ def declare_mapping_policy(conn:RestClient, policy:dict, **kwargs)->str|None:
     Returns:
 
     """
-    policy_id = policy.get("mapping").get("id")
+    try:
+        policy_id = policy.get("mapping").get("id")
+    except AttributeError:
+        policy_id = None
+
     get_headers = {
         "command": f"blockchain get *",
         "User-Agent": "AnyLog/1.23"
