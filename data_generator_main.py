@@ -120,6 +120,10 @@ def main():
             - Publish: PRINT, POST, MQTT
             - Optional: specify turbine ID(s)
 
+        proveit
+            - Data: Proveit 2026 conference data. Data is values only and require a special `msg client` or `OPC-UA` process to pull into AnyLog / EdgeLake
+            - Publish: PRINT, POST, MQTT, OPC-UA (server)
+            - Optional: specific group of topic-based data set
     PUBLISH FORMATS
         PRINT
             Output generated data to screen only (no network activity).
@@ -177,6 +181,14 @@ def main():
                 --turbine-ids 1 3 7
                 --turbine-ids=1,3,7
 
+        --proveit-topics TOPIC [TOPIC...]
+            Proveit topics:
+                "Enterprise A",  "Enterprise A/Dallas", "Enterprise A/opto22", "Enterprise B", "Enterprise B/Site1",
+                "Enterprise B/Site2", "Enterprise B/Site3", "Enterprise C", "Enterprise C/sub",
+                "Enterprise C/tff", "Enterprise C/chrom", "Enterprise C/sum"
+            Examples:
+                --proveit-topic "Enterprise A"
+                 --proveit-topic "Enterprise A/Dallas", "Enterprise C"
     EXAMPLES
         # Print random data to screen
         python generator.py random print
