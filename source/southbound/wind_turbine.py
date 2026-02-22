@@ -6,7 +6,7 @@ from typing import Optional, Dict
 from source.support import get_files_by_url
 from source.support import read_turbine_data
 
-from source.northbound.publish_data import publish_data
+from source.northbound.rest_functions import publish_data
 from source.northbound.rest_calls import RestClient
 from source.northbound.mqtt_calls import MqttClient
 from source.policies.mappings import WIND_TURBINE_TABLES

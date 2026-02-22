@@ -2,7 +2,7 @@ import datetime
 import random
 import time
 
-from source.northbound.publish_data import publish_data
+from source.northbound.rest_functions import publish_data
 
 TABLE = "rand_data"
 TOPIC = "rand-data"

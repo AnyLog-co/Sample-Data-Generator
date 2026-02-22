@@ -1,27 +1,57 @@
 import json
 import requests
+from source.northbound.error_codes import REST_EXCEPTION_CODES
+from source.northbound.error_codes import HTTP_STATUS_CODES
+from source.northbound.error_codes import REQUEST_EXCEPTION_MAP
+
 
 class RestClient:
     def __init__(self, conn:str, auth:tuple=None, timeout:float=60):
-        self.url = f"http://{conn}"
-        self.auth = auth
+        self.url = f"http://{conn}" if not conn.startswith("http") else conn
         self.timeout = timeout
+        self.auth = auth
 
-    def __execute_command(self, method:str, headers:dict, payload=None):
+    def _execute_command(self, method:str, headers:dict, payload=None):
         if (isinstance(payload, list) and isinstance(payload[0], dict)) or isinstance(payload, dict):
             payload = json.dumps(payload)
         try:
             response = requests.request(method=method.upper(), url=self.url, headers=headers, auth=self.auth,
                                         timeout=self.timeout, data=payload)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            status_code = error.response.status_code
+            status_msg = HTTP_STATUS_CODES.get(status_code)
+            if not status_msg:
+                # fallback to first-digit mapping to REST_EXCEPTION_CODES
+                first_digit = int(str(status_code)[0])
+                status_msg = REST_EXCEPTION_CODES.get(first_digit, "Unknown REST error")
+
+            error_msg = (
+                f"Failed to execute {method.upper()} against {self.url} "
+                f"(Network Error {status_code}: {status_msg} | Response: {error.response.text})"
+            )
+            raise requests.exceptions.HTTPError(error_msg, response=error.response) from error
+
         except Exception as error:
-            raise Exception(f"Failed to execute {method.upper()} against {self.url} (Error: {error})")
+            # Any transport/network errors (ConnectionError, Timeout, etc.)
+            error_type = type(error).__name__
+            error_code = REQUEST_EXCEPTION_MAP.get(error_type, 899)
+            error_msg = REST_EXCEPTION_CODES.get(error_code, str(error))
+
+            raise Exception(
+                f"Failed to execute {method.upper()} against {self.url} "
+                f"(Transport Error {error_code}: {error_msg})"
+            ) from error
+
         return response
 
     def publish_data(self, headers:dict, payload, method:str="post"):
-        return self.__execute_command(method=method.upper(), headers=headers, payload=payload)
-        
-    def get_data(self, headers:dict):
-        response = self.__execute_command(method="GET", headers=headers, payload=None)
+        return self._execute_command(method=method.upper(), headers=headers, payload=payload)
+
+    def get_data(self, headers:dict|None=None, raw_response:bool=False):
+        response = self._execute_command(method="GET", headers=headers)
+        if raw_response:
+            return response
 
         try:
             return response.json()
@@ -31,14 +61,22 @@ class RestClient:
 
 
 def get_file_content(url:str=None, timeout:float=30):
-    response = None
-    try:
-        response = requests.get(url=url, timeout=timeout)
-        response.raise_for_status()
-    except Exception as error:
-        raise Exception(f"Failed to get content from {url} (Error: {error})")
+    """
+    Given a URL, extract content from.
+    :use-cases:
+        1. get list of files
+        2. read content from file
+    :args:
+        url:str - URL to extract content from
+        timeout:float - REST timeout
+    :params:
+        temp_conn:RestClient - Connection to URL
+    :return:
+        raw response
 
-    return response
+    """
+    temp_conn = RestClient(conn=url, auth=(), timeout=timeout)
+    return temp_conn.get_data(headers=None, raw_response=True)
 
 def declare_mapping_policy(conn:RestClient, policy:dict, **kwargs)->str|None:
     """

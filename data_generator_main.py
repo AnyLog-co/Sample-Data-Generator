@@ -2,11 +2,14 @@ import argparse
 
 from source.northbound.mqtt_calls import MqttClient
 from source.northbound.rest_calls import RestClient
+from source.northbound.opcua import OpcuaServer
 from source.support import extract_credentials
+
 from source.southbound.random_data import main as rand_data
 from source.southbound.rig_data import main as rig_data
 from source.southbound.vessel_data import main as vessel_data
 from source.southbound.wind_turbine import main as wind_turbine
+from source.southbound.proveit_data import main as proveit_data
 from source.policies.mappings import RIG_INFO
 
 
@@ -53,6 +56,20 @@ def build_parser(parser:argparse.ArgumentParser):
     wt_parser.add_argument("--turbine-ids", type=int, nargs="+",
                            choices=[i for i in range(1, 12) if i != 4], default=None,
                            help="Space-separated turbine IDs. If omitted, all turbines except 4.")
+    # -------------------------
+    # PROVEIT
+    # -------------------------
+    proveit_parser = subparsers.add_parser("proveit")
+    proveit_parser.add_argument("publish_format", nargs='?', choices=["print", "post", "mqtt", "opcua"],
+                                default="print", help=publish_format_help)
+    proveit_parser.add_argument("--proveit-topics", type=str, nargs="+",
+                                choices=["Enterprise A",  "Enterprise A/Dallas", "Enterprise A/opto22",
+                                         "Enterprise B", "Enterprise B/Site1", "Enterprise B/Site2",
+                                         "Enterprise B/Site3",
+                                         "Enterprise C", "Enterprise C/sub", "Enterprise C/tff", "Enterprise C/chrom",
+                                         "Enterprise C/sum"],
+                                help="Sapce-separated ProveIT topics. If omitted, all topics")
+
 
     # -------------------------
     # GLOBAL ARGS
@@ -66,6 +83,7 @@ def build_parser(parser:argparse.ArgumentParser):
     parser.add_argument("--sleep", type=float, default=15, help="sleep between each iteration")
     parser.add_argument("--offset-sleep", type=float, default=0.5,
                         help="When publishing multiple IDs, time offset between each ID")
+
 
     return parser
 
@@ -203,6 +221,8 @@ def main():
             conn = RestClient(conn=f"{broker}:{port}", auth=(user, password), timeout=args.timeout)
         elif args.publish_format == "MQTT":
             conn = MqttClient(host=broker, port=port, user=user, password=password, timeout=args.timeout)
+        elif args.publish_format == "OPCUA":
+            conn = OpcuaServer(host=broker, port=port)
 
     if args.data == "random":
         rand_data(method=args.publish_format, conn=conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
@@ -214,7 +234,10 @@ def main():
                     iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "wind-turbine":
         wind_turbine(method=args.publish_format, conn=conn, db_name=args.db_name, publish_topics=args.turbine_ids,
-                    iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
+                     iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
+    elif args.data == "proveit":
+        proveit_data(method=args.publish_format, conn=conn, publish_topics=args.proveit_topics,
+                     iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
 
 
 if __name__ == "__main__":

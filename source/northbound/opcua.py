@@ -1,6 +1,6 @@
 from asyncua import ua, Server
 import ast
-
+import asyncio
 
 class OpcuaServer:
     def __init__(self, host="0.0.0.0", port=4840):
@@ -13,6 +13,7 @@ class OpcuaServer:
         self.folder_nodes = {}
         self.variable_nodes = {}
         self.variable_types = {}  # 🔒 path -> ua.VariantType
+        # self.node_lock = asyncio.Lock()  # 🔒 lock for safe node creation
 
     # ---------------- Connection ----------------
 
@@ -93,7 +94,20 @@ class OpcuaServer:
         self.variable_nodes[path] = var
         return var
 
+    # async def _build_tree(self, topic, value):
+    #     parts = topic.split("/")
+    #     parent = self.root
+    #     path = ""
+    #
+    #     for part in parts[:-1]:
+    #         path += "/" + part
+    #         parent = await self._get_or_create_folder(parent, part, path)
+    #
+    #     full_path = path + "/" + parts[-1]
+    #     return await self._get_or_create_variable(parent, parts[-1], full_path, value), full_path
+
     async def _build_tree(self, topic, value):
+        # async with self.node_lock:  # 🔒 only one coroutine can create nodes at a time
         parts = topic.split("/")
         parent = self.root
         path = ""
@@ -107,7 +121,10 @@ class OpcuaServer:
 
     # ---------------- MQTT-style Publish ----------------
 
-    async def publish_data(self, topic: str, payload):
+    async def publish_data(self, topic:str, payload):
+        if self.root is None:
+            await self.connect()
+
         value = self.parse_payload(payload)
         var, path = await self._build_tree(topic, value)
 
@@ -128,3 +145,12 @@ class OpcuaServer:
                 safe_value
             )
             await var.write_value(ua.Variant(safe_value, vartype))
+
+    # async def publish_data(self, topic: str, payload):
+    #     value = self.parse_payload(payload)
+    #     var, path = await self._build_tree(topic, value)  # 🔒 lock ensures safe tree creation
+    #     vartype = self.variable_types[path]
+    #     safe_value = self.cast_value(value, vartype)
+    #
+    #     await var.write_value(ua.Variant(safe_value, vartype))
+

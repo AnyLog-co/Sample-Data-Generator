@@ -1,9 +1,12 @@
-from typing import List
+import asyncio
 import json
+from typing import List
+
 from source.northbound.mqtt_calls import MqttClient
 from source.northbound.rest_calls import RestClient
+from source.northbound.opcua import OpcuaServer
 
-def publish_data(method:str, conn:MqttClient|RestClient, payload:dict|List[dict],  topic:str=None, table_name:str=None,
+def publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer, payload:dict|List[dict],  topic:str=None, table_name:str=None,
                  db_name:str=None):
     """
     main for publishing data
@@ -40,4 +43,3 @@ def publish_data(method:str, conn:MqttClient|RestClient, payload:dict|List[dict]
             "topic": topic
         })
         conn.publish_data(headers=headers, payload=payload, method=method)
-

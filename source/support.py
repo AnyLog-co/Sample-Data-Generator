@@ -43,21 +43,26 @@ def extract_credentials(credentials:str):
 def get_files_by_url(url:str)->list:
     """
     Get list of CSV files for Rig data
-    :params:
+    :args:
         url:str - RIG files url path
+    :params:
+        ext_types:list - list of extension type(s) - currently supporting CSV and JSON
     :return:
         list of files
     """
+    ext_types = ["csv", "json"]
+
     response = get_file_content(url=url, timeout=30)
     content = None
     if response:
         try:
             soup = BeautifulSoup(response.text, "html.parser")
             links = [a.get("href") for a in soup.find_all("a")]
-            content = [link for link in links if link and  (link.endswith(".csv") or link.endswith(".json"))]
+            content = [link for link in links if link and (link.endswith(f".{ending}") for ending in ["csv", "json"])]
         except Exception as error:
             raise Exception(f"Failed to access data files {url} (Error: {error})")
-    return content
+
+    return [fname for fname in content if fname.rsplit('.')[-1] in ext_types]
 
 def read_csv_content(url:str, row_id:int=0)->dict|None:
     response = get_file_content(url=url, timeout=30)
@@ -91,10 +96,12 @@ def read_json_content(url:str, row_id:int)->dict|None:
         try:
             raw_content = response.json()[row_id]
         except requests.JSONDecodeError:
-            raw_content = json.loads(response.text.splitlines()[row_id].split(": ", 1)[-1].strip())
+            response_content = response.text.splitlines()[row_id]
+            if ": {" in response_content.strip() and not response_content.strip().startswith('{'):
+                response_content = response_content.split(": ", 1)[-1]
+            raw_content = json.loads(response_content.strip())
         except IndexError:
             raw_content = None
-
     if raw_content:
         content = raw_content
     return content

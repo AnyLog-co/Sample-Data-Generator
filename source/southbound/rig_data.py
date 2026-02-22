@@ -8,7 +8,7 @@ from source.support import get_files_by_url
 from source.support import read_csv_content
 from source.support import timestamp_calculator
 
-from source.northbound.publish_data import publish_data
+from source.northbound.rest_functions import publish_data
 from source.northbound.rest_calls import RestClient
 from source.northbound.mqtt_calls import MqttClient
 
