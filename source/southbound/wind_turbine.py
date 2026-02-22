@@ -4,7 +4,7 @@ import time
 
 from typing import Optional, Dict
 from source.support import get_files_by_url
-from source.support import read_turbine_data
+from source.support import read_json_content
 
 from source.northbound.rest_functions import publish_data
 from source.northbound.rest_calls import RestClient
@@ -96,7 +96,7 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
         timestamp = datetime.datetime.now(tz=datetime.timezone.utc)
         for id_index, (turbine_id, file_path) in enumerate(turbine_paths.items()):
             if line_counts[turbine_id] is not None:
-                row = read_turbine_data(file_path, row_id=line_counts[turbine_id])
+                row = read_json_content(file_path, row_id=line_counts[turbine_id], german_format=True)
 
                 if row:
                     if method in ["MQTT", "POST"]:
