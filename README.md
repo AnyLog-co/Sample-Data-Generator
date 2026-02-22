@@ -148,6 +148,27 @@ python generator.py proveit opcua --conn 0.0.0.0:4840
 
 # ⚙️ Development
 
+## 🐳 Docker Usage
+
+The Data Generator can be run as a Docker container for easy deployment.  
+The container image is available as: `anylogco/sample-data-generator:beta2` (amd64 only - not tested)
+
+* Sample Docker call
+```shell
+docker run -e DATA=rig \
+           -e PUBLISH_FORMAT=mqtt \
+           -e RIG_IDS=1,3 \
+           -e CONN=127.0.0.1:32150 \
+           anylogco/sample-data-generator:beta2
+```
+
+* Docker build (optional)
+```shell
+docker build -f .\Dockerfile . -t anylogco/sample-data-generator:beta2
+```
+
+
+
 ## Project Structure
 
 ```
