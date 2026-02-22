@@ -7,11 +7,33 @@ from source.northbound.error_codes import REQUEST_EXCEPTION_MAP
 
 class RestClient:
     def __init__(self, conn:str, auth:tuple=None, timeout:float=60):
+        """
+        Class to support cURL requests against the network
+        :args:
+            conn:str - base for URL
+        :params:
+            self.url - full connection path
+            self.timeout:float - REST timeout
+            self.auth:tuple - authentication infomration
+        """
         self.url = f"http://{conn}" if not conn.startswith("http") else conn
         self.timeout = timeout
         self.auth = auth
 
-    def _execute_command(self, method:str, headers:dict, payload=None):
+    def _execute_command(self, method:str, headers:dict, payload=None)->requests.Request:
+        """
+        Execute cURL command against the URL
+        :args:
+            method:str - method to execute (PUT, POST, GET)
+            headers:dict - REST headers
+            payload:Any - content to publish into AnyLog / EdgeLake
+        :param:
+            response:requests.Requests - REST request response
+        :raise:
+            raise exception if fails, using the exception coes in `error_code.py`
+        :return:
+            response if successful
+        """
         if (isinstance(payload, list) and isinstance(payload[0], dict)) or isinstance(payload, dict):
             payload = json.dumps(payload)
         try:
@@ -45,10 +67,28 @@ class RestClient:
 
         return response
 
-    def publish_data(self, headers:dict, payload, method:str="post"):
+    def publish_data(self, headers:dict, payload, method:str="POST"):
+        """
+        Execute REST POST / PUT command to publish data against AnyLog / EdgeLake
+        :args:
+            headers:dict - REST headers
+            payload: Any - content to publish into AnyLog / EdgeLake
+            method:dict - format to publish data (PUT or POST)
+        :return:
+            response from   `_execute_command`
+        """
         return self._execute_command(method=method.upper(), headers=headers, payload=payload)
 
     def get_data(self, headers:dict|None=None, raw_response:bool=False):
+        """
+        Execute REST GET command to get data from AnyLog / EdgeLake
+        :args:
+            headers:dict - REST headers
+            raw_response:bool - return raw response rather than extract data
+        :return:
+            if raw_response - return response
+            else - try to parse in JSON if fails return text format
+        """
         response = self._execute_command(method="GET", headers=headers)
         if raw_response:
             return response
@@ -60,43 +100,21 @@ class RestClient:
 
 
 
-def get_file_content(url:str=None, timeout:float=30):
-    """
-    Given a URL, extract content from.
-    :use-cases:
-        1. get list of files
-        2. read content from file
-    :args:
-        url:str - URL to extract content from
-        timeout:float - REST timeout
-    :params:
-        temp_conn:RestClient - Connection to URL
-    :return:
-        raw response
 
-    """
-    temp_conn = RestClient(conn=url, auth=(), timeout=timeout)
-    return temp_conn.get_data(headers=None, raw_response=True)
 
 def declare_mapping_policy(conn:RestClient, policy:dict, **kwargs)->str|None:
+    #--- To review ---#
     """
     Check whether a policy exists and if not declare policy and extract policy ID
     can be used for
         - mapping
         - uns
-    :argss:
+    :args:
         conn:RestClient - connection to REST
         policy:dict - Policy to publish
         kwargs:dict - arguments for WHERE when checking if policy exists
     :params:
         policy_id:str - extract policy ID if exists
-    Args:
-        conn:
-        policy:
-        **kwargs:
-
-    Returns:
-
     """
     try:
         policy_id = policy.get("mapping").get("id")
@@ -136,6 +154,7 @@ def declare_mapping_policy(conn:RestClient, policy:dict, **kwargs)->str|None:
 
 
 def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str|list, is_rest:bool=True):
+    # --- To review ---#
     is_topics = False
     if not isinstance(topics, list):
         topics = topics.split(',')

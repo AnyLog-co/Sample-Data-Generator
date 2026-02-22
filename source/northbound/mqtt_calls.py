@@ -6,9 +6,28 @@ from typing import List
 from source.northbound.error_codes import MQTT_ERROR_CODES
 
 
-
 class MqttClient:
-    def __init__(self, host:str, port:int, user:str=None, password:str=None, timeout:int=60):
+    """
+    MQTT client wrapper for connecting, publishing, and disconnecting
+    from an MQTT broker with structured error handling.
+    """
+
+    def __init__(self, host: str, port: int, user: str = None, password: str = None, timeout: int = 60):
+        """
+        Initialize MQTT client and establish connection
+
+        :args:
+            host:str - MQTT broker hostname or IP
+            port:int - MQTT broker port
+            user:str - optional username for authentication
+            password:str - optional password for authentication
+            timeout:int - keepalive timeout in seconds
+        :params:
+            self.client:mqtt.Client - underlying MQTT client instance
+            self._connected:bool - connection state flag
+        :return:
+            None
+        """
         self.host = host
         self.port = port
         self.user = user
@@ -27,7 +46,21 @@ class MqttClient:
     # -------------------------
     # Callbacks
     # -------------------------
+
     def _on_connect(self, client, userdata, flags, rc):
+        """
+        Internal callback triggered upon connection attempt
+
+        :args:
+            client:mqtt.Client - MQTT client instance
+            userdata:Any - user-defined data
+            flags:dict - response flags from broker
+            rc:int - result code
+        :params:
+            self._connected:bool - updated connection state
+        :return:
+            None
+        """
         if rc == 0:
             self._connected = True
         else:
@@ -38,6 +71,18 @@ class MqttClient:
             )
 
     def _on_disconnect(self, client, userdata, rc):
+        """
+        Internal callback triggered upon disconnection
+
+        :args:
+            client:mqtt.Client - MQTT client instance
+            userdata:Any - user-defined data
+            rc:int - result code
+        :params:
+            self._connected:bool - updated connection state
+        :return:
+            None
+        """
         self._connected = False
         if rc != 0:
             error_msg = MQTT_ERROR_CODES.get(rc, f"Unknown error code {rc}")
@@ -51,6 +96,17 @@ class MqttClient:
     # -------------------------
 
     def connect(self):
+        """
+        Establish connection to MQTT broker
+
+        :args:
+            None
+        :params:
+            self.client:mqtt.Client - configured client instance
+            self._connected:bool - updated connection state
+        :return:
+            None
+        """
         try:
             if self.user and self.password:
                 self.client.username_pw_set(self.user, self.password)
@@ -74,6 +130,16 @@ class MqttClient:
             )
 
     def disconnect(self):
+        """
+        Disconnect from MQTT broker
+
+        :args:
+            None
+        :params:
+            self.client:mqtt.Client - active MQTT client
+        :return:
+            None
+        """
         try:
             if self.client.is_connected():
                 self.client.loop_stop()
@@ -89,6 +155,18 @@ class MqttClient:
     # -------------------------
 
     def publish_data(self, topic: str, payload: str | dict | List[dict]):
+        """
+        Publish data to a specific MQTT topic
+
+        :args:
+            topic:str - MQTT topic name
+            payload:str|dict|List[dict] - message content to publish
+        :params:
+            response:mqtt.MQTTMessageInfo - publish response object
+            response.rc:int - MQTT return code
+        :return:
+            None
+        """
         try:
             if not self._connected:
                 raise Exception("MQTT client is not connected")

@@ -7,7 +7,7 @@ import re
 
 import requests
 from bs4 import BeautifulSoup
-from source.northbound.rest_calls import get_file_content
+from source.northbound.rest_functions import get_file_content
 
 def _to_snake(name: str)->str:
     """
@@ -30,10 +30,10 @@ def extract_credentials(credentials:str):
             [ip]:[port]
             [user]:[password]@[ip]:[port]
     :params:
-        borker:str -  IP
-        port:int
-        user:str
-        password:str
+        broker:str -  IP
+        port:int - port associated with IP
+        user:str - user used for security
+        password:str - password associated with user
     :return:
         broker, port, user, password
     """

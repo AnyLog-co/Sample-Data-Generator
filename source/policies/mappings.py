@@ -1,18 +1,6 @@
-CONFIGS = {
-    "rig": {
-        "url": "http://45.33.11.32/Sample-Data/rig-data",
-        "topic": "rig-data"
-    },
-    "vessel": {
-        "url": "http://45.33.11.32/Sample-Data/rig-data",
-        "topic": "rig-data"
-    },
-    "wind-turbine": {
-        "url": "http://45.33.11.32/Sample-Data/wind-turbine/",
-        "topic": "wind-turbine"
-    }
-}
-
+"""
+Logic dictionaries used for mapping and referencing tables
+"""
 BASE_POLICY = {
     "mapping": {
         "id": None,

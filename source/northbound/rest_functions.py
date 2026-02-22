@@ -43,3 +43,21 @@ def publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer, payload:dic
             "topic": topic
         })
         conn.publish_data(headers=headers, payload=payload, method=method)
+
+def get_file_content(url:str=None, timeout:float=30):
+    """
+    Given a URL, extract content from.
+    :use-cases:
+        1. get list of files
+        2. read content from file
+    :args:
+        url:str - URL to extract content from
+        timeout:float - REST timeout
+    :params:
+        temp_conn:RestClient - Connection to URL
+    :return:
+        raw response
+
+    """
+    temp_conn = RestClient(conn=url, auth=(), timeout=timeout)
+    return temp_conn.get_data(headers=None, raw_response=True)

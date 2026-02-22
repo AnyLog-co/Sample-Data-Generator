@@ -1,3 +1,6 @@
+"""
+Dicts with error consistent error message to be used for REST and MQTT
+"""
 MQTT_ERROR_CODES = {
     -1: "MQTT_ERR_NO_CONN",
     1: "Connection Refused: Unacceptable protocol version",
