@@ -4,9 +4,7 @@
 3. begin with `vessel`, then get relevant data file(s) based on timestamp
 4. publish data into AnyLog / EdgeLake
 """
-import copy
 import datetime
-import json
 import posixpath
 import time
 
@@ -159,6 +157,7 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                 db_name=db_name,
                 payload=payload
             )
+
 
         # -----------------------------
         # Loop control
