@@ -113,22 +113,25 @@ def read_csv_content(url:str, row_id:int=0)->dict|None:
     return content
 
 
-def read_json_content(url:str, row_id:int, german_format:bool=False, timeout:float=30)->dict|None:
+def read_json_content(url:str, row_id:int|None=None, timestamp:str|None=None, german_format:bool=False, timeout:float=30)->(dict|None) or (dict|None, str):
     """
     Read content from a given (URL) file
     :args:
         url:str - URL with files
-        row_id:int - row number to extract content from
+        row_id:int|None - row number to extract content from
+        timestamp:str|None=None - timestamp for row
         german_format:bool - whether data is German format
         timeout:float - REST timeout
     :params:
-       response:response.Requests - raw request response
+        response:response.Requests - raw request response
         raw_content:dict - raw content from request
         content:str|None - actual content to store
     :return:
         content
     """
+    line = None
     response = get_file_content(url=url, timeout=timeout)
+    is_split = False
     if not response:
         return None
 
@@ -138,22 +141,38 @@ def read_json_content(url:str, row_id:int, german_format:bool=False, timeout:flo
             locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
             text = response.content.decode("utf-8-sig")
             rows = [json.loads(line) for line in text.splitlines() if line.strip()]
-            raw_content = rows[row_id]
+            if row_id:
+                raw_content = rows[row_id]
         else:
             # Standard JSON array
             try:
                 raw_content = response.json()[row_id]
             except requests.JSONDecodeError:
                 # Fallback to line-based parsing
-                line = response.text.splitlines()[row_id]
-                if ": {" in line.strip() and not line.strip().startswith("{"):
-                    line = line.split(": ", 1)[-1]
-                raw_content = json.loads(line.strip())
+                if row_id is not None:
+                    line = response.text.splitlines()[row_id]
+                elif timestamp is not None:
+                    line = None
+                    lines = response.text.splitlines()
+                    for read_lines in lines:
+                        if timestamp in read_lines:
+                            line = read_lines
+                            break
+                if line and ": {" in line.strip() and not line.strip().startswith("{"):
+                    is_split = True
+                    timestamp, line = line.split(": ", 1)
+                if line is None:
+                    print(url)
+                    exit(1)
+                else:
+                    raw_content = json.loads(line.strip())
     except (IndexError, ValueError, json.JSONDecodeError):
         return None
 
-    if not german_format:
+    if not german_format and not is_split:
         return raw_content
+    elif not german_format:
+        return timestamp, raw_content
 
     # German numeric normalization
     content = {}

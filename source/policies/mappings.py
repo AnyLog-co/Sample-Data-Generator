@@ -136,6 +136,262 @@ WIND_TURBINE_TABLES = {
     }
 }
 
+VESSEL_INFO = {
+
+    # -----------------------------
+    # 1. Battery Telemetry
+    # -----------------------------
+    "battery_telemetry": [
+        "timestamp",
+        "vessel_name",
+        "side",
+        "motor_id",
+
+        # core battery states
+        "batteryStateOfChargePercent",
+        "gStateOfCharge",
+        "actualSoc",
+        "gStateOfHealth",
+        "gEnergyRemaining",
+        "maxCapacity",
+        "hvBatteryCapacity",
+        "hvBatteryType",
+        "lvBatteryCapacity",
+        "lvBatteryMaxCapacity",
+        "lvBatteryStateOfChargePercent",
+        "lvBatteryType",
+        "currentBatteryPower",
+        "maxBatteryPower",
+        "timeBattery",
+        "timeToFullMinute",
+        "starterBatteryVoltage",
+        "starterBatteryVoltagePercent",
+        "cellBalance",
+        "gCellBalance",
+        "gPowerLimitCharge",
+        "gPowerLimitDischarge"
+    ],
+
+    # -----------------------------
+    # 2. Navigation Telemetry
+    # -----------------------------
+    "navigation_telemetry": [
+        "timestamp",
+        "vessel_name",
+        "side",
+        "motor_id",
+
+        "currentPositionLatitude",
+        "currentPositionLongitude",
+        "speedOverGround",
+        "speedOverGroundFixed",
+        "speedThroughWater",
+        "trip",
+        "distanceHome",
+        "distanceDestination",
+        "sogValid",
+        "currentHeading",
+        "headingDestination",
+        "headingHome"
+    ],
+
+    # -----------------------------
+    # 3. Charger Telemetry
+    # -----------------------------
+    "charger_telemetry": [
+        "timestamp",
+        "vessel_name",
+        "side",
+        "motor_id",
+
+        # AC
+        "acChargerPowerPercent",
+        "portAcChargerPower",
+        "portAcChargerEnable",
+        "stbdAcChargerPower",
+        "stbdAcChargerEnable",
+
+        # DC / other
+        "dcacEnable",
+        "dcacPower",
+        "dcacPowerPercent",
+        "dcdcEnable",
+        "dcdcPower",
+        "dcdcPowerPercent",
+        "elPtxPower",
+        "elPtxPowerPercent",
+        "regenerationPower",
+        "regenerationPowerPercent",
+        "availablePowerChargeLong",
+        "availablePowerChargeShort",
+        "availablePowerDischargeLong",
+        "availablePowerDischargeShort",
+        "maxCurrentCharge",
+        "maxCurrentDischarge"
+    ],
+
+    # -----------------------------
+    # 4. Engine Telemetry
+    # -----------------------------
+    "engine_telemetry": [
+        "timestamp",
+        "vessel_name",
+        "side",
+        "motor_id",
+
+        "motorPowerCombined",
+        "motorPowerCombinedPercent",
+        "motorPowerLimit",
+        "portMotorPower",
+        "portMotorPowerPercent",
+        "stbdMotorPower",
+        "stbdMotorPowerPercent",
+        "portRpmShaft",
+        "portRpmShaftPercent",
+        "stbdRpmShaft",
+        "stbdRpmShaftPercent",
+        "throttle",
+        "drive",
+        "powerBalance",
+        "maxPower",
+        "maxSpeed",
+        "selectSystemMode",
+        "vesselState",
+        "systemState"
+    ],
+
+    # -----------------------------
+    # 5. AC Power Telemetry
+    # -----------------------------
+    "ac_power_telemetry": [
+        "timestamp",
+        "vessel_name",
+        "side",
+        "motor_id",
+
+        "gActAcCurrent",
+        "gActAcVoltage",
+        "gActAcFrequency",
+        "gCommandAcCurrentLimitPP",
+        "gParamMaxAcCurrentPP",
+        "gMaxDcPower"
+    ],
+
+    # -----------------------------
+    # 6. DC Power Telemetry
+    # -----------------------------
+    "dc_power_telemetry": [
+        "timestamp",
+        "vessel_name",
+        "side",
+        "motor_id",
+
+        "gActDcPower",
+        "gActDcVoltage",
+        "gCommandDcPowerLimit",
+        "gCommandMaxDcVoltage"
+    ],
+
+    # -----------------------------
+    # 7. Thermal Telemetry
+    # -----------------------------
+    "thermal_telemetry": [
+        "timestamp",
+        "vessel_name",
+        "side",
+        "motor_id",
+
+        "gActElectronicTemperature",
+        "gAverageTemperature",
+        "gMaxCellTemperature",
+        "gMinCellTemperature",
+        "actualTempBattery",
+        "actualTempBatteryMax",
+        "actualTempBatteryMin",
+        "actualTempHeatexchanger",
+        "gCoolingPolicy",
+        "coolingRequested",
+        "coolingType"
+    ],
+
+    # -----------------------------
+    # 8. Control State
+    # -----------------------------
+    "control_state": [
+        "timestamp",
+        "vessel_name",
+        "side",
+        "motor_id",
+
+        "gCommand",
+        "gState",
+        "gWake",
+        "gIsSlave",
+        "gError",
+        "gDisableReason",
+        "gSimConnectedPhaseCount",
+        "deviceState",
+        "systemState"
+    ]
+}
+
+BASE_VESSEL_FILES = {
+    "DLB": {
+        "Helios_DLB_BCL25_700_8_CH_IP_3_ID_65": [
+            "2024-08-15_Helios_DLB_BCL25_700_8_CH_IP_3_ID_65.json",
+            "2024-08-15_Helios_DLB_BCL25_700_8_CH_IP_3_ID_65_DEVICE.json"
+        ],
+        "Helios_DLB_BCL25_700_8_CH_IP_4_ID_65": [
+            "2024-08-15_Helios_DLB_BCL25_700_8_CH_IP_4_ID_65.json",
+            "2024-08-15_Helios_DLB_BCL25_700_8_CH_IP_4_ID_65_DEVICE.json"
+        ],
+        "Helios_DLB_BMWix_IP_3_ID_33": [
+            "2024-08-15_Helios_DLB_BMWix_IP_3_ID_33.json",
+            "2024-08-15_Helios_DLB_BMWix_IP_3_ID_33_DEVICE.json"
+        ],
+        "Helios_DLB_BMWix_IP_3_ID_49": [
+            "2024-08-15_Helios_DLB_BMWix_IP_3_ID_49.json",
+            "2024-08-15_Helios_DLB_BMWix_IP_3_ID_49_DEVICE.json"
+        ],
+        "Helios_DLB_BMWix_IP_3_ID_81": [
+            "2024-08-15_Helios_DLB_BMWix_IP_3_ID_81.json",
+            "2024-08-15_Helios_DLB_BMWix_IP_3_ID_81_DEVICE.json"
+        ],
+        "Helios_DLB_BMWix_IP_4_ID_49": [
+            "2024-08-15_Helios_DLB_BMWix_IP_4_ID_49.json",
+            "2024-08-15_Helios_DLB_BMWix_IP_4_ID_49_DEVICE.json"
+        ],
+        "Helios_DLB_vessel": [
+            "2024-08-15_Helios_DLB_vessel.json"
+        ]
+    },
+
+    "DLT": {
+        "Helios_DLT_BCL25_700_8_CH_IP_3_ID_65": [
+            "2024-08-15_Helios_DLT_BCL25_700_8_CH_IP_3_ID_65.json",
+            "2024-08-15_Helios_DLT_BCL25_700_8_CH_IP_3_ID_65_DEVICE.json"
+        ],
+        "Helios_DLT_BMWix_IP_3_ID_33": [
+            "2024-08-15_Helios_DLT_BMWix_IP_3_ID_33.json",
+            "2024-08-15_Helios_DLT_BMWix_IP_3_ID_33_DEVICE.json"
+        ],
+        "Helios_DLT_BMWix_IP_3_ID_49": [
+            "2024-08-15_Helios_DLT_BMWix_IP_3_ID_49.json",
+            "2024-08-15_Helios_DLT_BMWix_IP_3_ID_49_DEVICE.json"
+        ],
+        "Helios_DLT_BMWix_IP_3_ID_81": [
+            "2024-08-15_Helios_DLT_BMWix_IP_3_ID_81.json",
+            "2024-08-15_Helios_DLT_BMWix_IP_3_ID_81_DEVICE.json"
+        ],
+        "Helios_DLT_BMWix_IP_4_ID_49": [
+            "2024-08-15_Helios_DLT_BMWix_IP_4_ID_49.json",
+            "2024-08-15_Helios_DLT_BMWix_IP_4_ID_49_DEVICE.json"
+        ],
+        "Helios_DLT_vessel": [
+            "2024-08-15_Helios_DLT_vessel.json"
+        ]
+    }
+}
 
 VESSEL_INFO = {
     "anotherpeak-tier1": {

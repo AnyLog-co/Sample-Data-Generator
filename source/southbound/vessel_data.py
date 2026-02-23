@@ -1,3 +1,10 @@
+"""
+1. copy appropriate file(s) into cloud instance (1 time process - manual)
+2. convert to select DLB vs DLT
+3. begin with `vessel`, then get data relevant data file(s) based on timestamp
+4. publish data into AnyLog / EdgeLake
+"""
+
 import posixpath
 import time
 
