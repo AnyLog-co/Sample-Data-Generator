@@ -138,16 +138,22 @@ WIND_TURBINE_TABLES = {
 
 VESSEL_INFO = {
 
-    # -----------------------------
-    # 1. Battery Telemetry
-    # -----------------------------
-    "battery_telemetry": [
+    # ------------------------------------------------------------------
+    # Metadata (ALWAYS included in every payload)
+    # ------------------------------------------------------------------
+    "general": [
         "timestamp",
         "vessel_name",
         "side",
+        "ip_index",
         "motor_id",
+        "device"
+    ],
 
-        # core battery states
+    # ------------------------------------------------------------------
+    # Battery Telemetry
+    # ------------------------------------------------------------------
+    "battery_telemetry": [
         "batteryStateOfChargePercent",
         "gStateOfCharge",
         "actualSoc",
@@ -172,15 +178,10 @@ VESSEL_INFO = {
         "gPowerLimitDischarge"
     ],
 
-    # -----------------------------
-    # 2. Navigation Telemetry
-    # -----------------------------
+    # ------------------------------------------------------------------
+    # Navigation Telemetry
+    # ------------------------------------------------------------------
     "navigation_telemetry": [
-        "timestamp",
-        "vessel_name",
-        "side",
-        "motor_id",
-
         "currentPositionLatitude",
         "currentPositionLongitude",
         "speedOverGround",
@@ -195,23 +196,15 @@ VESSEL_INFO = {
         "headingHome"
     ],
 
-    # -----------------------------
-    # 3. Charger Telemetry
-    # -----------------------------
+    # ------------------------------------------------------------------
+    # Charger Telemetry
+    # ------------------------------------------------------------------
     "charger_telemetry": [
-        "timestamp",
-        "vessel_name",
-        "side",
-        "motor_id",
-
-        # AC
         "acChargerPowerPercent",
         "portAcChargerPower",
         "portAcChargerEnable",
         "stbdAcChargerPower",
         "stbdAcChargerEnable",
-
-        # DC / other
         "dcacEnable",
         "dcacPower",
         "dcacPowerPercent",
@@ -230,15 +223,10 @@ VESSEL_INFO = {
         "maxCurrentDischarge"
     ],
 
-    # -----------------------------
-    # 4. Engine Telemetry
-    # -----------------------------
+    # ------------------------------------------------------------------
+    # Engine Telemetry
+    # ------------------------------------------------------------------
     "engine_telemetry": [
-        "timestamp",
-        "vessel_name",
-        "side",
-        "motor_id",
-
         "motorPowerCombined",
         "motorPowerCombinedPercent",
         "motorPowerLimit",
@@ -260,15 +248,10 @@ VESSEL_INFO = {
         "systemState"
     ],
 
-    # -----------------------------
-    # 5. AC Power Telemetry
-    # -----------------------------
+    # ------------------------------------------------------------------
+    # AC Power Telemetry
+    # ------------------------------------------------------------------
     "ac_power_telemetry": [
-        "timestamp",
-        "vessel_name",
-        "side",
-        "motor_id",
-
         "gActAcCurrent",
         "gActAcVoltage",
         "gActAcFrequency",
@@ -277,30 +260,20 @@ VESSEL_INFO = {
         "gMaxDcPower"
     ],
 
-    # -----------------------------
-    # 6. DC Power Telemetry
-    # -----------------------------
+    # ------------------------------------------------------------------
+    # DC Power Telemetry
+    # ------------------------------------------------------------------
     "dc_power_telemetry": [
-        "timestamp",
-        "vessel_name",
-        "side",
-        "motor_id",
-
         "gActDcPower",
         "gActDcVoltage",
         "gCommandDcPowerLimit",
         "gCommandMaxDcVoltage"
     ],
 
-    # -----------------------------
-    # 7. Thermal Telemetry
-    # -----------------------------
+    # ------------------------------------------------------------------
+    # Thermal Telemetry
+    # ------------------------------------------------------------------
     "thermal_telemetry": [
-        "timestamp",
-        "vessel_name",
-        "side",
-        "motor_id",
-
         "gActElectronicTemperature",
         "gAverageTemperature",
         "gMaxCellTemperature",
@@ -314,15 +287,10 @@ VESSEL_INFO = {
         "coolingType"
     ],
 
-    # -----------------------------
-    # 8. Control State
-    # -----------------------------
+    # ------------------------------------------------------------------
+    # Control State
+    # ------------------------------------------------------------------
     "control_state": [
-        "timestamp",
-        "vessel_name",
-        "side",
-        "motor_id",
-
         "gCommand",
         "gState",
         "gWake",
@@ -393,86 +361,86 @@ BASE_VESSEL_FILES = {
     }
 }
 
-VESSEL_INFO = {
-    "anotherpeak-tier1": {
-        "file_id": "vessel.json",
-        "tables": {
-            "battery_telemetry": [
-                "batteryStateOfChargePercent",
-                "hvBatteryCapacity",
-                "hvBatteryType",
-                "lvBattery*",
-                "currentBatteryPower",
-                "maxBatteryPower",
-                "timeBattery",
-                "timeToFullMinute",
-                "starterBatteryVoltage"
-                "starterBatteryVoltagePercent"
-            ],
-            "navigation_telemetry": [
-                "currentPositionLatitude",
-                "currentPositionLongitude",
-                "speedOverGround",
-                "speedOverGroundFixed",
-                "speedThroughWater",
-                "heading*",
-                "distance*",
-                "trip",
-                "sogValid"
-            ],
-            "charger_telemetry": [
-                "acChargerPowerPercent",
-                "portAcCharger*",
-                "stbdAcCharger*",
-                "elPtx*",
-                "dcac*",
-                "dcdc*",
-                "regeneration*"
-            ],
-            "engine_telemetry": [
-            "motor*",
-            "rpm*",
-            "throttle*",
-            "drive*",
-            "powerBalance",
-            "maxPower",
-            "maxSpeed",
-            "selectSystemMode",
-            "vesselState",
-            "systemState"
-        ],
-        },
-    },
-    "anotherpeak-tier2": {
-        "file_id": "ID_65.json",
-        "tables": {
-            "ac_power_telemetry": [
-                "gActAcCurrent",
-                "gActAcVoltage",
-                "gActAcFrequency",
-                "gCommandAcCurrentLimitPP",
-                "gMaxDcPower",
-                "gParamMaxAcCurrentPP"
-            ],
-            "dc_power_telemetry": [
-                "gActDcPower",
-                "gActDcVoltage",
-                "gCommandDcPowerLimit",
-                "gCommandMaxDcVoltage"
-            ],
-            "thermal_telemetry": [
-                "gActElectronicTemperature",
-                "gCoolingPolicy"
-            ],
-            "control_state": [
-            "gCommand",
-            "gState",
-            "gWake",
-            "gIsSlave",
-            "gError",
-            "gDisableReason",
-            "gSimConnectedPhaseCount"
-        ]
-        }
-    }
-}
+# VESSEL_INFO = {
+#     "anotherpeak-tier1": {
+#         "file_id": "vessel.json",
+#         "tables": {
+#             "battery_telemetry": [
+#                 "batteryStateOfChargePercent",
+#                 "hvBatteryCapacity",
+#                 "hvBatteryType",
+#                 "lvBattery*",
+#                 "currentBatteryPower",
+#                 "maxBatteryPower",
+#                 "timeBattery",
+#                 "timeToFullMinute",
+#                 "starterBatteryVoltage"
+#                 "starterBatteryVoltagePercent"
+#             ],
+#             "navigation_telemetry": [
+#                 "currentPositionLatitude",
+#                 "currentPositionLongitude",
+#                 "speedOverGround",
+#                 "speedOverGroundFixed",
+#                 "speedThroughWater",
+#                 "heading*",
+#                 "distance*",
+#                 "trip",
+#                 "sogValid"
+#             ],
+#             "charger_telemetry": [
+#                 "acChargerPowerPercent",
+#                 "portAcCharger*",
+#                 "stbdAcCharger*",
+#                 "elPtx*",
+#                 "dcac*",
+#                 "dcdc*",
+#                 "regeneration*"
+#             ],
+#             "engine_telemetry": [
+#             "motor*",
+#             "rpm*",
+#             "throttle*",
+#             "drive*",
+#             "powerBalance",
+#             "maxPower",
+#             "maxSpeed",
+#             "selectSystemMode",
+#             "vesselState",
+#             "systemState"
+#         ],
+#         },
+#     },
+#     "anotherpeak-tier2": {
+#         "file_id": "ID_65.json",
+#         "tables": {
+#             "ac_power_telemetry": [
+#                 "gActAcCurrent",
+#                 "gActAcVoltage",
+#                 "gActAcFrequency",
+#                 "gCommandAcCurrentLimitPP",
+#                 "gMaxDcPower",
+#                 "gParamMaxAcCurrentPP"
+#             ],
+#             "dc_power_telemetry": [
+#                 "gActDcPower",
+#                 "gActDcVoltage",
+#                 "gCommandDcPowerLimit",
+#                 "gCommandMaxDcVoltage"
+#             ],
+#             "thermal_telemetry": [
+#                 "gActElectronicTemperature",
+#                 "gCoolingPolicy"
+#             ],
+#             "control_state": [
+#             "gCommand",
+#             "gState",
+#             "gWake",
+#             "gIsSlave",
+#             "gError",
+#             "gDisableReason",
+#             "gSimConnectedPhaseCount"
+#         ]
+#         }
+#     }
+# }

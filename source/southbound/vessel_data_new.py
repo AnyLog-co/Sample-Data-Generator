@@ -52,6 +52,9 @@ def _check_vessels(vessel_ids: list[str] | str = None) -> dict:
 #          sleep:float=10, offset_sleep:float=0.5
 def main(publish_topics: list[str] | str = None):
     _check_vessels(publish_topics)
+    timestamp = None
+
+    row_id = 0
 
     for side in VESSEL_FILES:
         general_params = {"boat_side": side}
@@ -62,11 +65,10 @@ def main(publish_topics: list[str] | str = None):
                 "motor_id": int(group.rsplit('_', 1)[-1])
             })
             general_params["device"] = group.split(f"{general_params.get('boat_side')}_")[-1].split("_IP")[0]
-
-            timestamp = None
-            full_row = copy.deepcopy(general_params)
-            row_id = 0
-            full_row["timestamp"] = timestamp_calculator(timestamp=datetime.datetime.now(), offset=0, id_index=0)
+            general_params["timestamp"] = timestamp_calculator(timestamp=datetime.datetime.now(), offset=0, id_index=0)
+            full_row = general_params
+            print(json.dumps(full_row, indent=2))
+            exit(1)
             for fname in VESSEL_FILES[side][group]:
                 print(fname)
                 url = posixpath.join(DATA_DIR, fname)
@@ -74,7 +76,7 @@ def main(publish_topics: list[str] | str = None):
                     timestamp, row = read_json_content(url=url, row_id=None, timestamp=timestamp)
                 else:
                     timestamp, row = read_json_content(url=url, row_id=row_id, timestamp=timestamp)
-                print(row)
+                # print(row)
                 full_row.update(row)
             print(json.dumps(full_row, indent=2))
             exit(1)
