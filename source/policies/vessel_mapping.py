@@ -1,67 +1,74 @@
 import copy
 import posixpath
 
+
+from source.northbound.rest_calls import RestClient
+from source.northbound.rest_functions import declare_mapping_policy
+from source.northbound.rest_functions import declare_msg_client
+from source.support import read_json_content
+from source.support import get_files_by_url
+from source.support import _to_snake
+from source.support import mapping_param
 from source.policies.mappings import BASE_POLICY
 from source.policies.mappings import VESSEL_INFO
-from source.support import get_files_by_url
-from source.support import read_json_content
-from source.support import mapping_policy_config
-from source.northbound.rest_calls import RestClient
-from source.northbound.rest_calls import declare_mapping_policy
-from source.northbound.rest_calls import declare_msg_client
-from source.support import _to_snake
-
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/vessel-data/"
 VESSEL_FILES = get_files_by_url(url=DATA_DIR)
 
-TABLE = "vessel_data"
 TOPIC = "vessel-data"
 
 
-
+# , =None, port:int, is_rest:bool=False
 def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
-    topics = f"(name={TOPIC} and "
-    for tier in VESSEL_INFO:
-        mappings = []
-        rows = []
-        content = {}
-        for file in VESSEL_FILES:
-            if VESSEL_INFO[tier].get("file_id") in file:
-                file_path = posixpath.join(DATA_DIR,  file)
-                for row_id in range(10):
-                    rows.append(read_json_content(url=file_path, row_id=row_id))
+    topics = f"(name={TOPIC} "
+    columns = {}
+    for fname in VESSEL_FILES: # extract all columns and corresponding types
+        # print(fname)
+        url = posixpath.join(DATA_DIR, fname)
+        for row_id in range(3):
+            _, row = read_json_content(url=url, row_id=row_id, timestamp=None, german_format=False, timeout=30)
+            for column in row:
+                if column not in columns:
+                    columns[column] = []
+                if type(row.get(column)) not in columns.get(column):
+                    columns[column].append(type(row.get(column)))
 
-        for row in rows:
-            for key in row:
-                if key not in content:
-                    content[key] = []
-                if type(row.get(key)) not in content[key]:
-                    content[key].append(type(row.get(key)))
+    for table in VESSEL_INFO:
+        if table != "general":
+            mapping_policy = copy.deepcopy(BASE_POLICY)
+            mapping_policy["mapping"]["id"] = _to_snake(table).replace('_', '-')
+            mapping_policy["mapping"]["table"] = _to_snake(table)
+            for column in VESSEL_INFO.get("general"):
+                mapping_policy["mapping"]["schema"].update({
+                    _to_snake(name=column): {
+                        "type": VESSEL_INFO.get("general").get(column),
+                        **({"default": ""} if VESSEL_INFO.get("general").get(column) == "string" else {}),
+                        "bring": f"[{column}]"
+                    }
+                })
+            for column in VESSEL_INFO[table]:
+                if columns.get(column):
+                    data_type  = mapping_param(columns.get(column))
+                    mapping_policy["mapping"]["schema"].update({
+                        _to_snake(name=column): {
+                            "type": data_type,
+                            **({"default": ""} if data_type == "string"  else {}),
+                            **({"default": False} if data_type == "bool" else {}),
+                            "bring": f"[{column}]"
+                        }
+                    })
 
-        for table in VESSEL_INFO[tier]["tables"]:
-            table_content = {}
-            new_policy = copy.deepcopy(BASE_POLICY)
-            new_policy["mapping"]["id"] = table.replace('_','-')
-            new_policy["mapping"] ["table"] = table
-            for sensor in VESSEL_INFO[tier]["tables"][table]:
-                if content.get(sensor):
-                    table_content[sensor] = content.get(sensor)
-                elif sensor.endswith('*'):
-                    for key in content:
-                        if key.startswith(sensor.split('*')[0]):
-                            table_content[key] = content.get(key)
+            policy_id = declare_mapping_policy(conn=conn, policy=mapping_policy,
+                                               table=mapping_policy.get("mapping").get("table"))
+            topics += f" and policy={policy_id}"
 
-            schema = mapping_policy_config(content=table_content, function=_to_snake)
-            new_policy["mapping"]["schema"].update(schema)
-            policy_id = declare_mapping_policy(conn=conn, policy=new_policy)
-            topics += f" policy={policy_id} and"
-
-    topics = topics.rsplit(" and", 1)[0] + ')'
+    topics += ')'
+    # print(topics)
     declare_msg_client(conn=conn, broker=broker, port=port, topics=topics, is_rest=is_rest)
 
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30 )
+    main(conn=conn, broker="rest", port=32149 , is_rest=True)
 

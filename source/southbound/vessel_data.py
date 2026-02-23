@@ -1,63 +1,54 @@
 """
 1. copy appropriate file(s) into cloud instance (1 time process - manual)
 2. convert to select DLB vs DLT
-3. begin with `vessel`, then get data relevant data file(s) based on timestamp
+3. begin with `vessel`, then get relevant data file(s) based on timestamp
 4. publish data into AnyLog / EdgeLake
 """
-
+import copy
+import datetime
+import json
 import posixpath
 import time
 
-from typing import  Dict
-from source.support import get_files_by_url
-from source.support import read_json_content
-
-from source.northbound.rest_functions import publish_data
 from source.northbound.rest_calls import RestClient
 from source.northbound.mqtt_calls import MqttClient
+from source.support import get_files_by_url
+from source.policies.mappings import BASE_VESSEL_FILES
+from source.support import read_json_content
+from source.support import timestamp_calculator
+from source.northbound.rest_functions import publish_data
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/vessel-data/"
 VESSEL_FILES = get_files_by_url(url=DATA_DIR)
 
-TABLE = "vessel_data"
 TOPIC = "vessel-data"
 
-
-def _check_vessels(vessel_ids:list[str]|str)->list:
-    """
-    Validate turbines have data (files) and if not specified then set to all wind turbines
-    :args:
-        vessel_ids:list[str]|str - list of wind turbines either literal or comma separated string
-    :return:
-        list of wind turbines
-    """
-    is_file = False
-    if isinstance(vessel_ids, str):
-        vessel_ids = vessel_ids.split(",")
-        
-    # check if user input is valid and file(s) exist
-    if vessel_ids:
-        for vessel_id in vessel_ids:
-            for file_name in VESSEL_FILES:
-                if vessel_id in file_name:
-                    is_file = True
-                    break
-        if not is_file:
-            raise ValueError(f"Invalid vessel side(s) in vessel options")
+def _check_vessels(vessel_ids: list[str] | str = None) -> dict:
+    vessel_files = {}
+    if vessel_ids and isinstance(vessel_ids, str):
+        vessels = [vessel_ids]
+    elif vessel_ids and isinstance(vessel_ids, list):
+        vessels = vessel_ids
     else:
-        vessel_ids = ["DLB", "DLT"]
+        vessels = ["DLB", "DLT"]
 
-    return vessel_ids
+    for base_side in vessels:
+        vessel_files[base_side] = {}
+        for group in BASE_VESSEL_FILES.get(base_side, {}):
+            for fname in BASE_VESSEL_FILES[base_side][group]:
+                if fname in VESSEL_FILES and group not in vessel_files[base_side]:
+                    vessel_files[base_side][group] = [fname]
+                elif fname in VESSEL_FILES:
+                    vessel_files[base_side][group].append(fname)
+    return vessel_files
 
 
-
-def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topics:list[str]|str=None, iterations:int=10,
-         sleep:float=10, offset_sleep:float=0.5):
+def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topics:list[str]|str=None,
+         iterations: int = 10, sleep:float=10, offset_sleep:float=0.5):
     """
-    main for publishing rig data
+    main for publishing vessel (boat) data
     :args:
         method:str - method to publish data
-            - PUT
             - POST
             - MQTT
         conn:RestClient|MqttClient - connection to publish data
@@ -74,51 +65,111 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
         payload:list - payload to publish data
         is_active:bool
         is_null:bool
+    :miising:
+        1. if DLT / DLB in parallel - then it's 2 threads
     """
-    vessel_ids = _check_vessels(vessel_ids=publish_topics)
-    vessel_paths:Dict[str, dict] = {}
-    for vessel_id in vessel_ids:
-        if vessel_id not in vessel_paths:
-            vessel_paths[vessel_id] = {}
-        for fname in VESSEL_FILES:
-            vessel_paths[vessel_id].update({
-                "file_path": posixpath.join(DATA_DIR, fname),
-                "line_count": 0
-            })
+
+
+    vessel_files = _check_vessels(publish_topics)
 
     counter = 0
     is_active = True
 
+    # row counter per group
+    row_counts = {
+        side: {group: 0 for group in vessel_files[side]}
+        for side in vessel_files
+    }
+
     while is_active:
+
         payload = []
-        for vessel_id in vessel_paths:
-            if vessel_paths[vessel_id].get("line_count") is not None:
-                row = read_json_content(vessel_paths[vessel_id].get("file_path"), row_id=vessel_paths[vessel_id].get("line_count"))
 
-                if row:
-                    if method in ["MQTT", "POST"]:
-                        row["dbms"] = db_name
-                        row["table"] = TABLE
+        for side in vessel_files:
+            for id_index, group in enumerate(vessel_files[side]):
 
-                    payload.append(row)
-                    vessel_paths[vessel_id]["line_count"] += 1
-                    if len(vessel_ids) > 1:
-                        time.sleep(offset_sleep)
+                row_id = row_counts[side][group]
+                group_timestamp = None
+
+                # -----------------------------
+                # Build General Metadata
+                # -----------------------------
+                general_params = {
+                    "dbms": db_name,
+                    "boat_side": side,
+                    "timestamp": timestamp_calculator(
+                        timestamp=datetime.datetime.now(datetime.timezone.utc),
+                        offset=offset_sleep, id_index=id_index
+                    ),
+                    "vessel_name": None,
+                    "ip_index": "",
+                    "motor_id": "",
+                    "device": ""
+                }
+
+                # Handle vessel file separately
+                if "_vessel" in group:
+                    general_params["vessel_name"] = group.split("_")[1]
                 else:
-                    vessel_paths[vessel_id]["line_count"] = None
+                    parts = group.split("_")
+                    general_params.update({
+                        "vessel_name": parts[0],
+                        "ip_index": int(group.split("_IP_")[1].split("_ID_")[0]),
+                        "motor_id": int(group.rsplit("_", 1)[-1]),
+                        "device": group.split(f"{side}_")[1].split("_IP")[0]
+                    })
 
-        # print(payload)
-        publish_data(method=method, conn=conn, topic=TOPIC, table_name=TABLE, db_name=db_name, payload=payload)
+                # Ensure string/bool fields are never None (AnyLog requirement)
+                for key in ["vessel_name", "device", "boat_side", "dbms"]:
+                    if general_params[key] is None:
+                        general_params[key] = ""
 
+                full_row = general_params.copy()
+
+                # -----------------------------
+                # Merge JSON files
+                # -----------------------------
+                for fname in vessel_files[side][group]:
+                    url = posixpath.join(DATA_DIR, fname)
+                    group_timestamp, row = read_json_content(
+                        url=url,
+                        row_id=row_id,
+                        timestamp=group_timestamp
+                    )
+
+                    if not row:
+                        row_counts[side][group] = 0
+                        break
+
+                    full_row.update(row)
+
+                payload.append(full_row)
+                row_counts[side][group] += 1
+
+        # -----------------------------
+        # Publish
+        # -----------------------------
+        if payload:
+            # for data in payload:
+            publish_data(
+                method=method,
+                conn=conn,
+                topic=TOPIC,
+                table_name=None,
+                db_name=db_name,
+                payload=payload
+            )
+
+        # -----------------------------
+        # Loop control
+        # -----------------------------
         counter += 1
         if 0 < iterations <= counter:
             is_active = False
         else:
-            if all(vessel_paths.get(vessel_id).get("line_count") is None for vessel_id in vessel_paths):
-                for vessel_id in vessel_paths:
-                    vessel_paths[vessel_id]["line_count"] = 0
             time.sleep(sleep)
 
 
 if __name__ == "__main__":
-    main(method="POST", conn=None, db_name="rig_db", publish_topics=None, iterations=5)
+    conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)
+    main(method="PRINT", conn=conn, publish_topics=["DLT"], db_name="anotherpeak", iterations=1)

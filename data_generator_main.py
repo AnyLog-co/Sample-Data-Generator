@@ -2,7 +2,7 @@ import argparse
 
 from source.southbound.random_data import main as rand_data
 from source.southbound.rig_data import main as rig_data
-from source.southbound.vessel_data import main as vessel_data
+from source.southbound.vessel_data_old import main as vessel_data
 from source.southbound.wind_turbine import main as wind_turbine
 from source.southbound.proveit_data import main as proveit_data
 

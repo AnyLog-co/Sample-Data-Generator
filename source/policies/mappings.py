@@ -1,6 +1,7 @@
 """
 Logic dictionaries used for mapping and referencing tables
 """
+
 BASE_POLICY = {
     "mapping": {
         "id": None,
@@ -141,14 +142,13 @@ VESSEL_INFO = {
     # ------------------------------------------------------------------
     # Metadata (ALWAYS included in every payload)
     # ------------------------------------------------------------------
-    "general": [
-        "timestamp",
-        "vessel_name",
-        "side",
-        "ip_index",
-        "motor_id",
-        "device"
-    ],
+    "general": {
+        "vessel_name": "string",
+        "boat_side": "string",
+        "ip_index": "int",
+        "motor_id": "int",
+        "device": "string"
+    },
 
     # ------------------------------------------------------------------
     # Battery Telemetry
@@ -360,6 +360,8 @@ BASE_VESSEL_FILES = {
         ]
     }
 }
+
+
 
 # VESSEL_INFO = {
 #     "anotherpeak-tier1": {

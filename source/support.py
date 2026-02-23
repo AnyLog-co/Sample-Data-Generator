@@ -209,6 +209,17 @@ def timestamp_calculator(timestamp:datetime.datetime, offset:float, id_index:int
         raise Exception(f"Failed to calculate timestamp (Error: {error})")
 
 
+def mapping_param(content:list):
+    data_type = "string"
+    if str in content:
+        data_type = "string"
+    elif bool in content:
+        data_type = "bool"
+    elif float in content:
+        data_type = "float"
+    elif int in content:
+        data_type = "int"
+    return data_type
 
 
 def mapping_policy_config(content:dict, function=None)->dict:
