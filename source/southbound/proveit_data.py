@@ -8,7 +8,6 @@ from source.northbound.opcua import OpcuaServer
 from source.southbound.proveit_support import proveit_data
 from source.southbound.proveit_support import proveit_opcua
 from source.support import get_files_by_url
-from source.support import read_json_content
 
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/proveit-data/"

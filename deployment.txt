@@ -1,0 +1,24 @@
+Machine 1: Operator 1 - Sabetha
+Machine 2: Operator 1b - Sabetha
+Machine 3: Operator 2 - Sabetha
+Machine 4: Operator 2b - Sabetha
+Machine 5: Operator 3 - Sabetha
+Machine 6: Operator 3b - Sabetha
+
+Machine 7:  Operator 7 - Vessels (DLT / DLB)
+
+Machine 8: Operator 8  - Rig 01
+Machine 8: Operator 9  - Wind Turbine 1
+
+Machine 9: Operator 10  - Rig 07
+Machine 9: Operator 11  - Wind Turbine 2
+
+Machine 10: Operator 12  - Rig 012
+Machine 10: Operator 13  - Wind Turbine 3
+
+Machine 11: Operator 14  - Rig 032
+Machine 11: Operator 15  - Wind Turbine 5
+
+Machine 12: Operator 15  - Wind Turbine 6
+Machine 13: Operator 16  - Wind Turbine 7
+Machine 14: Operator 17  - Wind Turbine 8
