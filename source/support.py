@@ -149,18 +149,25 @@ def read_json_content(url:str, row_id:int|None=None, timestamp:str|None=None, ge
                 raw_content = response.json()[row_id]
             except requests.JSONDecodeError:
                 # Fallback to line-based parsing
-                if row_id is not None:
-                    line = response.text.splitlines()[row_id]
-                elif timestamp is not None:
+
+                line = None
+                if timestamp is not None:
                     line = None
                     lines = response.text.splitlines()
                     for read_lines in lines:
                         if timestamp in read_lines:
                             line = read_lines
                             break
+
+                if not line:
+                    line = response.text.splitlines()[row_id]
                 if line and ": {" in line.strip() and not line.strip().startswith("{"):
                     is_split = True
                     timestamp, line = line.split(": ", 1)
+                    try: # convert timestamp to datetime
+                        timestamp = datetime.datetime.strftime(timestamp, "%Y-%m-%d %H:%M:%S")
+                    except Exception as error:
+                        pass
                 if line is None:
                     print(url)
                     exit(1)

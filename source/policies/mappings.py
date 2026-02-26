@@ -137,6 +137,382 @@ WIND_TURBINE_TABLES = {
     }
 }
 
+
+SCHEMA = {
+
+    # ──────────────────────────────────────────────────────────────────────
+    # METADATA BLOCK — prepended to every table
+    # Source: filename parsing
+    # Note: vessel.json files have no ip_index or motor_id → NULL
+    # ──────────────────────────────────────────────────────────────────────
+    "_metadata": [
+        "boat_name",       # "Helios"          — from filename
+        "side",            # "DLB" | "DLT"     — from filename
+        "ip_index",        # 3 | 4             — from filename (NULL for vessel tables)
+        "motor_id",        # 33|49|65|81       — from filename (NULL for vessel tables)
+        # "snapshot_index",  # 0 | 1 | 2         — order within file
+    ],
+
+    # ──────────────────────────────────────────────────────────────────────
+    # TABLE 1 — position_logs
+    # Source: vessel.json
+    # ──────────────────────────────────────────────────────────────────────
+    "position_logs": [
+        # ...metadata...
+        "hmiYear",
+        "hmiMonth",
+        "hmiDay",
+        "hmiHour",
+        "hmiMinute",
+        "hmiSecond",
+        "currentPositionLatitude",
+        "currentPositionLongitude",
+        "currentPositionToggle",
+        "currentHeading",
+        "headingDestination",
+        "headingHome",
+        "speedOverGround",
+        "speedOverGroundFixed",
+        "speedThroughWater",
+        "sogValid",
+        "trip",
+        "distanceHome",
+        "distanceDestination",
+        "socDestination",
+        "socHome",
+        "timeDestHour",
+        "timeDestMinute",
+        "timeHomeHour",
+        "timeHomeMinute",
+    ],
+
+    # ──────────────────────────────────────────────────────────────────────
+    # TABLE 2 — vessel_power_logs
+    # Source: vessel.json
+    # ──────────────────────────────────────────────────────────────────────
+    "vessel_power_logs": [
+        # ...metadata...
+        "hmiYear",
+        "hmiMonth",
+        "hmiDay",
+        "hmiHour",
+        "hmiMinute",
+        "hmiSecond",
+        # HV battery (aggregated across all packs)
+        "batteryStateOfChargePercent",
+        "hvBatteryCapacity",
+        "hvBatteryType",
+        "currentBatteryPower",
+        "maxBatteryPower",
+        "timeToFullMinute",
+        "timeBattery",
+        # LV / starter battery
+        "starterBatteryVoltage",
+        "starterBatteryVoltagePercent",
+        "lvBatteryCapacity",
+        "lvBatteryMaxCapacity",
+        "lvBatteryStateOfChargePercent",
+        "lvBatteryType",
+        "lvBatteryVoltage",
+        "lvBatteryVoltagePercent",
+        # Power flows
+        "powerBalance",
+        "motorPowerCombined",
+        "motorPowerCombinedPercent",
+        "motorPowerLimit",
+        "portMotorPower",
+        "portMotorPowerPercent",
+        "stbdMotorPower",
+        "stbdMotorPowerPercent",
+        "portRpmShaft",
+        "portRpmShaftPercent",
+        "stbdRpmShaft",
+        "stbdRpmShaftPercent",
+        # AC chargers (vessel-level view)
+        "acChargerPowerPercent",
+        "portAcChargerPower",
+        "portAcChargerEnable",
+        "stbdAcChargerPower",
+        "stbdAcChargerEnable",
+        # DC-AC / DC-DC
+        "dcacPower",
+        "dcacPowerConfirmed",
+        "dcacPowerPercent",
+        "dcacEnable",
+        "dcdcPower",
+        "dcdcPowerConfirmed",
+        "dcdcPowerPercent",
+        "dcdcEnable",
+        # Regen / solar
+        "regenerationPower",
+        "regenerationPowerPercent",
+        "regenerationEnable",
+        "solarPower",
+        "solarPower_hv",
+        # PTO / eLPTX
+        "elPtxPower",
+        "elPtxPowerConfirmed",
+        "elPtxPowerConfirmedPercent",
+        "elPtxPowerPercent",
+        "ptoPower",
+        "ptoPowerConfirmed",
+        "ptoPowerPercent",
+        # Genset
+        "portGenSetPower",
+        "portGenSetPowerPercent",
+        "portGenSetFuelConsumption",
+        "stbdGenSetPower",
+        "stbdGenSetPowerPercent",
+        "stbdGenSetFuelConsumption",
+        "runTimeGenset",
+    ],
+
+    # ──────────────────────────────────────────────────────────────────────
+    # TABLE 3 — vessel_state_logs
+    # Source: vessel.json
+    # ──────────────────────────────────────────────────────────────────────
+    "vessel_state_logs": [
+        # ...metadata...
+        "hmiYear",
+        "hmiMonth",
+        "hmiDay",
+        "hmiHour",
+        "hmiMinute",
+        "hmiSecond",
+        "systemState",
+        "vesselState",
+        "selectSystemMode",
+        "gCommand",
+        "gCommandState",
+        "portDriveState",
+        "stbdDriveState",
+        "portBatteryConnectionState",
+        "stbdBatteryConnectionState",
+        "portThrottleGearState",
+        "stbdThrottleGearState",
+        "recoveryState",
+        "serverCpuLoad",
+        "serverMemoryUsage",
+        "serverSoftwareVersion",
+        "serverCompilationTime",
+        "updateRateMs",
+        "scuConnectionState",
+        "boxLinkEnable",
+        "nightModeActive",
+        "displayEnable",
+    ],
+
+    # ──────────────────────────────────────────────────────────────────────
+    # TABLE 4 — battery_pack_logs
+    # Source: BMWix .json  (system / gateway view)
+    # ──────────────────────────────────────────────────────────────────────
+    "battery_pack_logs": [
+        # ...metadata...
+        # SOC / SOH
+        "gStateOfCharge",
+        "gStateOfHealth",
+        "gEnergyRemaining",
+        "gParamMaxCapacity",
+        "gParamMaxChargeVoltage",
+        # Electrical
+        "gPackVoltage",
+        "gBusVoltage",
+        "gCurrent",
+        "gCellBalance",
+        # Power limits
+        "gPowerLimitCharge",
+        "gPowerLimitDischarge",
+        # Thermal
+        "gAverageTemperature",
+        "gMaxCellTemperature",
+        "gMinCellTemperature",
+        "gCoolingPolicy",
+        # Time
+        "gTimeToFullMinute",
+        # State / control
+        "gState",
+        "gCommand",
+        "gError",
+        "gDisableReason",
+        "gBalancingState",
+        "batteryErrorCode",
+        "batteryErrorListEraseState",
+    ],
+
+    # ──────────────────────────────────────────────────────────────────────
+    # TABLE 5 — battery_pack_device_logs
+    # Source: BMWix _DEVICE.json  (raw BMS view)
+    # ──────────────────────────────────────────────────────────────────────
+    "battery_pack_device_logs": [
+        # ...metadata...
+        # SOC
+        "actualSoc",
+        "actualUserSoc",
+        "actualSocDelta",
+        "maxSocAllowed_StateOfHealth",
+        "minSocAllowed",
+        # Electrical
+        "actualPackVoltage",
+        "actualBusVoltage",
+        "actualCurrent",
+        "maxCapacity",
+        "maxVoltageCharge",
+        "minVoltageDischarge",
+        "maxCurrentCharge",
+        "maxCurrentDischarge",
+        "maxCellVoltage",
+        "minCellVoltage",
+        "cellBalance",
+        # Power limits (raw BMS values — different precision from gateway view)
+        "availablePowerChargeLong",
+        "availablePowerChargeShort",
+        "availablePowerDischargeLong",
+        "availablePowerDischargeShort",
+        # Thermal
+        "actualTempBattery",
+        "actualTempBatteryMax",
+        "actualTempBatteryMin",
+        "actualTempHeatexchanger",
+        # Cooling (EKMV compressor)
+        "coolingRequested",
+        "coolingRequestedPower",
+        "coolingType",
+        "coolingWorking",
+        "coolingValveState",
+        "coolingValveRequest",
+        "coolingValveErrorState",
+        "ekmvOperationState",
+        "ekmvTemp",
+        "ekmvTempIn",
+        "ekmvTempOut",
+        "ekmvPresHigh",
+        "ekmvPresLow",
+        "ekmvRpmPercent",
+        "ekmvEpower",
+        "ekmvErrorState",
+        # Contactor / safety
+        "stateContactor",
+        "stateDischargeBus",
+        "stateErrorContactor",
+        "stateErrorExternalIsolation",
+        "stateErrorInternalIsolation",
+        "stateWarnIsolation",
+        "statusWarnOverTemp",
+        "isoMeasurementActive",
+        # Requests
+        "requestAbortCharging",
+        "requestContactorClose",
+        "requestInterruptCharging",
+        "requestOpenContactorFast",
+        "requestOpenContactorNow",
+        # Time
+        "timeToFullMinute",
+        "predictedChargeTimeMinute",
+        # Device identity
+        "batteryType",
+        "deviceState",
+        "deviceEnableSetting",
+        "deviceIdentification",
+        "error",
+    ],
+
+    # ──────────────────────────────────────────────────────────────────────
+    # TABLE 6 — charger_logs
+    # Source: BCL25 .json  (system / gateway view)
+    # ──────────────────────────────────────────────────────────────────────
+    "charger_logs": [
+        # ...metadata...
+        # AC side
+        "gActAcCurrent",
+        "gActAcVoltage",
+        "gActAcFrequency",
+        "gCommandAcCurrentLimitPP",
+        "gParamMaxAcCurrentPP",
+        # DC side
+        "gActDcPower",
+        "gActDcVoltage",
+        "gCommandDcPowerLimit",
+        "gCommandMaxDcVoltage",
+        "gMaxDcPower",
+        # Thermal
+        "gActElectronicTemperature",
+        "gCoolingPolicy",
+        # State / control
+        "gState",
+        "gCommand",
+        "gError",
+        "gDisableReason",
+        "gIsSlave",
+        "gWake",
+        "gSimConnectedPhaseCount",
+    ],
+
+    # ──────────────────────────────────────────────────────────────────────
+    # TABLE 7 — charger_device_logs
+    # Source: BCL25 _DEVICE.json  (raw charger hardware view)
+    # ──────────────────────────────────────────────────────────────────────
+    "charger_device_logs": [
+        # ...metadata...
+        # AC side (raw 3-phase)
+        "currentL1",
+        "currentL2",
+        "currentL3",
+        "voltageL1",
+        "voltageL2",
+        "voltageL3",
+        "inputFrequency",
+        "acCurrentLim",
+        # DC / battery side
+        "batteryCurrent",
+        "batteryCurrentLim",
+        "batteryVoltage",
+        "batteryVoltageLim",
+        "chgIbatMaxAvail",
+        # Thermal
+        "invTempAmb",
+        "bbTempAmb",
+        "externalTemp",
+        "signalTempAmb",
+        "signalTempChassis",
+        # Inverter / buck-boost state
+        "inverterState",
+        "inverterShutDownReason",
+        "buckBoostState",
+        "buckBoostShutDownReason",
+        "shutDownReason",
+        "powerStage",
+        # Signal / command
+        "signalState",
+        "signalConnection",
+        "cmdEnable",
+        "cmdMode",
+        "mode",
+        # EVSE (charge plug interface)
+        "evseStatus",
+        "evseType",
+        "evseTypeStatus",
+        "contrPilotImp",
+        "proximityState",
+        "lockState",
+        "pilotDuty",
+        "pilotFreq",
+        # LV battery
+        "lV_Vbat",
+        "lvBattUVlim",
+        # Device identity
+        "deviceMode",
+        "deviceEnableSetting",
+        "deviceSeen",
+        "deviceCantStart",
+        "error",
+        "errorStatus",
+        "BBuCVersion",
+        "INVuCVersion",
+        "signaluCVersion",
+        "hwRev",
+    ],
+}
+
 VESSEL_INFO = {
 
     # ------------------------------------------------------------------
@@ -360,6 +736,8 @@ BASE_VESSEL_FILES = {
         ]
     }
 }
+
+
 
 
 

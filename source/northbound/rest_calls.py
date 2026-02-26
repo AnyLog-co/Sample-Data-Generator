@@ -42,32 +42,32 @@ class RestClient:
             response.raise_for_status()
         except requests.exceptions.HTTPError as error:
             response = None
-            print(type(payload) , payload)
-            # status_code = error.response.status_code
-            # status_msg = HTTP_STATUS_CODES.get(status_code)
-            # if not status_msg:
-            #     # fallback to first-digit mapping to REST_EXCEPTION_CODES
-            #     first_digit = int(str(status_code)[0])
-            #     status_msg = REST_EXCEPTION_CODES.get(first_digit, "Unknown REST error")
-            #
-            # error_msg = (
-            #     f"Failed to execute {method.upper()} against {self.url} "
-            #     f"(Network Error {status_code}: {status_msg} | Response: {error.response.text})"
-            # )
-            # raise requests.exceptions.HTTPError(error_msg, response=error.response) from error
+
+            status_code = error.response.status_code
+            status_msg = HTTP_STATUS_CODES.get(status_code)
+            if not status_msg:
+                # fallback to first-digit mapping to REST_EXCEPTION_CODES
+                first_digit = int(str(status_code)[0])
+                status_msg = REST_EXCEPTION_CODES.get(first_digit, "Unknown REST error")
+
+            error_msg = (
+                f"Failed to execute {method.upper()} against {self.url} "
+                f"(Network Error {status_code}: {status_msg} | Response: {error.response.text})"
+            )
+            raise requests.exceptions.HTTPError(error_msg, response=error.response) from error
 
         except Exception as error:
             # Any transport/network errors (ConnectionError, Timeout, etc.)
             response = None
-            print(type(payload), payload)
-            # error_type = type(error).__name__
-            # error_code = REQUEST_EXCEPTION_MAP.get(error_type, 899)
-            # error_msg = REST_EXCEPTION_CODES.get(error_code, str(error))
-            #
-            # raise Exception(
-            #     f"Failed to execute {method.upper()} against {self.url} "
-            #     f"(Transport Error {error_code}: {error_msg})"
-            # ) from error
+
+            error_type = type(error).__name__
+            error_code = REQUEST_EXCEPTION_MAP.get(error_type, 899)
+            error_msg = REST_EXCEPTION_CODES.get(error_code, str(error))
+
+            raise Exception(
+                f"Failed to execute {method.upper()} against {self.url} "
+                f"(Transport Error {error_code}: {error_msg})"
+            ) from error
 
         return response
 

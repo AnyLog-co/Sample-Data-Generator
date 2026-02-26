@@ -20,5 +20,8 @@ Machine 11: Operator 14  - Rig 032
 Machine 11: Operator 15  - Wind Turbine 5
 
 Machine 12: Operator 15  - Wind Turbine 6
-Machine 13: Operator 16  - Wind Turbine 7
-Machine 14: Operator 17  - Wind Turbine 8
+Machine 12: Operator 16  - Enterprise A
+Machine 13: Operator 17  - Wind Turbine 7
+Machine 13: Operator 18  - Enterprise B/Site1
+Machine 14: Operator 19  - Wind Turbine 8
+Machine 13: Operator 20  - Enterprise C

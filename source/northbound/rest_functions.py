@@ -1,4 +1,3 @@
-import asyncio
 import json
 from typing import List
 
@@ -62,13 +61,41 @@ def get_file_content(url:str=None, timeout:float=30):
     temp_conn = RestClient(conn=url, auth=(), timeout=timeout)
     return temp_conn.get_data(headers=None, raw_response=True)
 
-def declare_mapping_policy(conn:RestClient, policy:dict, **kwargs)->str|None:
-    #--- To review ---#
+def check_policy(conn:RestClient, policy_type:str=None, **kwargs)->str:
     """
-    Check whether a policy exists and if not declare policy and extract policy ID
+    Check
+    Args:
+        conn:
+        policy_type:
+        **kwargs:
+
+    Returns:
+
+    """
+    headers = {
+        "command": f"blockchain get {policy_type if policy_type is not None else '*'}",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if kwargs:
+        headers["command"] += " where"
+        for key, value in kwargs.items():
+            if value is not None and not isinstance(value, int) and not isinstance(value, float):
+                headers["command"] += f' {key}="{value.strip()}" and'
+            elif value is not None:
+                headers["command"] += f' {key}={value} and'
+        headers["command"] = headers["command"].rsplit(" and", 1)[0]
+
+    headers["command"] += " bring [*][id]"
+    response = conn.get_data(headers=headers)
+    return response
+
+def declare_policy(conn:RestClient, policy:dict)->str:
+    """
+    Declare policy on blockchain - if does not exit
     can be used for
         - mapping
-        - uns
+        - UNS
     :args:
         conn:RestClient - connection to REST
         policy:dict - Policy to publish
@@ -76,41 +103,31 @@ def declare_mapping_policy(conn:RestClient, policy:dict, **kwargs)->str|None:
     :params:
         policy_id:str - extract policy ID if exists
     """
-    try:
-        policy_id = policy.get("mapping").get("id")
-    except AttributeError:
-        policy_id = None
-
-    get_headers = {
-        "command": f"blockchain get *",
+    headers = {
+        "command": "blockchain insert where policy=!new_policy and local=true and master=!ledger_conn",
         "User-Agent": "AnyLog/1.23"
     }
 
-    if policy_id or kwargs:
-        get_headers["command"] += " where "
-        if policy_id and "id" not in list(kwargs.values()):
-            get_headers["command"] += f' id="{policy_id}" and '
-        for name, var in kwargs.items():
-            get_headers["command"] += f'{name}="{var}" and '
-        get_headers["command"] = get_headers["command"].rsplit(" and ", 1)[0]
-    get_headers["command"] += " bring [*][id]"
+    policy_type = list(policy.keys())[0]
+    new_policy = f"<new_policy={json.dumps(policy)}>"
 
-    publish_headers = {
-        "command": "blockchain insert where policy=!new_policy and local=true and master=!ledger_conn",
-        "User-Agent": "Anylog/1.23"
-    }
+    base_id = policy.get(policy_type).get("id")
+    name = policy.get(policy_type).get("name")
+    namespace = policy.get(policy_type).get("namespace")
+    table = policy.get(policy_type).get("table")
+    policy_id = check_policy(conn=conn, policy_type=policy_type, id=base_id, name=name, namespace=namespace, table=table)
 
-    response = conn.get_data(headers=get_headers)
     index = 0
-    while not response or response == "[]":
+    while not policy_id or policy_id == "[]":
         if index > 0:
             raise ConnectionError(f"Failed to publish policy against {conn.url}")
-        new_policy = f"<new_policy={json.dumps(policy)}>"
-        conn.publish_data(headers=publish_headers, payload=new_policy, method="POST")
-        response = conn.get_data(headers=get_headers)
+        conn.publish_data(headers=headers, payload=new_policy, method="POST")
+        policy_id = check_policy(conn=conn, policy_type=policy_type, id=base_id, name=name, namespace=namespace)
         index += 1
 
-    return response
+    return policy_id
+
+
 
 
 def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str|list, is_rest:bool=True):

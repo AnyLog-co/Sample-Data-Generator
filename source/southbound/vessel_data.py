@@ -5,19 +5,27 @@
 4. publish data into AnyLog / EdgeLake
 """
 import datetime
+import json
 import posixpath
 import time
 
+import source.policies.vessel_mapping
 from source.northbound.rest_calls import RestClient
 from source.northbound.mqtt_calls import MqttClient
 from source.support import get_files_by_url
 from source.policies.mappings import BASE_VESSEL_FILES
+from source.policies.mappings import VESSEL_INFO
 from source.support import read_json_content
 from source.support import timestamp_calculator
 from source.northbound.rest_functions import publish_data
+from source.policies.mappings import SCHEMA
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/vessel-data/"
 VESSEL_FILES = get_files_by_url(url=DATA_DIR)
+VESSEL_COLUMNS = []
+for table in VESSEL_INFO:
+    if table != "general":
+        VESSEL_COLUMNS.extend(VESSEL_INFO.get(table))
 
 TOPIC = "vessel-data"
 
@@ -72,96 +80,80 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
 
     counter = 0
     is_active = True
-
     # row counter per group
     row_counts = {
-        side: {group: 0 for group in vessel_files[side]}
-        for side in vessel_files
+        side: {group: {file: 0 for file in vessel_files[side][group]} for group in vessel_files[side]} for side in vessel_files
     }
 
+
     while is_active:
-
-        payload = []
-
         for side in vessel_files:
             for id_index, group in enumerate(vessel_files[side]):
-
-                row_id = row_counts[side][group]
-                group_timestamp = None
-
-                # -----------------------------
-                # Build General Metadata
-                # -----------------------------
-                general_params = {
+                base_row = {
                     "dbms": db_name,
-                    "boat_side": side,
+                    "side": side,
+                    "boat_name": group.split('_')[0],
                     "timestamp": timestamp_calculator(
-                        timestamp=datetime.datetime.now(datetime.timezone.utc),
-                        offset=offset_sleep, id_index=id_index
-                    ),
-                    "vessel_name": None,
-                    "ip_index": "",
-                    "motor_id": "",
-                    "device": ""
+                        timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+                        offset=offset_sleep,
+                        id_index=id_index
+                    )
                 }
-
-                # Handle vessel file separately
-                if "_vessel" in group:
-                    general_params["vessel_name"] = group.split("_")[1]
-                else:
-                    parts = group.split("_")
-                    general_params.update({
-                        "vessel_name": parts[0],
-                        "ip_index": int(group.split("_IP_")[1].split("_ID_")[0]),
-                        "motor_id": int(group.rsplit("_", 1)[-1]),
-                        "device": group.split(f"{side}_")[1].split("_IP")[0]
+                if not group.endswith("vessel"):
+                    base_row.update({
+                        "motor_id": int(group.split('_')[-1]),
+                        "ip_index": int(group.split("IP_")[-1].split("_")[0]),
                     })
 
-                # Ensure string/bool fields are never None (AnyLog requirement)
-                for key in ["vessel_name", "device", "boat_side", "dbms"]:
-                    if general_params[key] is None:
-                        general_params[key] = ""
+        #         combine_rows = []
+                for file_name in vessel_files.get(side).get(group):
+                    print(file_name)
+                    row_id = row_counts[side][group][file_name]
+                    current_timestamp, file_row = read_json_content(posixpath.join(DATA_DIR, file_name),
+                                                                    timestamp=None, row_id=row_id)
 
-                full_row = general_params.copy()
-
-                # -----------------------------
-                # Merge JSON files
-                # -----------------------------
-                for fname in vessel_files[side][group]:
-                    url = posixpath.join(DATA_DIR, fname)
-                    group_timestamp, row = read_json_content(
-                        url=url,
-                        row_id=row_id,
-                        timestamp=group_timestamp
+                    file_row.update(base_row)
+                    publish_data(
+                        method=method,
+                        conn=conn,
+                        topic=TOPIC,
+                        payload=file_row,  # ← FIX 3: list not dict
+                        db_name=db_name,
                     )
+                    insight = {}
+                    for table in list(SCHEMA.keys()):
+                        if table != "_metadata":
+                            for column in file_row:
+                                if base_row.get(column) is None and column in SCHEMA[table]:
+                                    if table not in insight:
+                                        insight[table] = []
+                                    insight[table].append(column)
 
-                    if not row:
-                        row_counts[side][group] = 0
-                        break
-
-                    full_row.update(row)
-
-                payload.append(full_row)
-                row_counts[side][group] += 1
-
-        # -----------------------------
-        # Publish
-        # -----------------------------
-        if payload:
-            # for data in payload:
-            publish_data(
-                method=method,
-                conn=conn,
-                topic=TOPIC,
-                table_name=None,
-                db_name=db_name,
-                payload=payload
-            )
+                    print(json.dumps(insight, indent=2))
+                    exit(1)
 
 
-        # -----------------------------
-        # Loop control
-        # -----------------------------
+        #             if not file_row:
+        #                 for fn in row_counts[side][group]:
+        #                     row_counts[side][group][fn] = 0
+        #                 break
+        #             combine_rows.append(file_row)
+        #
+        #         rows = [base_row]
+        #         for row in combine_rows:
+        #             for column in row:
+        #                 if column not in rows[0]:
+        #                     rows[0][column] = row.get(column)
+        #                 else:
+        #                     if len(rows) == 1:
+        #                         rows.append(base_row)
+        #                     rows[-1][column] = row.get(column)
+
+
+
+            # print(rows)
+
+        # ── loop control ──────────────────────────────────────────────
         counter += 1
         if 0 < iterations <= counter:
             is_active = False
@@ -171,4 +163,4 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
 
 if __name__ == "__main__":
     conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)
-    main(method="PRINT", conn=conn, publish_topics=["DLT"], db_name="anotherpeak", iterations=1)
+    main(method="POST", conn=conn, publish_topics=None, db_name="anotherpeak", iterations=1)
