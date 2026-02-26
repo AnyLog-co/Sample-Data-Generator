@@ -84,7 +84,7 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
     row_counts = {
         side: {group: {file: 0 for file in vessel_files[side][group]} for group in vessel_files[side]} for side in vessel_files
     }
-
+    payload = []
 
     while is_active:
         for side in vessel_files:
@@ -105,55 +105,25 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                         "ip_index": int(group.split("IP_")[-1].split("_")[0]),
                     })
 
-        #         combine_rows = []
                 for file_name in vessel_files.get(side).get(group):
-                    print(file_name)
                     row_id = row_counts[side][group][file_name]
                     current_timestamp, file_row = read_json_content(posixpath.join(DATA_DIR, file_name),
                                                                     timestamp=None, row_id=row_id)
-
                     file_row.update(base_row)
-                    publish_data(
-                        method=method,
-                        conn=conn,
-                        topic=TOPIC,
-                        payload=file_row,  # ← FIX 3: list not dict
-                        db_name=db_name,
-                    )
-                    insight = {}
-                    for table in list(SCHEMA.keys()):
-                        if table != "_metadata":
-                            for column in file_row:
-                                if base_row.get(column) is None and column in SCHEMA[table]:
-                                    if table not in insight:
-                                        insight[table] = []
-                                    insight[table].append(column)
-
-                    print(json.dumps(insight, indent=2))
-                    exit(1)
+                    payload.append(file_row)
 
 
-        #             if not file_row:
-        #                 for fn in row_counts[side][group]:
-        #                     row_counts[side][group][fn] = 0
-        #                 break
-        #             combine_rows.append(file_row)
-        #
-        #         rows = [base_row]
-        #         for row in combine_rows:
-        #             for column in row:
-        #                 if column not in rows[0]:
-        #                     rows[0][column] = row.get(column)
-        #                 else:
-        #                     if len(rows) == 1:
-        #                         rows.append(base_row)
-        #                     rows[-1][column] = row.get(column)
+        publish_data(
+            method=method,
+            conn=conn,
+            topic=TOPIC,
+            payload=payload,  # ← FIX 3: list not dict
+            db_name=db_name,
+        )
 
-
-
-            # print(rows)
 
         # ── loop control ──────────────────────────────────────────────
+        payload = []
         counter += 1
         if 0 < iterations <= counter:
             is_active = False
@@ -162,5 +132,6 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
 
 
 if __name__ == "__main__":
-    conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)
-    main(method="POST", conn=conn, publish_topics=None, db_name="anotherpeak", iterations=1)
+    # conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)
+    conn = RestClient(conn="10.0.0.78:7849", auth=(), timeout=30)
+    main(method="POST", conn=conn, publish_topics=None, db_name="anotherpeak", iterations=10)

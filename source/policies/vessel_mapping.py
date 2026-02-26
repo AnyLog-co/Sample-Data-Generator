@@ -100,6 +100,8 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
 
 
 if __name__ == "__main__":
-    conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30 )
-    main(conn=conn, broker="rest", port=32149 , is_rest=True)
+    # conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30 )
+    conn = RestClient(conn="10.0.0.78:7849", auth=(), timeout=30)
+    # main(conn=conn, broker="rest", port=32149 , is_rest=True)
+    main(conn=conn, broker="rest", port=7849 , is_rest=True)
 
