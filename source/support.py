@@ -199,6 +199,13 @@ def read_json_content(url:str, row_id:int|None=None, timestamp:str|None=None, ge
     return content
 
 
+def read_json_file(file_path:str):
+    try:
+        with open(file_path, 'r') as f:
+            return json.load(f)
+    except Exception as error:
+        raise Exception(f"Failed to read content in {file_path} (Error: {error})")
+
 def timestamp_calculator(timestamp:datetime.datetime, offset:float, id_index:int)->str:
     """
     Calculate new timestamp based on base-timestamp
