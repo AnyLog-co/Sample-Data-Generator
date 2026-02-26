@@ -1,0 +1,45 @@
+[
+  {
+    "uns": {
+      "name": "Smart City",
+      "namespace": "Smart_City",
+      "uns_level": "enterprise"
+    }
+  },
+  {
+    "uns": {
+      "name": "Power Plant",
+      "namespace": "Smart_City/Power_Plant",
+      "isa95": {
+        "level": "L3",
+        "entity": "Site",
+        "standard": "ISA-95"
+      },
+      "description": "Power Plant site node (ISA-95 Site scope)."
+    }
+  },
+  {
+    "uns": {
+      "name": "Water Plant",
+      "namespace": "Smart_City/Water_Plant",
+      "isa95": {
+        "level": "L3",
+        "entity": "Site",
+        "standard": "ISA-95"
+      },
+      "description": "Water Plant site node (ISA-95 Site scope)."
+    }
+  },
+  {
+    "uns": {
+      "name": "Waste Water Plant",
+      "namespace": "Smart_City/Waste_Water_Plant",
+      "isa95": {
+        "level": "L3",
+        "entity": "Site",
+        "standard": "ISA-95"
+      },
+      "description": "Waste Water Plant site node (ISA-95 Site scope)."
+    }
+  }
+]
