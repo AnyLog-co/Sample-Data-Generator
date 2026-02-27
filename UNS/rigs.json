@@ -22,18 +22,35 @@
     }
   },
   {
+  "uns": {
+    "name": "RIG-TX-001",
+    "uns_layer": "rig",
+    "namespace": "wits/record01/RIG-TX-001",
+    "parent": "wits/record01",
+    "rig_id": "RIG-TX-001",
+    "rig_name": "Permian Basin",
+    "region": "West Texas",
+    "location": "land",
+    "loc": "31.8498, -102.3614",
+    "dbms": "timbergrove",
+    "table": "rig_data",
+    "where": "rig_id='RIG-TX-001'"
+  }
+},
+  {
     "uns": {
-      "name": "RIG-TX-001",
+      "name": "RIG-TX-007",
       "uns_layer": "rig",
-      "namespace": "wits/record01/RIG-TX-001",
+      "namespace": "wits/record01/RIG-TX-007",
       "parent": "wits/record01",
-      "rig_id": "RIG-TX-001",
-      "rig_name": "Permian Basin",
-      "region": "West Texas",
+      "rig_id": "RIG-TX-007",
+      "rig_name": "Eagle Ford",
+      "region": "South Texas",
       "location": "land",
+      "loc": "28.9724, -98.6428",
       "dbms": "timbergrove",
       "table": "rig_data",
-      "where": "rig_id='RIG-TX-001'"
+      "where": "rig_id='RIG-TX-007'"
     }
   },
   {
@@ -430,39 +447,6 @@
       "dbms": "timbergrove",
       "table": "rig_data",
       "where": "rig_id='RIG-TX-001'"
-    }
-  },
-  {
-    "uns": {
-      "name": "RIG-TX-007",
-      "uns_layer": "rig",
-      "namespace": "wits/record01/RIG-TX-007",
-      "parent": "wits/record01",
-      "rig_id": "RIG-TX-007",
-      "rig_name": "Eagle Ford",
-      "region": "South Texas",
-      "location": "land",
-      "dbms": "timbergrove",
-      "table": "rig_data",
-      "where": "rig_id='RIG-TX-007'"
-    }
-  },
-  {
-    "uns": {
-      "name": "RIG-TX-007/timestamp",
-      "uns_layer": "tag",
-      "namespace": "wits/record01/RIG-TX-007/timestamp",
-      "parent": "wits/record01/RIG-TX-007",
-      "rig_id": "RIG-TX-007",
-      "column": "timestamp",
-      "wits_record": "1",
-      "wits_item": "1",
-      "wits_description": "Date and Time",
-      "data_type": "timestamp",
-      "unit": "UTC",
-      "dbms": "timbergrove",
-      "table": "rig_data",
-      "where": "rig_id='RIG-TX-007'"
     }
   },
   {
