@@ -18,13 +18,16 @@ def __publish_policies(conn:RestClient, full_path:str):
         is_policy = check_policy(conn=conn, policy_type="uns", namespace=namespace)
 
         if not is_policy or is_policy is None or is_policy == "[]":
-            for param in ["id", "parent", "date", "cluster"]:
+            for param in ["id", "parent", "date", "cluster", "ledger"]:
                 if policy.get("uns").get(param) is not None:
                     policy["uns"].pop(param)
 
             parent_namespace = namespace.rsplit("/", 1)[0]
             if namespace != parent_namespace:
                 parent_id = check_policy(conn=conn, policy_type="uns", namespace=parent_namespace)
+                if not parent_id or parent_id == "[]":
+                    raise Exception(f"Failed to get parent policy for namespace {namespace} - tentative parent namespace: {parent_namespace}")
+
                 policy["uns"]["parent"] = parent_id
 
             declare_policy(conn=conn, policy=policy)
@@ -33,7 +36,7 @@ def __publish_policies(conn:RestClient, full_path:str):
 def main(): 
     parse = argparse.ArgumentParser()
     parse.add_argument("conn", type=str, default=None, help="REST User:Passowrd@IP:Port to send UNS through")
-    parse.add_argument("UNS", type=str, choices=["smart-city", "rigs"], default=None,
+    parse.add_argument("UNS", type=str, choices=["smart-city", "rigs", "enterprise-c"], default=None,
                        help="UNS group to publish")
     args = parse.parse_args()
     host, port, user, password = extract_credentials(args.conn)
