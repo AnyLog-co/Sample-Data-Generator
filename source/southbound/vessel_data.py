@@ -28,6 +28,7 @@ for table in VESSEL_INFO:
         VESSEL_COLUMNS.extend(VESSEL_INFO.get(table))
 
 TOPIC = "vessel-data"
+EXPECTED_RESULTS = {table: 0 for table in SCHEMA}
 
 def _check_vessels(vessel_ids: list[str] | str = None) -> dict:
     vessel_files = {}
@@ -47,6 +48,22 @@ def _check_vessels(vessel_ids: list[str] | str = None) -> dict:
                 elif fname in VESSEL_FILES:
                     vessel_files[base_side][group].append(fname)
     return vessel_files
+
+
+def _provide_expectations(payload):
+    global EXPECTED_RESULTS
+    RAW_DATA = {table: {column: 0 for column in SCHEMA[table]} for table in SCHEMA}
+
+    for row in payload:
+        for column in row:
+            for table in RAW_DATA:
+                if RAW_DATA[table].get(column) is not None:
+                    RAW_DATA[table][column] += 1
+
+    for table in EXPECTED_RESULTS:
+        EXPECTED_RESULTS[table] = max(list(RAW_DATA[table].values()))
+
+
 
 
 def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topics:list[str]|str=None,
@@ -85,20 +102,19 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
         side: {group: {file: 0 for file in vessel_files[side][group]} for group in vessel_files[side]} for side in vessel_files
     }
     payload = []
-
+    last_id_index = 0
     while is_active:
         for side in vessel_files:
+            base_row = {
+                "dbms": db_name,
+                "side": side,
+                "boat_name": None,
+                "timestamp": datetime.datetime.now(tz=datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+            }
+            side_payload = []
             for id_index, group in enumerate(vessel_files[side]):
-                base_row = {
-                    "dbms": db_name,
-                    "side": side,
-                    "boat_name": group.split('_')[0],
-                    "timestamp": timestamp_calculator(
-                        timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
-                        offset=offset_sleep,
-                        id_index=id_index
-                    )
-                }
+                if base_row["boat_name"] is None:
+                    base_row["boat_name"] = group.split('_')[0]
                 if not group.endswith("vessel"):
                     base_row.update({
                         "motor_id": int(group.split('_')[-1]),
@@ -110,8 +126,24 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                     current_timestamp, file_row = read_json_content(posixpath.join(DATA_DIR, file_name),
                                                                     timestamp=None, row_id=row_id)
                     file_row.update(base_row)
-                    payload.append(file_row)
+                    side_payload.append(file_row)
 
+
+        for row in side_payload:
+            if not payload:
+                payload.append(row)
+            # If first payload item has None for all keys in row → update it
+            elif all(payload[0].get(column) is None for column in row):
+                payload[0].update(row)
+            # If ANY existing payload item has all None for row's keys → update that one
+            elif any(all(item.get(column) is None for column in row) for item in payload):
+                for item in payload:
+                    if all(item.get(column) is None for column in row):
+                        item.update(row)
+                        break
+            # Otherwise append
+            else:
+                payload.append(row)
 
         publish_data(
             method=method,
@@ -120,8 +152,8 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
             payload=payload,  # ← FIX 3: list not dict
             db_name=db_name,
         )
-
-
+        _provide_expectations(payload)
+        print(json.dumps(EXPECTED_RESULTS, indent=2))
         # ── loop control ──────────────────────────────────────────────
         payload = []
         counter += 1
@@ -132,6 +164,6 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
 
 
 if __name__ == "__main__":
-    # conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)
-    conn = RestClient(conn="10.0.0.78:7849", auth=(), timeout=30)
+    conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)
+    # conn = RestClient(conn="10.0.0.78:7849", auth=(), timeout=30)
     main(method="POST", conn=conn, publish_topics=None, db_name="anotherpeak", iterations=10)

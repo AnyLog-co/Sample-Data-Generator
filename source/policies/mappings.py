@@ -11,7 +11,7 @@ BASE_POLICY = {
         "schema": {
             "timestamp": {
                 "type": "timestamp",
-                "default": "now()",
+                "default": None,
                 "bring": "[timestamp]"
             }
         }
