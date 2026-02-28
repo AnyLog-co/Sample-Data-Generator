@@ -70,14 +70,17 @@ def build_parser(parser:argparse.ArgumentParser):
                                          "Enterprise B/Site3",
                                          "Enterprise C", "Enterprise C/sub", "Enterprise C/tff", "Enterprise C/chrom",
                                          "Enterprise C/sum"],
-                                help="Sapce-separated ProveIT topics. If omitted, all topics")
-
+                                help="Space-separated ProveIT topics. If omitted, all topics")
 
     # -------------------------
     # GLOBAL ARGS
     # -------------------------
-    parser.add_argument("--conn", type=str, default=None,
-                        help="IP:Port connection information for publishing data. For OPC-UA data. the default value is 0.0.0.0:4840")
+    parser.add_argument("--control-conn", type=str, default=None, required=False,
+                        help="IP:Port of the AnyLog/EdgeLake node used for mapping policies and msg-client.")
+    parser.add_argument("--data-conn", type=str, default=None,
+                        help="Optional IP:Port for data publishing (REST/MQTT). If omitted, defaults to --control-conn. For OPC-UA the default will be 0.0.0.0:4840")
+
+
     parser.add_argument("--db-name", type=str, default="test", help="Default logical database")
     parser.add_argument("--repeat", type=int, default=10,
                         help="Number of iterations - if set to 0 then run continuously")
@@ -218,39 +221,64 @@ def main():
     # -------------------------
     # CONDITIONAL VALIDATION
     # -------------------------
-    if args.publish_format in ("post", "mqtt") and not args.conn:
-        parser.error("--conn is required when using POST or MQTT")
-    elif args.publish_format == "opcua" and not args.conn:
-        args.conn = "0.0.0.0:4840"
-
-
-
     args.publish_format = args.publish_format.upper()
-    conn = None
-    if args.publish_format != "PRINT":
-        if not args.conn:
-            raise argparse.ArgumentError(argument=None, message=f"publishing format {args.publish_format} requires missing connection information")
-        broker, port, user, password = extract_credentials(args.conn)
-        if args.publish_format in ["POST", "PUT"]:
-            conn = RestClient(conn=f"{broker}:{port}", auth=(user, password), timeout=args.timeout)
-        elif args.publish_format == "MQTT":
-            conn = MqttClient(host=broker, port=port, user=user, password=password, timeout=args.timeout)
-        elif args.publish_format == "OPCUA":
-            conn = OpcuaServer(host=broker, port=port)
+    # 1. default for OPC-UA
+    if args.publish_format == "OPCUA" and not args.data_conn:
+        args.data_conn = "0.0.0.0:4840"
+    # 2. for POST use data_conn if control_conn not provided
+    elif args.publish_format == "POST" and not args.control_conn and args.data_conn:
+        args.control_conn = args.data_conn
+    # 3. for PUT / POST if data_name  not provided
+    elif args.publish_format in ["PUT", "POST"] and args.control_name and not args.data_conn:
+        args.data_conn = args.control_conn
+    # 4. Warning: missing args.control_conn, but there's data_conn
+    elif args.publish_format not in ["MQTT", "OPCUA"] and not args.control_conn and args.data_conn: # warning only
+        print(f"Missing `--control-conn` for {args.publish_format}, will not declare mapping or `msg client`")
+    # 5. Exception: missing both control_conn and data_conn
+    elif args.publish_format in ["POST", "MQTT"] and not args.control_conn and not args.data_conn:
+        raise argparse.ArgumentError(argument=None, message=f"publishing format {args.publish_format} requires missing connection information")
 
+
+    # Define connection information
+    control_conn = None
+    data_conn    = None
+    if args.publish_conn != "PRINT":
+        if args.control_conn:
+            broker, port, user, password = extract_credentials(args.control_conn)
+            control_conn = RestClient(conn=f"{broker}:{port}", auth=(user, password), timeout=args.timeout)
+        if args.data_conn:
+            broker, port, user, password = extract_credentials(args.data_conn)
+            if args.publish_format in ["POST", "PUT"]:
+                data_conn = RestClient(conn=f"{broker}:{port}", auth=(user, password), timeout=args.timeout)
+            elif args.publish_format == "MQTT":
+                data_conn = MqttClient(host=broker, port=port, user=user, password=password, timeout=args.timeout)
+            elif args.publish_format == "OPCUA":
+                data_conn = OpcuaServer(host=broker, port=port)
+
+    # publish msg client and define data
     if args.data == "random":
-        rand_data(method=args.publish_format, conn=conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
+        if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
+            pass
+        rand_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
     elif args.data == "rig":
-        rig_data(method=args.publish_format, conn=conn, db_name=args.db_name, publish_topics=args.rig_ids,
+        if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
+            pass
+        rig_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.rig_ids,
                  iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "vessel":
-        vessel_data(method=args.publish_format, conn=conn, db_name=args.db_name, publish_topics=args.vessel_ids,
+        if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
+            pass
+        vessel_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.vessel_ids,
                     iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "wind-turbine":
-        wind_turbine(method=args.publish_format, conn=conn, db_name=args.db_name, publish_topics=args.turbine_ids,
+        if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
+            pass
+        wind_turbine(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.turbine_ids,
                      iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "proveit":
-        proveit_data(method=args.publish_format, conn=conn, publish_topics=args.proveit_topics,
+        if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
+            pass 
+        proveit_data(method=args.publish_format, conn=data_conn, publish_topics=args.proveit_topics,
                      iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
 
 
