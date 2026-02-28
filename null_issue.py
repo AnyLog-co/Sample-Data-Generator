@@ -53,7 +53,7 @@ MAPPING = [
             "script": ["if [sensor_3] then policy1_counter = incr !policy1_counter"]
           },
           "__end__": {
-            "script": ["if policy1_counter == 0 then return IGNORE_EVENT"]
+            "script": ["if !policy1_counter == 0 then streaming data ignore event"]
           },
         }
       }
@@ -96,7 +96,7 @@ MAPPING = [
                     "script": ["if [sensor_4] then policy2_counter = incr !policy2_counter"]
                 },
                 "__end__": {
-                    "script": ["if policy2_counter == 0 then return IGNORE_EVENT"]
+                    "script": ["if !policy2_counter == 0 then streaming data ignore event"]
                 },
             }
         }
@@ -182,20 +182,18 @@ def main(conn: RestClient | None):
 
         payload.append(row)
 
-    for row in payload:
-        print(row)
-        publish_data(
-            method="POST",
-            conn=conn,
-            payload=row,
-            topic=TOPIC,
-            table_name=None,
-            db_name=None
-        )
+    publish_data(
+        method="POST",
+        conn=conn,
+        payload=row,
+        topic=TOPIC,
+        table_name=None,
+        db_name=None
+    )
 
 
 if __name__ == "__main__":
-    # conn = RestClient(conn="50.116.20.125:32149")
-    conn = RestClient(conn="10.0.0.78:7849")
+    conn = RestClient(conn="50.116.20.125:32149")
+    # conn = RestClient(conn="10.0.0.78:7849")
     prep_node(conn=conn)
     main(conn=conn)
