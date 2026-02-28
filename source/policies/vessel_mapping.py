@@ -46,9 +46,11 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
     for table in SCHEMA:
         if table != "_metadata":
             mapping_policy = copy.deepcopy(BASE_POLICY)
-            mapping_policy["mapping"]["id"] = table.upper().replace('_', '-')
+            topic = table.upper().replace('_', '-')
+            mapping_policy["mapping"]["id"] = topic
             mapping_policy["mapping"]["table"] = table
             topics += f" and policy={table.upper().replace('_', '-')}"
+            mapping_policy["mapping"]["schema"].update({"__start__": {"script": [f"set {topic}_counter = 0"]}})
             for column in SCHEMA[table]:
                 if columns.get(column) is not None:
                     data_type = mapping_param(columns.get(column))
@@ -57,9 +59,12 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
                             "type": data_type,
                             "bring": f"[{column}]",
                             "default": None if data_type in ["int", "float"] else "",
-                           "optional": True
+                           "optional": True,
+                           "script": [f"if [{column}] then {topic}_counter = incr !{topic}_counter"]
                         }
                     })
+            mapping_policy["mapping"]["schema"]["__end__"] = {"script": [f"if !{topic}_counter == 0 then streaming data ignore event"]}
+
             declare_policy(conn=conn, policy=mapping_policy)
 
     topics += ')'

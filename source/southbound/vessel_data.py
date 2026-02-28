@@ -152,7 +152,7 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
             payload=payload,  # ← FIX 3: list not dict
             db_name=db_name,
         )
-        _provide_expectations(payload)
+        _provide_expectations(payalod)
         print(json.dumps(EXPECTED_RESULTS, indent=2))
         # ── loop control ──────────────────────────────────────────────
         payload = []
