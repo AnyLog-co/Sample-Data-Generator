@@ -195,7 +195,7 @@ def main(conn: RestClient | None):
 
 
 if __name__ == "__main__":
-    conn = RestClient(conn="50.116.20.125:32149")
-    # conn = RestClient(conn="10.0.0.78:7849")
+    # conn = RestClient(conn="50.116.20.125:32149")
+    conn = RestClient(conn="10.0.0.78:7849")
     prep_node(conn=conn)
     main(conn=conn)
