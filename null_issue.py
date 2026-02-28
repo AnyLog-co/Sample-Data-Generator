@@ -22,6 +22,9 @@ MAPPING = [
         "table": "t1",
         "readings": "",
         "schema": {
+          "__start__": {
+            "script": ["set policy1_counter = 0"]
+          },
           "timestamp": {
             "type": "timestamp",
             "default": "NOW()",
@@ -40,51 +43,64 @@ MAPPING = [
           "sensor_1": {
             "type": "int",
             "bring": "[sensor_1]",
-            "default": None
+            "default": None,
+            "script": ["if [sensor_1] then policy1_counter = incr !policy1_counter"]
           },
           "sensor_3": {
             "type": "float",
             "bring": "[sensor_3]",
-            "default": None
+            "default": None,
+            "script": ["if [sensor_3] then policy1_counter = incr !policy1_counter"]
+          },
+          "__end__": {
+            "script": ["if policy1_counter == 0 then return IGNORE_EVENT"]
           },
         }
       }
     },
     {
-      "mapping": {
-        "id": "policy2",
-        "dbms": "bring [dbms]",
-        "table": "t2",
-        "readings": "",
-        "schema": {
-          "timestamp": {
-            "type": "timestamp",
-            "default": "NOW()",
-            "bring": "[timestamp]"
-          },
-          "monitor_id": {
-            "type": "string",
-            "bring": "[monitor_id]",
-            "default": ""
-          },
-          "device": {
-            "type": "string",
-            "bring": "[device]",
-            "default": ""
-          },
-          "sensor_2": {
-            "type": "int",
-            "bring": "[sensor_2]",
-            "default": None
-          },
-          "sensor_4": {
-            "type": "float",
-            "bring": "[sensor_4]",
-            "default": None
-          }
+        "mapping": {
+            "id": "policy2",
+            "dbms": "bring [dbms]",
+            "table": "t2",
+            "readings": "",
+            "schema": {
+                "__start__": {
+                    "script": ["set policy2_counter = 0"]
+                },
+                "timestamp": {
+                    "type": "timestamp",
+                    "default": "NOW()",
+                    "bring": "[timestamp]"
+                },
+                "monitor_id": {
+                    "type": "string",
+                    "bring": "[monitor_id]",
+                    "default": ""
+                },
+                "device": {
+                    "type": "string",
+                    "bring": "[device]",
+                    "default": ""
+                },
+                "sensor_2": {
+                    "type": "int",
+                    "bring": "[sensor_2]",
+                    "default": None,
+                    "script": ["if [sensor_2] then policy2_counter = incr !policy2_counter"]
+                },
+                "sensor_4": {
+                    "type": "float",
+                    "bring": "[sensor_4]",
+                    "default": None,
+                    "script": ["if [sensor_4] then policy2_counter = incr !policy2_counter"]
+                },
+                "__end__": {
+                    "script": ["if policy2_counter == 0 then return IGNORE_EVENT"]
+                },
+            }
         }
-      }
-    }
+    },
 ]
 
 BASE_COLUMNS = ["sensor_1", "sensor_2", "sensor_3", "sensor_4"]
@@ -166,18 +182,20 @@ def main(conn: RestClient | None):
 
         payload.append(row)
 
-    publish_data(
-        method="POST",
-        conn=conn,
-        payload=payload,
-        topic=TOPIC,
-        table_name=None,
-        db_name=None
-    )
+    for row in payload:
+        print(row)
+        publish_data(
+            method="POST",
+            conn=conn,
+            payload=row,
+            topic=TOPIC,
+            table_name=None,
+            db_name=None
+        )
 
 
 if __name__ == "__main__":
-    # conn = RestClient(conn="50.116.20.125:32149")
-    conn = RestClient(conn="10.0.0.78:7849")
+    conn = RestClient(conn="50.116.20.125:32149")
+    # conn = RestClient(conn="10.0.0.78:7849")
     prep_node(conn=conn)
     main(conn=conn)
