@@ -3,17 +3,9 @@
     "uns": {
       "name": "Enterprise_C",
       "namespace": "Enterprise_C",
-      "uns_level": "enterprise",
-      "id": "b992dcf093661dc3dc966c6a420ac816",
-      "date": "2026-02-16T19:13:14.831323Z",
-      "ledger": "global",
-      "isa95": {
-        "level": "L4",
-        "entity": "Enterprise",
-        "standard": "ISA-95"
-      }
+      "uns_level": "enterprise"
     }
-  },w
+  },
   {
     "uns": {
       "name": "Site1",

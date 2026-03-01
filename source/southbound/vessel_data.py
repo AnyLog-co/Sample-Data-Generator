@@ -9,14 +9,12 @@ import json
 import posixpath
 import time
 
-import source.policies.vessel_mapping
 from source.northbound.rest_calls import RestClient
 from source.northbound.mqtt_calls import MqttClient
 from source.support import get_files_by_url
 from source.policies.mappings import BASE_VESSEL_FILES
 from source.policies.mappings import VESSEL_INFO
 from source.support import read_json_content
-from source.support import timestamp_calculator
 from source.northbound.rest_functions import publish_data
 from source.policies.mappings import SCHEMA
 
@@ -162,8 +160,8 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
         else:
             time.sleep(sleep)
 
-
-if __name__ == "__main__":
-    conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)
-    # conn = RestClient(conn="10.0.0.78:7849", auth=(), timeout=30)
-    main(method="POST", conn=conn, publish_topics=None, db_name="anotherpeak", iterations=10)
+#
+# if __name__ == "__main__":
+#     conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)
+#     # conn = RestClient(conn="10.0.0.78:7849", auth=(), timeout=30)
+#     main(method="POST", conn=conn, publish_topics=None, db_name="anotherpeak", iterations=10)

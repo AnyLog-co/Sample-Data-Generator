@@ -2,9 +2,14 @@ import argparse
 
 from source.southbound.random_data import main as rand_data
 from source.southbound.rig_data import main as rig_data
-from source.southbound.vessel_data_old import main as vessel_data
+from source.southbound.vessel_data import main as vessel_data
 from source.southbound.wind_turbine import main as wind_turbine
 from source.southbound.proveit_data import main as proveit_data
+
+from source.policies.random_mapping import main as random_mapping
+from source.policies.wind_turbine_mapping import main as wind_turbine_mapping
+from source.policies.rig_mapping import main as rig_mapping
+from source.policies.vessel_mapping import main as vessel_mapping
 
 from source.northbound.mqtt_calls import MqttClient
 from source.northbound.rest_calls import RestClient
@@ -226,7 +231,7 @@ def main():
     if args.publish_format == "OPCUA" and not args.data_conn:
         args.data_conn = "0.0.0.0:4840"
     # 2. for POST use data_conn if control_conn not provided
-    elif args.publish_format == "POST" and not args.control_conn and args.data_conn:
+    elif args.publish_format in ["PUT", "POST"] and not args.control_conn and args.data_conn:
         args.control_conn = args.data_conn
     # 3. for PUT / POST if data_name  not provided
     elif args.publish_format in ["PUT", "POST"] and args.control_name and not args.data_conn:
@@ -242,6 +247,9 @@ def main():
     # Define connection information
     control_conn = None
     data_conn    = None
+    data_broker = None
+    data_port = None
+    is_rest = False
     if args.publish_conn != "PRINT":
         if args.control_conn:
             broker, port, user, password = extract_credentials(args.control_conn)
@@ -250,32 +258,35 @@ def main():
             broker, port, user, password = extract_credentials(args.data_conn)
             if args.publish_format in ["POST", "PUT"]:
                 data_conn = RestClient(conn=f"{broker}:{port}", auth=(user, password), timeout=args.timeout)
+                is_rest = True
             elif args.publish_format == "MQTT":
                 data_conn = MqttClient(host=broker, port=port, user=user, password=password, timeout=args.timeout)
             elif args.publish_format == "OPCUA":
                 data_conn = OpcuaServer(host=broker, port=port)
+            data_broker = broker
+            data_port = port
 
     # publish msg client and define data
     if args.data == "random":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
-            pass
+            random_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
         rand_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
     elif args.data == "rig":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
-            pass
+            rig_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
         rig_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.rig_ids,
                  iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "vessel":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
-            pass
+            vessel_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
         vessel_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.vessel_ids,
                     iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "wind-turbine":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
-            pass
+            wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
         wind_turbine(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.turbine_ids,
                      iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
-    elif args.data == "proveit":
+    elif args.data == "proveit": # conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest
         if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
             pass 
         proveit_data(method=args.publish_format, conn=data_conn, publish_topics=args.proveit_topics,
