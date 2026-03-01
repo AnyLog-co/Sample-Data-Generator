@@ -42,11 +42,11 @@ def publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer, payload:dic
             "topic": topic
         })
         headers["Content-Type"] = "application/json"
-        print(f"Method: {method.upper()}")
-        print(f"headers: {headers}")
-        print(f"Data Type: {type(payload)}")
-        print(f" | Subtype: {type(payload[0])}" if isinstance(payload, list) else "")
-        print(f" | Size: {len(payload)}" if isinstance(payload, list) or isinstance(payload, dict) else "")
+        # print(f"Method: {method.upper()}")
+        # print(f"headers: {headers}")
+        # print(f"Data Type: {type(payload)}")
+        # print(f" | Subtype: {type(payload[0])}" if isinstance(payload, list) else "")
+        # print(f" | Size: {len(payload)}" if isinstance(payload, list) or isinstance(payload, dict) else "")
         conn.publish_data(headers=headers, payload=payload, method=method)
 
 def get_file_content(url:str=None, timeout:float=30):
