@@ -165,7 +165,7 @@ def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str|list, i
 
         if broker not in ["rest", "local"] and port:
             declare_msg_client_header["command"] += f" and port={port}"
-        if broker  == "rest" or is_rest is True:
+        if is_rest:
             declare_msg_client_header["command"] += f" and user-agent=anylog"
 
         conn.publish_data(headers=declare_msg_client_header, payload=None, method="POST")
