@@ -131,7 +131,6 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
     row_counts = {
         side: {group: {file: 0 for file in vessel_files[side][group]} for group in vessel_files[side]} for side in vessel_files
     }
-    payload = []
 
     while is_active:
         for side in vessel_files:
@@ -167,33 +166,33 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                     file_row.update(base_row)
                     side_payload.append(file_row)
 
+            payload = []
+            for row in side_payload:
+                if not payload:
+                    payload.append(row)
+                # If first payload item has None for all keys in row → update it
+                elif all(payload[0].get(column) is None for column in row):
+                    payload[0].update(row)
+                # If ANY existing payload item has all None for row's keys → update that one
+                elif any(all(item.get(column) is None for column in row) for item in payload):
+                    for item in payload:
+                        if all(item.get(column) is None for column in row):
+                            item.update(row)
+                            break
+                # Otherwise append
+                else:
+                    payload.append(row)
 
-        for row in side_payload:
-            if not payload:
-                payload.append(row)
-            # If first payload item has None for all keys in row → update it
-            elif all(payload[0].get(column) is None for column in row):
-                payload[0].update(row)
-            # If ANY existing payload item has all None for row's keys → update that one
-            elif any(all(item.get(column) is None for column in row) for item in payload):
-                for item in payload:
-                    if all(item.get(column) is None for column in row):
-                        item.update(row)
-                        break
-            # Otherwise append
-            else:
-                payload.append(row)
+            publish_data(
+                method=method,
+                conn=conn,
+                topic=TOPIC,
+                payload=payload,  # ← FIX 3: list not dict
+                db_name=db_name,
+            )
+
             time.sleep(offset_sleep)
 
-        publish_data(
-            method=method,
-            conn=conn,
-            topic=TOPIC,
-            payload=payload,  # ← FIX 3: list not dict
-            db_name=db_name,
-        )
-        # _provide_expectations(payalod)
-        # print(json.dumps(EXPECTED_RESULTS, indent=2))
         # ── loop control ──────────────────────────────────────────────
         payload = []
         counter += 1
