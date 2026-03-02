@@ -87,7 +87,11 @@ def main(method:str, conn:RestClient|MqttClient|OpcuaServer|None, publish_topics
         asyncio.run(proveit_opcua(conn=conn, publish_topics=publish_topics, iterations=iterations, sleep=sleep,
                                   offset_sleep=offset_sleep))
 
-#
-# if __name__ == "__main__":
-#     conn = OpcuaServer(host="0.0.0.0", port=4841)
-#     main(method="OPCUA", conn=conn, iterations=0)
+
+if __name__ == "__main__":
+    method = "OPCUA"
+    if method == "OPCUA":
+        conn = OpcuaServer(host="0.0.0.0", port=4841)
+    elif method == "POST":
+        conn = RestClient(conn="10.0.0.78:7849")
+    main(method=method, conn=conn, iterations=0)

@@ -94,7 +94,6 @@ def build_parser(parser:argparse.ArgumentParser):
     parser.add_argument("--offset-sleep", type=float, default=0.5,
                         help="When publishing multiple IDs, time offset between each ID")
 
-
     return parser
 
 
@@ -233,7 +232,7 @@ def main():
     elif args.publish_format in ["PUT", "POST"] and not args.control_conn and args.data_conn:
         args.control_conn = args.data_conn
     # 3. for PUT / POST if data_name  not provided
-    elif args.publish_format in ["PUT", "POST"] and args.control_name and not args.data_conn:
+    elif args.publish_format in ["PUT", "POST"] and args.control_conn and not args.data_conn:
         args.data_conn = args.control_conn
     # 4. Warning: missing args.control_conn, but there's data_conn
     elif args.publish_format not in ["MQTT", "OPCUA"] and not args.control_conn and args.data_conn: # warning only
