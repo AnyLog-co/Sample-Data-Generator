@@ -5,7 +5,6 @@
 4. publish data into AnyLog / EdgeLake
 """
 import datetime
-import json
 import posixpath
 import time
 
@@ -14,9 +13,11 @@ from source.northbound.mqtt_calls import MqttClient
 from source.support import get_files_by_url
 from source.policies.mappings import BASE_VESSEL_FILES
 from source.policies.mappings import VESSEL_INFO
-from source.support import read_json_content
+from source.support import get_file_content
 from source.northbound.rest_functions import publish_data
+from source.support import read_json_content
 from source.policies.mappings import SCHEMA
+from source.support import find_closest_row
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/vessel-data/"
 VESSEL_FILES = get_files_by_url(url=DATA_DIR)
@@ -27,8 +28,11 @@ for table in VESSEL_INFO:
 
 TOPIC = "vessel-data"
 EXPECTED_RESULTS = {table: 0 for table in SCHEMA}
+FILE_INDEX = {}
+RAW_DATA = {}
 
 def _check_vessels(vessel_ids: list[str] | str = None) -> dict:
+    global FILE_INDEX
     vessel_files = {}
     if vessel_ids and isinstance(vessel_ids, str):
         vessels = [vessel_ids]
@@ -45,11 +49,24 @@ def _check_vessels(vessel_ids: list[str] | str = None) -> dict:
                     vessel_files[base_side][group] = [fname]
                 elif fname in VESSEL_FILES:
                     vessel_files[base_side][group].append(fname)
+
+    FILE_INDEX = {
+        side: {
+            group: {
+                file: _preload_file_index(posixpath.join(DATA_DIR, file))
+                for file in vessel_files[side][group]
+            }
+            for group in vessel_files[side]
+        }
+        for side in vessel_files
+    }
+
     return vessel_files
 
 
 def _provide_expectations(payload):
     global EXPECTED_RESULTS
+    global RAW_DATA
     RAW_DATA = {table: {column: 0 for column in SCHEMA[table]} for table in SCHEMA}
 
     for row in payload:
@@ -62,6 +79,21 @@ def _provide_expectations(payload):
         EXPECTED_RESULTS[table] = max(list(RAW_DATA[table].values()))
 
 
+def _preload_file_index(url):
+    response = get_file_content(url)
+    lines = response.text.splitlines()
+    index = []
+
+    for i, line in enumerate(lines):
+        if ": {" in line:
+            ts_str, json_part = line.split(": ", 1)
+            try:
+                ts = datetime.datetime.strptime(ts_str.strip(), "%Y-%m-%d %H:%M:%S")
+                index.append((ts, i))
+            except:
+                continue
+
+    return index
 
 
 def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topics:list[str]|str=None,
@@ -100,7 +132,7 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
         side: {group: {file: 0 for file in vessel_files[side][group]} for group in vessel_files[side]} for side in vessel_files
     }
     payload = []
-    last_id_index = 0
+
     while is_active:
         for side in vessel_files:
             base_row = {
@@ -109,6 +141,8 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                 "boat_name": None,
                 "timestamp": datetime.datetime.now(tz=datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
             }
+
+            target_ts = None
             side_payload = []
             for id_index, group in enumerate(vessel_files[side]):
                 if base_row["boat_name"] is None:
@@ -120,9 +154,16 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                     })
 
                 for file_name in vessel_files.get(side).get(group):
+                    url = posixpath.join(DATA_DIR, file_name)
+                    file_index = FILE_INDEX[side][group][file_name]
+
                     row_id = row_counts[side][group][file_name]
-                    current_timestamp, file_row = read_json_content(posixpath.join(DATA_DIR, file_name),
-                                                                    timestamp=None, row_id=row_id)
+                    if target_ts is not None:
+                        row_id = find_closest_row(index=file_index, target_ts=target_ts)
+                    target_ts, file_row = read_json_content(url=url, timestamp=None, row_id=row_id)
+                    if not file_row:
+                        continue
+
                     file_row.update(base_row)
                     side_payload.append(file_row)
 
@@ -142,6 +183,7 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
             # Otherwise append
             else:
                 payload.append(row)
+            time.sleep(offset_sleep)
 
         publish_data(
             method=method,

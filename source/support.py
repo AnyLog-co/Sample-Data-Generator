@@ -9,7 +9,29 @@ import requests
 from bs4 import BeautifulSoup
 from source.northbound.rest_functions import get_file_content
 
-def _to_snake(name: str)->str:
+def find_closest_row(index, target_ts):
+    # index = list[(timestamp, row_id)]
+    if isinstance(target_ts, str):
+        try:
+            target_ts = datetime.datetime.strptime(target_ts, "%Y-%m-%d %H:%M:%S")
+        except Exception as error:
+            raise Exception(f"Failed to convert {target_ts} to proper format: '%Y-%m-%d %H:%M:%S' (Error: {error}")
+    elif not isinstance(target_ts, datetime.datetime):
+        raise Exception(f"Failed to convert {target_ts} to proper format: '%Y-%m-%d %H:%M:%S'")
+
+    best = None
+    best_diff = None
+
+    for ts, row_id in index:
+        diff = abs((ts - target_ts).total_seconds())
+        if best_diff is None or diff < best_diff:
+            best = row_id
+            best_diff = diff
+
+    return best
+
+
+def to_snake(name: str)->str:
     """
     Convert camelCase or PascalCase to snake_case.
     Examples:
@@ -113,7 +135,7 @@ def read_csv_content(url:str, row_id:int=0)->dict|None:
     return content
 
 
-def read_json_content(url:str, row_id:int|None=None, timestamp:str|None=None, german_format:bool=False, timeout:float=30)->(dict|None) or (dict|None, str):
+def read_json_content(url:str, row_id:int|None=None, timestamp:str|datetime.datetime|None=None, german_format:bool=False, timeout:float=30)->(dict|None) or (dict|None, str):
     """
     Read content from a given (URL) file
     :args:
