@@ -10,7 +10,7 @@ import time
 
 from source.northbound.rest_calls import RestClient
 from source.northbound.mqtt_calls import MqttClient
-from source.support import get_files_by_url
+from source.support import get_files_by_url, timestamp_calculator
 from source.policies.mappings import BASE_VESSEL_FILES
 from source.policies.mappings import VESSEL_INFO
 from source.support import get_file_content
@@ -138,7 +138,8 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                 "dbms": db_name,
                 "side": side,
                 "boat_name": None,
-                "timestamp": datetime.datetime.now(tz=datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                "timestamp": timestamp_calculator(timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+                                                  offset=offset_sleep,  id_index=list(vessel_files.keys()).index(side))
             }
 
             target_ts = None
@@ -190,8 +191,6 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                 payload=payload,  # ← FIX 3: list not dict
                 db_name=db_name,
             )
-
-            time.sleep(offset_sleep)
 
         # ── loop control ──────────────────────────────────────────────
         payload = []
