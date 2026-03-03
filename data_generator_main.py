@@ -1,12 +1,12 @@
 import argparse
 
-# from source.southbound.random_data import main as rand_data
+from source.southbound.random_data import main as rand_data
 # from source.southbound.rig_data import main as rig_data
 from source.southbound.vessel_data import main as vessel_data
 # from source.southbound.wind_turbine import main as wind_turbine
 # from source.southbound.proveit_data import main as proveit_data
 
-# from source.policies.random_mapping import main as random_mapping
+from source.policies.random_mapping import main as random_mapping
 # from source.policies.wind_turbine_mapping import main as wind_turbine_mapping
 # from source.policies.rig_mapping import main as rig_mapping
 from source.policies.vessel_mapping import main as vessel_mapping
@@ -269,10 +269,11 @@ def main():
             data_port = port
 
     # publish msg client and define data
-    # if args.data == "random":
-    #     if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
-    #         random_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
-    #     rand_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
+    if args.data == "random":
+        if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
+            random_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
+        if not args.skip_inserts:
+            rand_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
     # elif args.data == "rig":
     #     if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
     #         rig_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
