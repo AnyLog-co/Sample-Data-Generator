@@ -93,6 +93,10 @@ def build_parser(parser:argparse.ArgumentParser):
     parser.add_argument("--sleep", type=float, default=15, help="sleep between each iteration")
     parser.add_argument("--offset-sleep", type=float, default=0.5,
                         help="When publishing multiple IDs, time offset between each ID")
+    parser.add_argument("--skip-msg-client", type=bool, nargs='?', const=True, default=False,
+                        help="Skip generating `run msg client` for POST / MQTT / OPC-Ua process")
+    parser.add_argument("--skip-inserts", type=bool, nargs='?', const=True, default=False,
+                        help="Only execute `run msg client` and skip insertion process (invalid for PUT)")
 
     return parser
 
@@ -275,10 +279,11 @@ def main():
     #     rig_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.rig_ids,
     #              iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     if args.data == "vessel":
-        if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
+        if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             vessel_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
-        vessel_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.vessel_ids,
-                    iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
+        if not args.skip_inserts:
+            vessel_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.vessel_ids,
+                        iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     # elif args.data == "wind-turbine":
     #     if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
     #         wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)

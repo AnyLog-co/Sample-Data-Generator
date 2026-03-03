@@ -61,11 +61,12 @@ def extract_credentials(credentials:str):
     """
     user = None
     password = None
-    broker, port = credentials.split(':')
     if '@' in credentials:
         creds, conn = credentials.split('@')
         user, password = creds.split(':')
         broker, port = conn.split(":")
+    else:
+        broker, port = credentials.split(':')
     try:
         port = int(port)
     except:
