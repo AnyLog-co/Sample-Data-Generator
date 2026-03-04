@@ -1,7 +1,7 @@
 """
 Logic dictionaries used for mapping and referencing tables
 """
-
+# Base
 BASE_POLICY = {
     "mapping": {
         "id": None,
@@ -19,6 +19,7 @@ BASE_POLICY = {
 }
 
 
+# Oil Rigs
 RIG_INFO = {
     1: {
         'file': 'drilling_data_RIG-TX-001.csv',
@@ -58,7 +59,7 @@ RIG_INFO = {
     }
 }
 
-
+# Wind Turbine
 WIND_TURBINE_TABLES = {
     "identity": {  # identity / identification
         "turbine_id": "Anlage",
@@ -137,8 +138,8 @@ WIND_TURBINE_TABLES = {
     }
 }
 
-
-SCHEMA = {
+# Vessel / Boat data
+VESSEL_SCHEMAS = {
 
     # ──────────────────────────────────────────────────────────────────────
     # METADATA BLOCK — prepended to every table
@@ -736,91 +737,3 @@ BASE_VESSEL_FILES = {
         ]
     }
 }
-
-
-
-
-
-# VESSEL_INFO = {
-#     "anotherpeak-tier1": {
-#         "file_id": "vessel.json",
-#         "tables": {
-#             "battery_telemetry": [
-#                 "batteryStateOfChargePercent",
-#                 "hvBatteryCapacity",
-#                 "hvBatteryType",
-#                 "lvBattery*",
-#                 "currentBatteryPower",
-#                 "maxBatteryPower",
-#                 "timeBattery",
-#                 "timeToFullMinute",
-#                 "starterBatteryVoltage"
-#                 "starterBatteryVoltagePercent"
-#             ],
-#             "navigation_telemetry": [
-#                 "currentPositionLatitude",
-#                 "currentPositionLongitude",
-#                 "speedOverGround",
-#                 "speedOverGroundFixed",
-#                 "speedThroughWater",
-#                 "heading*",
-#                 "distance*",
-#                 "trip",
-#                 "sogValid"
-#             ],
-#             "charger_telemetry": [
-#                 "acChargerPowerPercent",
-#                 "portAcCharger*",
-#                 "stbdAcCharger*",
-#                 "elPtx*",
-#                 "dcac*",
-#                 "dcdc*",
-#                 "regeneration*"
-#             ],
-#             "engine_telemetry": [
-#             "motor*",
-#             "rpm*",
-#             "throttle*",
-#             "drive*",
-#             "powerBalance",
-#             "maxPower",
-#             "maxSpeed",
-#             "selectSystemMode",
-#             "vesselState",
-#             "systemState"
-#         ],
-#         },
-#     },
-#     "anotherpeak-tier2": {
-#         "file_id": "ID_65.json",
-#         "tables": {
-#             "ac_power_telemetry": [
-#                 "gActAcCurrent",
-#                 "gActAcVoltage",
-#                 "gActAcFrequency",
-#                 "gCommandAcCurrentLimitPP",
-#                 "gMaxDcPower",
-#                 "gParamMaxAcCurrentPP"
-#             ],
-#             "dc_power_telemetry": [
-#                 "gActDcPower",
-#                 "gActDcVoltage",
-#                 "gCommandDcPowerLimit",
-#                 "gCommandMaxDcVoltage"
-#             ],
-#             "thermal_telemetry": [
-#                 "gActElectronicTemperature",
-#                 "gCoolingPolicy"
-#             ],
-#             "control_state": [
-#             "gCommand",
-#             "gState",
-#             "gWake",
-#             "gIsSlave",
-#             "gError",
-#             "gDisableReason",
-#             "gSimConnectedPhaseCount"
-#         ]
-#         }
-#     }
-# }

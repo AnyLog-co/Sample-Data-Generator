@@ -7,7 +7,7 @@ from source.support import read_json_content
 from source.support import get_files_by_url
 from source.support import mapping_param
 from source.policies.mappings import BASE_POLICY
-from source.policies.mappings import SCHEMA
+from source.policies.mappings import VESSEL_SCHEMAS
 from source.northbound.rest_functions import check_msg_client
 from source.northbound.rest_functions import declare_policy
 from source.northbound.rest_functions import declare_msg_client
@@ -19,8 +19,8 @@ VESSEL_FILES = get_files_by_url(url=DATA_DIR)
 
 TOPIC = "vessel-data"
 
-for column in SCHEMA.get("_metadata"):
-    BASE_POLICY["mapping"]["schema"][column] = {
+for column in VESSEL_SCHEMAS.get("_metadata"):
+    BASE_POLICY["mapping"]["VESSEL_SCHEMAS"][column] = {
         **({"type": "int"} if column in ["ip_index", "motor_id"] else {}),
         **({"type": "string"} if column in ["boat_name", "side"] else {}),
         "bring": f"[{column}]",
@@ -46,18 +46,18 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
                     if type(row.get(column)) not in columns.get(column):
                         columns[column].append(type(row.get(column)))
 
-        for table in SCHEMA:
+        for table in VESSEL_SCHEMAS:
             if table != "_metadata":
                 mapping_policy = copy.deepcopy(BASE_POLICY)
                 topic = table.upper().replace('_', '-')
                 mapping_policy["mapping"]["id"] = topic
                 mapping_policy["mapping"]["table"] = table
                 topics += f" and policy={table.upper().replace('_', '-')}"
-                mapping_policy["mapping"]["schema"].update({"__start__": {"script": [f"set {topic}_counter = 0"]}})
-                for column in SCHEMA[table]:
+                mapping_policy["mapping"]["VESSEL_SCHEMAS"].update({"__start__": {"script": [f"set {topic}_counter = 0"]}})
+                for column in VESSEL_SCHEMAS[table]:
                     if columns.get(column) is not None:
                         data_type = mapping_param(columns.get(column))
-                        mapping_policy["mapping"]["schema"].update({
+                        mapping_policy["mapping"]["VESSEL_SCHEMAS"].update({
                            column: {
                                 "type": data_type,
                                 "bring": f"[{column}]",
@@ -66,7 +66,7 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
                                "script": [f"if [{column}] then {topic}_counter = incr !{topic}_counter"]
                             }
                         })
-                mapping_policy["mapping"]["schema"]["__end__"] = {"script": [f"if !{topic}_counter == 0 then streaming data ignore event"]}
+                mapping_policy["mapping"]["VESSEL_SCHEMAS"]["__end__"] = {"script": [f"if !{topic}_counter == 0 then streaming data ignore event"]}
 
                 declare_policy(conn=conn, policy=mapping_policy)
 
@@ -80,7 +80,7 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
     #         mapping_policy["mapping"]["id"] = _to_snake(table).replace('_', '-')
     #         mapping_policy["mapping"]["table"] = _to_snake(table)
     #         for column in VESSEL_INFO.get("general"):
-    #             mapping_policy["mapping"]["schema"].update({
+    #             mapping_policy["mapping"]["VESSEL_SCHEMAS"].update({
     #                 _to_snake(name=column): {
     #                     "type": VESSEL_INFO.get("general").get(column),
     #                     "default": None if VESSEL_INFO.get("general").get(column) in ["float", "int"] else "",
@@ -90,7 +90,7 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
     #         for column in VESSEL_INFO[table]:
     #             if columns.get(column):
     #
-    #                 mapping_policy["mapping"]["schema"].update({
+    #                 mapping_policy["mapping"]["VESSEL_SCHEMAS"].update({
     #                     _to_snake(name=column): {
     #                         "type": data_type,
     #                         "default": None if data_type in ["float", "int"] else "",
