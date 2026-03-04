@@ -49,7 +49,7 @@ def build_parser(parser:argparse.ArgumentParser):
     # VESSEL
     # -------------------------
     vessel_parser = subparsers.add_parser("vessel")
-    vessel_parser.add_argument("publish_format", nargs="?", choices=["print", "post", "mqtt"],
+    vessel_parser.add_argument("publish_format", nargs="?", choices=["print", "put", "post", "mqtt"],
                                default="print", help=publish_format_help)
     vessel_parser.add_argument("--vessel-ids", nargs="+", choices=["DLB", "DLT"], default=None,
                                help="Vessel engine side(s)")

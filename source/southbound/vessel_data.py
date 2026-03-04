@@ -16,7 +16,7 @@ from source.policies.mappings import VESSEL_INFO
 from source.support import get_file_content
 from source.northbound.rest_functions import publish_data
 from source.support import read_json_content
-from source.policies.mappings import SCHEMA
+from source.policies.mappings import VESSEL_SCHEMAS
 from source.support import find_closest_row
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/vessel-data/"
@@ -27,7 +27,7 @@ for table in VESSEL_INFO:
         VESSEL_COLUMNS.extend(VESSEL_INFO.get(table))
 
 TOPIC = "vessel-data"
-EXPECTED_RESULTS = {table: 0 for table in SCHEMA}
+EXPECTED_RESULTS = {table: 0 for table in VESSEL_SCHEMAS}
 FILE_INDEX = {}
 RAW_DATA = {}
 
@@ -67,7 +67,7 @@ def _check_vessels(vessel_ids: list[str] | str = None) -> dict:
 def _provide_expectations(payload):
     global EXPECTED_RESULTS
     global RAW_DATA
-    RAW_DATA = {table: {column: 0 for column in SCHEMA[table]} for table in SCHEMA}
+    RAW_DATA = {table: {column: 0 for column in VESSEL_SCHEMAS[table]} for table in VESSEL_SCHEMAS}
 
     for row in payload:
         for column in row:
@@ -168,28 +168,30 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                     side_payload.append(file_row)
 
             payload = []
-            for row in side_payload:
-                if not payload:
-                    payload.append(row)
-                # If first payload item has None for all keys in row → update it
-                elif all(payload[0].get(column) is None for column in row):
-                    payload[0].update(row)
-                # If ANY existing payload item has all None for row's keys → update that one
-                elif any(all(item.get(column) is None for column in row) for item in payload):
-                    for item in payload:
-                        if all(item.get(column) is None for column in row):
-                            item.update(row)
-                            break
-                # Otherwise append
-                else:
-                    payload.append(row)
+            if method.upper() != "PUT":
+                for row in side_payload:
+                    if not payload:
+                        payload.append(row)
+                    # If first payload item has None for all keys in row → update it
+                    elif all(payload[0].get(column) is None for column in row):
+                        payload[0].update(row)
+                    # If ANY existing payload item has all None for row's keys → update that one
+                    elif any(all(item.get(column) is None for column in row) for item in payload):
+                        for item in payload:
+                            if all(item.get(column) is None for column in row):
+                                item.update(row)
+                                break
+                    # Otherwise append
+                    else:
+                        payload.append(row)
 
             publish_data(
                 method=method,
                 conn=conn,
                 topic=f"{TOPIC}/{side.lower()}",
-                payload=payload,  # ← FIX 3: list not dict
+                payload=payload if method.upper() != "PUT" and payload else side_payload,  # ← FIX 3: list not dict
                 db_name=db_name,
+                table_name="boat_insight" if method.upper() == "PUT" else None
             )
 
         # ── loop control ──────────────────────────────────────────────

@@ -1,6 +1,5 @@
 import copy
 import posixpath
-import json
 
 from source.northbound.rest_calls import RestClient
 from source.support import read_json_content
@@ -20,7 +19,7 @@ VESSEL_FILES = get_files_by_url(url=DATA_DIR)
 TOPIC = "vessel-data"
 
 for column in VESSEL_SCHEMAS.get("_metadata"):
-    BASE_POLICY["mapping"]["VESSEL_SCHEMAS"][column] = {
+    BASE_POLICY["mapping"]["schema"][column] = {
         **({"type": "int"} if column in ["ip_index", "motor_id"] else {}),
         **({"type": "string"} if column in ["boat_name", "side"] else {}),
         "bring": f"[{column}]",
@@ -53,11 +52,11 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
                 mapping_policy["mapping"]["id"] = topic
                 mapping_policy["mapping"]["table"] = table
                 topics += f" and policy={table.upper().replace('_', '-')}"
-                mapping_policy["mapping"]["VESSEL_SCHEMAS"].update({"__start__": {"script": [f"set {topic}_counter = 0"]}})
+                mapping_policy["mapping"]["schema"].update({"__start__": {"script": [f"set {topic}_counter = 0"]}})
                 for column in VESSEL_SCHEMAS[table]:
                     if columns.get(column) is not None:
                         data_type = mapping_param(columns.get(column))
-                        mapping_policy["mapping"]["VESSEL_SCHEMAS"].update({
+                        mapping_policy["mapping"]["schema"].update({
                            column: {
                                 "type": data_type,
                                 "bring": f"[{column}]",
@@ -66,7 +65,7 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
                                "script": [f"if [{column}] then {topic}_counter = incr !{topic}_counter"]
                             }
                         })
-                mapping_policy["mapping"]["VESSEL_SCHEMAS"]["__end__"] = {"script": [f"if !{topic}_counter == 0 then streaming data ignore event"]}
+                mapping_policy["mapping"]["schema"]["__end__"] = {"script": [f"if !{topic}_counter == 0 then streaming data ignore event"]}
 
                 declare_policy(conn=conn, policy=mapping_policy)
 
@@ -80,7 +79,7 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
     #         mapping_policy["mapping"]["id"] = _to_snake(table).replace('_', '-')
     #         mapping_policy["mapping"]["table"] = _to_snake(table)
     #         for column in VESSEL_INFO.get("general"):
-    #             mapping_policy["mapping"]["VESSEL_SCHEMAS"].update({
+    #             mapping_policy["mapping"]["schema"].update({
     #                 _to_snake(name=column): {
     #                     "type": VESSEL_INFO.get("general").get(column),
     #                     "default": None if VESSEL_INFO.get("general").get(column) in ["float", "int"] else "",
@@ -90,7 +89,7 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
     #         for column in VESSEL_INFO[table]:
     #             if columns.get(column):
     #
-    #                 mapping_policy["mapping"]["VESSEL_SCHEMAS"].update({
+    #                 mapping_policy["mapping"]["schema"].update({
     #                     _to_snake(name=column): {
     #                         "type": data_type,
     #                         "default": None if data_type in ["float", "int"] else "",
