@@ -99,12 +99,17 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
                 row = read_json_content(file_path, row_id=line_counts[turbine_id], german_format=True)
 
                 if row:
+                    row = _turbine_translate(content=row, timestamp=timestamp, offset_sleep=offset_sleep,
+                                             id_index=id_index)
                     if method in ["MQTT", "POST"]:
-                        row["dbms"] = db_name
-                        row["table"] = TABLE
+                        row.update({
+                            "dbms": db_name,
+                            "table": TABLE
+                        })
 
-                    payload.append(_turbine_translate(content=row, timestamp=timestamp, offset_sleep=offset_sleep,
-                                                      id_index=id_index))
+                    publish_data(method=method, conn=conn, topic=f"{TOPIC}/xxx", table_name=TABLE, db_name=db_name,
+                                 payload=row)
+
                     line_counts[turbine_id] += 1
                     # if len(turbine_ids) > 1:
                     #     time.sleep(offset_sleep)
@@ -112,7 +117,6 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
                     line_counts[turbine_id] = None
 
         # print(payload)
-        publish_data(method=method, conn=conn, topic=TOPIC, table_name=TABLE, db_name=db_name, payload=payload)
 
         counter += 1
         if 0 < iterations <= counter:

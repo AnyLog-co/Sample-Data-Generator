@@ -85,7 +85,6 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
     is_active = True
 
     while is_active:
-        payload = []
         timestamp = datetime.datetime.now(tz=datetime.timezone.utc)
         for id_index, (rig_id, file_path) in enumerate(rig_paths.items()):
             if line_counts[rig_id] is not None:
@@ -96,14 +95,10 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                         row["dbms"] = db_name
                         row["table"] = TABLE
 
-                    payload.append(row)
-                    # line_counts[rig_id] += 1
-                    # if len(rig_ids) > 1:
-                    #     time.sleep(offset_sleep)
+                    publish_data(method=method, conn=conn, topic=f"{TOPIC}/{rig_id}", table_name=TABLE, db_name=db_name,
+                                 payload=row)
                 else:
                     line_counts[rig_id] = None
-
-        publish_data(method=method, conn=conn, topic=TOPIC, table_name=TABLE, db_name=db_name, payload=payload)
 
         counter += 1
         if 0 < iterations <= counter:

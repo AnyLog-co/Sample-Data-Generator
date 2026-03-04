@@ -1,14 +1,14 @@
 import argparse
 
 from source.southbound.random_data import main as rand_data
-# from source.southbound.rig_data import main as rig_data
+from source.southbound.rig_data import main as rig_data
 from source.southbound.vessel_data import main as vessel_data
-# from source.southbound.wind_turbine import main as wind_turbine
+from source.southbound.wind_turbine import main as wind_turbine
 # from source.southbound.proveit_data import main as proveit_data
 
 from source.policies.random_mapping import main as random_mapping
-# from source.policies.wind_turbine_mapping import main as wind_turbine_mapping
-# from source.policies.rig_mapping import main as rig_mapping
+from source.policies.wind_turbine_mapping import main as wind_turbine_mapping
+from source.policies.rig_mapping import main as rig_mapping
 from source.policies.vessel_mapping import main as vessel_mapping
 
 from source.northbound.mqtt_calls import MqttClient
@@ -268,28 +268,31 @@ def main():
             data_broker = broker
             data_port = port
 
+
     # publish msg client and define data
     if args.data == "random":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             random_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
         if not args.skip_inserts:
             rand_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
-    # elif args.data == "rig":
-    #     if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
-    #         rig_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
-    #     rig_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.rig_ids,
-    #              iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
+    elif args.data == "rig":
+        if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
+            rig_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
+        if not args.skip_inserts:
+            rig_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.rig_ids,
+                     iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     if args.data == "vessel":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             vessel_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
         if not args.skip_inserts:
             vessel_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.vessel_ids,
                         iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
-    # elif args.data == "wind-turbine":
-    #     if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
-    #         wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
-    #     wind_turbine(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.turbine_ids,
-    #                  iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
+    elif args.data == "wind-turbine":
+        if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
+            wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
+        if not args.skip_inserts:
+            wind_turbine(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.turbine_ids,
+                         iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     # elif args.data == "proveit": # conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest
     #     if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
     #         pass

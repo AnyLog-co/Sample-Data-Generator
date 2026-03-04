@@ -36,6 +36,8 @@ class RestClient:
         """
         if (isinstance(payload, list) and isinstance(payload[0], dict)) or isinstance(payload, dict):
             payload = json.dumps(payload)
+            if headers.get("Content-Type") == "application/json":
+                headers["Content-Type"] = "text/plain"
         try:
             response = requests.request(method=method.upper(), url=self.url, headers=headers, auth=self.auth,
                                         timeout=self.timeout, data=payload)

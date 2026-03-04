@@ -1,12 +1,15 @@
 import copy
-import json
 import posixpath
 
 from source.support import get_files_by_url
 from source.policies.mappings import BASE_POLICY
 from source.policies.mappings import WIND_TURBINE_TABLES
-from source.support import mapping_policy_config
+from source.northbound.rest_functions import declare_msg_client
+from source.northbound.rest_functions import declare_policy
 from source.northbound.rest_calls import RestClient
+from source.support import read_json_content
+from source.support import mapping_policy_config
+
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/wind-turbine/"
 TURBINE_FILES = get_files_by_url(url=DATA_DIR)
@@ -16,11 +19,12 @@ TOPIC = "wind-turbine"
 
 def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
     content = {}
-    topics = f"(name={TOPIC} and"
+    topics = f"(name={TOPIC}/# and"
     for fname in TURBINE_FILES:
         file_path = posixpath.join(DATA_DIR, fname)
         for row_id in range(5):
-            row = read_turbine_data(file_path, row_id=row_id)
+            row = read_json_content(url=file_path, row_id=row_id, timestamp=None, german_format=True)
+            # row = read_turbine_data(file_path, row_id=row_id)
             for key in row:
                 if key not in content:
                     content[key] = []
@@ -50,7 +54,7 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
 
             schema =  mapping_policy_config(content=table_content)
             new_policy["mapping"]["schema"].update(schema)
-            policy_id = declare_mapping_policy(conn=conn, policy=new_policy)
+            policy_id = declare_policy(conn=conn, policy=new_policy)
             topics += f" policy={policy_id} and"
 
     topics = topics.rsplit(" and", 1)[0] + ')'

@@ -187,7 +187,7 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
             publish_data(
                 method=method,
                 conn=conn,
-                topic=f"{TOPIC}/{side}",
+                topic=f"{TOPIC}/{side.lower()}",
                 payload=payload,  # ← FIX 3: list not dict
                 db_name=db_name,
             )

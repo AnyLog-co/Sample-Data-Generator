@@ -134,7 +134,26 @@ def declare_policy(conn:RestClient, policy:dict)->str:
     return policy_id
 
 
+def check_msg_client(conn:RestClient, topics:str|list):
+    is_topics = False
+    if not isinstance(topics, list):
+        topics = topics.split(',')
 
+
+    for topic in topics:
+        msg_topic = topic.split('name=', 1)[-1].split('and', 1)[0].strip()
+        headers = {
+            "command": f"get msg client where topic={msg_topic}",
+            "User-Agent": "AnyLog/1.23"
+        }
+
+        response = conn.get_data(headers=headers)
+        if not (response.strip() in ["No message client subscriptions", "No such client subscription"]):
+            is_topics = True
+            if len(topics) > 1:
+                print(f"Topic {msg_topic} already defined, cannot define `msg client` for provided topics")
+
+    return is_topics
 
 def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str|list, is_rest:bool=True):
     # --- To review ---#
@@ -142,19 +161,7 @@ def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str|list, i
     if not isinstance(topics, list):
         topics = topics.split(',')
 
-    for topic in topics:
-        msg_topic = topic.split('name=', 1)[-1].split('and', 1)[0].strip()
-        check_msg_client = {
-            "command": f"get msg client where topic={msg_topic}",
-            "User-Agent": "AnyLog/1.23"
-        }
-        response = conn.get_data(headers=check_msg_client)
-        if not (response.strip() in ["No message client subscriptions", "No such client subscription"]):
-            is_topics = True
-            if len(topics) > 1:
-                print(f"Topic {msg_topic} already defined, cannot define `msg client` for provided topics")
-
-    if not is_topics:
+    if not check_msg_client(conn=conn, topics=topics):
         declare_msg_client_header = {
             "command": f"run msg client where broker={broker} and log=false",
             "User-Agent": "AnyLog/1.23"
@@ -169,3 +176,5 @@ def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str|list, i
             declare_msg_client_header["command"] += f" and user-agent=anylog"
 
         conn.publish_data(headers=declare_msg_client_header, payload=None, method="POST")
+
+    return is_topics
