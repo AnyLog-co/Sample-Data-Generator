@@ -283,7 +283,8 @@ def main():
                      iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     if args.data == "vessel":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
-            vessel_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
+            vessel_ids = args.vessel_ids[0] if len(args.vessel_ids) == 1 else None
+            vessel_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, publish_topics=vessel_ids)
         if not args.skip_inserts:
             vessel_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.vessel_ids,
                         iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)

@@ -107,7 +107,7 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
                             "table": TABLE
                         })
 
-                    publish_data(method=method, conn=conn, topic=f"{TOPIC}/xxx", table_name=TABLE, db_name=db_name,
+                    publish_data(method=method, conn=conn, topic=f"{TOPIC}/turbine-{row.get('turbine_id')}", table_name=TABLE, db_name=db_name,
                                  payload=row)
 
                     line_counts[turbine_id] += 1

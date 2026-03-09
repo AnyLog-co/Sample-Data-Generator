@@ -95,7 +95,7 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                         row["dbms"] = db_name
                         row["table"] = TABLE
 
-                    publish_data(method=method, conn=conn, topic=f"{TOPIC}/{rig_id}", table_name=TABLE, db_name=db_name,
+                    publish_data(method=method, conn=conn, topic=f"{TOPIC}/rig-{rig_id}", table_name=TABLE, db_name=db_name,
                                  payload=row)
                 else:
                     line_counts[rig_id] = None

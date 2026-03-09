@@ -188,7 +188,7 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
             publish_data(
                 method=method,
                 conn=conn,
-                topic=f"{TOPIC}/{side.lower()}",
+                topic=f"{TOPIC}/{side.upper()}",
                 payload=payload if method.upper() != "PUT" and payload else side_payload,  # ← FIX 3: list not dict
                 db_name=db_name,
                 table_name="boat_insight" if method.upper() == "PUT" else None
