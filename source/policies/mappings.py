@@ -60,79 +60,81 @@ RIG_INFO = {
 }
 
 # Wind Turbine
+# Wind Turbine
 WIND_TURBINE_TABLES = {
-    "identity": {  # identity / identification
+
+    "identity": {
         "turbine_id": "Anlage",
         "alias": "Alias",
         "timestamp": "Zeit"
     },
 
-    "wind": {  # wind measurements
+    "wind": {
         "wind_avg": "Wind Ø [m/s]",
         "wind_max": "Wind max. [m/s]",
         "wind_min": "Wind min. [m/s]"
     },
 
-    "rpm": {  # rotational speed
+    "rpm": {
         "rpm_avg": "Drehzahl Ø [1/min]",
         "rpm_max": "Drehzahl max. [1/min]",
         "rpm_min": "Drehzahl min. [1/min]"
     },
 
-    "power_output": {  # power output
+    "power_output": {
         "power_avg": "Leistung Ø [kW]",
         "power_max": "Leistung max. [kW]",
         "power_min": "Leistung min. [kW]"
     },
 
-    "available_power": {  # available power
+    "available_power": {
         "avail_wind": "Leistung Verfügb. Wind Ø [kW]",
         "avail_tech": "Leistung Verfügb. techn. Ø [kW]",
         "avail_force_majeure": "Leistung Verfügb. force maj. Ø [kW]",
         "avail_external": "Leistung Verfügb. ext. Ø [kW]"
     },
 
-    "reactive_power": {  # reactive power
+    "reactive_power": {
         "reactive_avg": "Blindleistung Ø [kvar]",
         "reactive_max": "Blindleistung max. [kvar]",
         "reactive_min": "Blindleistung min. [kvar]"
     },
 
-    "energy": {  # energy produced
+    "energy": {
         "energy_kwh": "Energie prod. [kWh]"
     },
 
-    "blade_pitch": {  # blade pitch angle
+    "blade_pitch": {
         "pitch_avg": "Blattwinkel Ø [°]"
     },
 
-    "precipitation": {  # rainfall / precipitation
+    "precipitation": {
         "precip_avg": "Niederschlag Ø [mm/min]",
         "precip_max": "Niederschlag max. [mm/min]",
         "precip_min": "Niederschlag min. [mm/min]"
     },
-
-    "visibility": {  # visibility
+    # FIX 1: visibility fields (previously ignored)
+    "visibility": {
         "visibility_avg": "Sichtweite Ø [km]",
         "visibility_max": "Sichtweite max. [km]",
         "visibility_min": "Sichtweite min. [km]"
     },
-
-    "ambient_light": {  # ambient brightness
+    "ambient_light": {
         "ambient_avg": "Umfeldhelligkeit Ø [Lux]"
     },
 
-    "ice_detection": {  # ice detection
+    # FIX 2: ice amplitude field (missing before)
+    "ice_detection": {
         "ice_amplitude_avg": "Labko Eis Amplitude Ø [%]",
         "icing_rate_avg": "Eisans. timer Ø [°C/min]"
     },
 
-    "atmosphere": {  # atmospheric conditions
+    "atmosphere": {
         "pressure_avg": "Luftdruck Ø [mBar]",
         "humidity_avg": "Luftfeuchtigkeit Ø [%]"
     },
 
-    "operations": {  # operational runtime
+    "operations": {
         "operating_hours": "Betriebsstunden",
         "nacelle_position": "Gondelposition [°]"
     }

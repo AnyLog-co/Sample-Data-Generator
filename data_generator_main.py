@@ -277,7 +277,8 @@ def main():
             rand_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
     elif args.data == "rig":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
-            rig_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
+            rig_ids = args.rig_ids[0] if len(args.rig_ids) == 1 else None
+            rig_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, rig_id=rig_ids)
         if not args.skip_inserts:
             rig_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.rig_ids,
                      iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
@@ -290,7 +291,8 @@ def main():
                         iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "wind-turbine":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
-            wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
+            turbine_id = args.turbine_ids[0] if len(args.turbine_ids) == 1 else None
+            wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, turbine_id=turbine_id)
         if not args.skip_inserts:
             wind_turbine(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.turbine_ids,
                          iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
