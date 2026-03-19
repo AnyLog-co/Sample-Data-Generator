@@ -28,6 +28,8 @@ def __publish_policies(conn:RestClient, full_path:str):
                 if not parent_id or parent_id == "[]":
                     raise Exception(f"Failed to get parent policy for namespace {namespace} - tentative parent namespace: {parent_namespace}")
 
+                if policy["uns"].get("uns_level") == "sensor":
+                    policy["uns"]["name"] = policy["uns"]["namespace"]
                 policy["uns"]["parent"] = parent_id
 
             declare_policy(conn=conn, policy=policy)
@@ -36,7 +38,7 @@ def __publish_policies(conn:RestClient, full_path:str):
 def main(): 
     parse = argparse.ArgumentParser()
     parse.add_argument("conn", type=str, default=None, help="REST User:Passowrd@IP:Port to send UNS through")
-    parse.add_argument("UNS", type=str, choices=["smart-city", "rigs", "enterprise-c", "vessel", "wind-turbine"], default=None,
+    parse.add_argument("UNS", type=str, choices=["smart-city", "rigs", "enterprise-c", "vessel"], default=None,
                        help="UNS group to publish")
     args = parse.parse_args()
     host, port, user, password = extract_credentials(args.conn)
