@@ -4,6 +4,8 @@ from source.southbound.random_data import main as rand_data
 from source.southbound.rig_data import main as rig_data
 from source.southbound.vessel_data import main as vessel_data
 from source.southbound.wind_turbine import main as wind_turbine
+from source.southbound.wind_turbine2 import main as wind_turbine2
+
 # from source.southbound.proveit_data import main as proveit_data
 
 from source.policies.random_mapping import main as random_mapping
@@ -63,6 +65,22 @@ def build_parser(parser:argparse.ArgumentParser):
     wt_parser.add_argument("--turbine-ids", type=int, nargs="+",
                            choices=[i for i in range(1, 12) if i != 4], default=None,
                            help="Space-separated turbine IDs. If omitted, all turbines except 4.")
+
+    # -------------------------
+    # WIND TURBINE 2
+    # -------------------------
+    turbine_ids = []
+    for farm_id in range(1, 3):
+        turbine_ids.append(f"farm-{farm_id}")
+        for turbine_id in range(1, 5) if farm_id == 1 else range(1, 3):
+            turbine_ids.append(f"farm-{farm_id}/turbine-{turbine_id}")
+
+    wt2_parser = subparsers.add_parser("wind-turbine2")
+    wt2_parser.add_argument("publish_format", nargs="?", choices=["print", "post", "mqtt", "opcua"],
+                                default="print", help=publish_format_help)
+    wt2_parser.add_argument("--turbine-ids", type=str, nargs="+", choices=turbine_ids, default=None,
+                           help="Space-separated turbine IDs.")
+
     # -------------------------
     # PROVEIT
     # -------------------------
@@ -296,6 +314,14 @@ def main():
         if not args.skip_inserts:
             wind_turbine(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.turbine_ids,
                          iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
+    elif args.data == "wind-turbine2":
+        # if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
+        #     turbine_id = args.turbine_ids[0] if len(args.turbine_ids) == 1 else None
+        #     wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, turbine_id=turbine_id)
+        # if not args.skip_inserts:
+        wind_turbine2(method=args.publish_format, conn=data_conn, publish_topics=args.turbine_ids,
+                     iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
+
     # elif args.data == "proveit": # conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest
     #     if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
     #         pass

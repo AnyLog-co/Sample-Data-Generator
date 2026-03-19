@@ -28,6 +28,7 @@ FILE_BREAKDOWN = {
     }
 }
 
+TOPIC = "wind-turbine2"
 
 # ─────────────────────────── helpers ────────────────────────────
 
@@ -50,7 +51,7 @@ def _build_topic(farm: str, turbine: str, column: str) -> str:
         "WT1 - Status b [-]"  →  "farm-1/turbine-1/WT1 - Status b"
     """
     clean_column = re.sub(r'\s*\[.*?\]', '', column).strip()
-    return f"{farm}/{turbine}/{clean_column}"
+    return f"{TOPIC}/{farm}/{turbine}/{WIND_TURBINE_MAPPING.get(column)}"
 
 
 # ─────────────────────────── topic validation ────────────────────────────
@@ -149,7 +150,7 @@ def _turbine_data(method: str, conn: RestClient | MqttClient, farm: str, turbine
                 if column == "Time":
                     continue
 
-                topic = _build_topic(farm, turbine,  WIND_TURBINE_MAPPING.get(column))
+                topic = _build_topic(farm, turbine, column)
                 # payload = {"timestamp": timestamp, "value": value}
 
                 try:
