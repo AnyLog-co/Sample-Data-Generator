@@ -1,17 +1,19 @@
+import asyncio
 import copy
 import posixpath
+import re
 import time
 import concurrent.futures
 
-from typing import Optional, Dict
-from source.support import get_files_by_url, read_json_content, timestamp_calculator
-from source.northbound.rest_functions import publish_data
 from source.northbound.rest_calls import RestClient
 from source.northbound.mqtt_calls import MqttClient
-from source.policies.mappings import WIND_TURBINE_TABLES
+from source.northbound.opcua import OpcuaServer
+from source.northbound.rest_functions import publish_data
+from source.support import get_files_by_url, read_json_content
+from  source.policies.mappings import WIND_TURBINE_MAPPING
+
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/wind-turbine2/"
-TURBINE_FILES = []
 
 FILE_BREAKDOWN = {
     "farm-1": {
@@ -27,22 +29,42 @@ FILE_BREAKDOWN = {
 }
 
 
+# ─────────────────────────── helpers ────────────────────────────
+
+def _unpack_row(result) -> dict | None:
+    """
+    read_json_content returns (None, dict) for line-based JSON files.
+    Unpack safely regardless of whether it returns a tuple or a plain dict.
+    """
+    if result is None:
+        return None
+    if isinstance(result, tuple):
+        return result[1]   # (timestamp_or_None, row_dict)
+    return result
+
+
+def _build_topic(farm: str, turbine: str, column: str) -> str:
+    """
+    Strip unit notation (e.g. "[-]", "[kW]") from column name and build
+    the full MQTT-style topic: farm/turbine/column
+        "WT1 - Status b [-]"  →  "farm-1/turbine-1/WT1 - Status b"
+    """
+    clean_column = re.sub(r'\s*\[.*?\]', '', column).strip()
+    return f"{farm}/{turbine}/{clean_column}"
+
+
+# ─────────────────────────── topic validation ────────────────────────────
+
 def _check_turbine(turbine_ids: list[str] | str):
     """
-    Validate user provides a proper turbine topic(s) for wind-turbine2
+    Validate and filter FILE_BREAKDOWN to only the requested farm(s)/turbine(s).
     :args:
-        turbine_ids:list[str]|str - list of turbine ID(s) used as topics
-            - #
-            - farm-1/#
-            - farm-2/turbine-2/#
-    :global:
-        FILE_BREAKDOWN:dict[dict:str] - files to use
-    :params:
-        tmp_file_breakdown:dict[dict:str] - reference of FILE_BREAKDOWN
+        turbine_ids:list[str]|str - topic filter(s)
+            "#"              → all
+            "farm-1"         → all turbines in farm-1
+            "farm-2/turbine-1" → specific turbine
     """
     global FILE_BREAKDOWN
-    global TURBINE_FILES
-
     tmp_files_breakdown = {}
 
     if isinstance(turbine_ids, str):
@@ -55,119 +77,226 @@ def _check_turbine(turbine_ids: list[str] | str):
                 farm, turbine = turbine_id.split('/')
             else:
                 farm = turbine_id
+
             if FILE_BREAKDOWN.get(farm) is None or (
-                    (turbine is not None and turbine != '#') and FILE_BREAKDOWN.get(farm).get(turbine) is None):
-                raise ValueError(f"Invalid wind farm turbine {turbine_id}")
-            elif farm in ["farm-1", "farm-2"] and turbine in [None, "#"]:
+                    (turbine is not None and turbine != '#')
+                    and FILE_BREAKDOWN.get(farm).get(turbine) is None):
+                raise ValueError(f"Invalid wind farm / turbine: {turbine_id}")
+            elif turbine in [None, "#"]:
                 tmp_files_breakdown[farm] = FILE_BREAKDOWN.get(farm)
             else:
                 if farm not in tmp_files_breakdown:
                     tmp_files_breakdown[farm] = {}
-                tmp_files_breakdown[farm][turbine] = FILE_BREAKDOWN.get(farm).get(turbine)
+                tmp_files_breakdown[farm][turbine] = FILE_BREAKDOWN[farm][turbine]
+
         FILE_BREAKDOWN = copy.deepcopy(tmp_files_breakdown)
 
-    for farm in FILE_BREAKDOWN:
-        for turbine in FILE_BREAKDOWN[farm]:
-            TURBINE_FILES.append(get_files_by_url(url=posixpath.join(DATA_DIR, FILE_BREAKDOWN[farm][turbine])))
 
+# ─────────────────────────── sync worker (MQTT / REST) ────────────────────────────
 
-def _turbine_data(method: str, conn: RestClient | MqttClient, db_name: str, farm: str, turbine: str,
-                  dir_url: str, publish_topics: list[str] | str = None, iterations: int = 10,
-                  sleep: float = 10, offset_sleep: float = 0.5):
+def _turbine_data(method: str, conn: RestClient | MqttClient, farm: str, turbine: str,
+                  dir_url: str, iterations: int = 10, sleep: float = 10, offset_sleep: float = 0.5):
     """
-    Worker function for a single turbine. Reads all ~30 files in the turbine directory
-    into memory, then publishes row i across all files together before moving to row i+1.
+    Worker for a single turbine (runs in its own thread).
+
+    For each row_id:
+        - reads that row from every file in the turbine directory
+        - publishes one message per column (topic = farm/turbine/column)
+        - sleeps offset_sleep between files within the same row group
+    Then sleeps `sleep` before moving to the next row_id.
+    When any file returns None the cycle is exhausted; iteration counter increments
+    and row_id resets to 0.
 
     :args:
-        method:str         - publishing method (POST, MQTT, etc.)
-        conn:              - active connection client
-        db_name:str        - target database / table name
-        farm:str           - farm identifier (e.g. "farm-1")
-        turbine:str        - turbine identifier (e.g. "turbine-2")
-        dir_url:str        - URL to the turbine's data subdirectory
-        publish_topics:    - topic filter(s)
-        iterations:int     - number of row-groups to publish (0 = all)
-        sleep:float        - seconds to wait between row-groups
-        offset_sleep:float - seconds to wait between files within a row-group
+        method:str         - "POST", "MQTT", "PRINT"
+        conn:              - active client connection
+        farm:str           - e.g. "farm-1"
+        turbine:str        - e.g. "turbine-2"
+        dir_url:str        - full URL to the turbine's data directory
+        iterations:int     - full cycles to run (0 = run forever)
+        sleep:float        - seconds between row groups
+        offset_sleep:float - seconds between files within a row group
     """
-    topic = f"{farm}/{turbine}"
-
-    # Load all files in this turbine's directory into memory upfront
     try:
         fnames = get_files_by_url(url=dir_url)
     except Exception as error:
-        raise Exception(f"Failed to list turbine directory {dir_url} (Error: {error})")
+        raise Exception(f"Failed to list {dir_url} (Error: {error})")
 
-    all_file_data = []
-    for fname in fnames:
-        url = posixpath.join(dir_url, fname)
-        try:
-            all_file_data.append(read_json_content(url=url))
-        except Exception as error:
-            raise Exception(f"Failed to read {url} (Error: {error})")
+    if not fnames:
+        raise Exception(f"No data files found in {dir_url}")
 
-    if not all_file_data:
-        raise Exception(f"No data files found in turbine directory {dir_url}")
+    file_urls = [posixpath.join(dir_url, fname) for fname in fnames]
 
-    # Determine how many row-groups to publish
-    max_rows = min(len(file_data) for file_data in all_file_data)
-    row_groups = range(max_rows) if not iterations else range(min(iterations, max_rows))
+    row_id = 0
+    iteration_count = 0
+    is_active = True
 
-    for i in row_groups:
-        # Publish row i from each file in quick succession (offset_sleep between files)
-        for j, file_data in enumerate(all_file_data):
-            try:
-                row = file_data[i]
-                payload = {
-                    "timestamp": timestamp_calculator(row),
-                    "farm": farm,
-                    "turbine": turbine,
-                    "data": row,
-                }
-                print(payload)
-                # publish_data(
-                #     method=method,
-                #     conn=conn,
-                #     db_name=db_name,
-                #     table=WIND_TURBINE_TABLES.get(farm, db_name),
-                #     topic=topic,
-                #     data=payload,
-                # )
-            except Exception as error:
-                raise Exception(f"Failed to publish {topic} file[{j}] row {i} (Error: {error})")
+    while is_active:
+        cycle_exhausted = False
 
-            # Small offset between files in the same row-group, except after the last one
-            if j < len(all_file_data) - 1:
+        for idx, url in enumerate(file_urls):
+            result = read_json_content(url=url, row_id=row_id)
+            row = _unpack_row(result)
+
+            if row is None:
+                # This file has no more rows → end of this cycle
+                cycle_exhausted = True
+                break
+
+            timestamp = row.get("Time")
+
+            for column, value in row.items():
+                if column == "Time":
+                    continue
+
+                topic = _build_topic(farm, turbine,  WIND_TURBINE_MAPPING.get(column))
+                # payload = {"timestamp": timestamp, "value": value}
+
+                try:
+                    if method == "PRINT":
+                        print(f"{topic} → {value}")
+                    else:
+                        publish_data(method=method, conn=conn, topic=topic,
+                                     table_name=None, db_name=None, payload=value)
+                except Exception as error:
+                    raise Exception(f"Failed to publish {topic} row {row_id} (Error: {error})")
+
+            # offset between files within the same row group (skip after last file)
+            if idx < len(file_urls) - 1:
                 time.sleep(offset_sleep)
 
-        # Full sleep between row-groups
-        time.sleep(sleep)
+        if cycle_exhausted:
+            row_id = 0
+            iteration_count += 1
+            if 0 < iterations <= iteration_count:
+                is_active = False
+            else:
+                time.sleep(sleep)
+        else:
+            row_id += 1
+            time.sleep(sleep)
 
 
-def main(method: str, conn: RestClient | MqttClient, db_name: str, publish_topics: list[str] | str = None,
+# ─────────────────────────── async worker (OPC-UA) ────────────────────────────
+
+async def _turbine_data_opcua(conn: OpcuaServer, farm: str, turbine: str,
+                               dir_url: str, iterations: int = 10,
+                               sleep: float = 10, offset_sleep: float = 0.5):
+    """
+    Async mirror of _turbine_data for OPC-UA. Same row-group logic, awaited sleeps.
+    """
+    try:
+        fnames = get_files_by_url(url=dir_url)
+    except Exception as error:
+        raise Exception(f"Failed to list {dir_url} (Error: {error})")
+
+    if not fnames:
+        raise Exception(f"No data files found in {dir_url}")
+
+    file_urls = [posixpath.join(dir_url, fname) for fname in fnames]
+
+    row_id = 0
+    iteration_count = 0
+    is_active = True
+
+    while is_active:
+        cycle_exhausted = False
+
+        for idx, url in enumerate(file_urls):
+            loop = asyncio.get_running_loop()
+            result = await loop.run_in_executor(None, read_json_content, url, row_id)
+            row = _unpack_row(result)
+
+            if row is None:
+                cycle_exhausted = True
+                break
+
+            timestamp = row.get("Time")
+
+            for column, value in row.items():
+                if column == "Time":
+                    continue
+
+                topic = _build_topic(farm, turbine, column)
+                payload = {"timestamp": timestamp, "value": value}
+
+                try:
+                    await conn.publish_data(topic=topic, payload=payload)
+                except Exception as error:
+                    raise Exception(f"Failed to publish {topic} row {row_id} (Error: {error})")
+
+            if idx < len(file_urls) - 1:
+                await asyncio.sleep(offset_sleep)
+
+        if cycle_exhausted:
+            row_id = 0
+            iteration_count += 1
+            if 0 < iterations <= iteration_count:
+                is_active = False
+            else:
+                await asyncio.sleep(sleep)
+        else:
+            row_id += 1
+            await asyncio.sleep(sleep)
+
+
+async def _main_opcua(conn: OpcuaServer, iterations: int = 10,
+                      sleep: float = 10, offset_sleep: float = 0.5):
+    """
+    Start OPC-UA server then run all turbine coroutines concurrently.
+    """
+    await conn.connect()
+    try:
+        turbine_tasks = [
+            (farm, turbine, posixpath.join(DATA_DIR, fname))
+            for farm, turbines in FILE_BREAKDOWN.items()
+            for turbine, fname in turbines.items()
+        ]
+        await asyncio.gather(*[
+            _turbine_data_opcua(conn=conn, farm=farm, turbine=turbine, dir_url=dir_url,
+                                iterations=iterations, sleep=sleep, offset_sleep=offset_sleep)
+            for farm, turbine, dir_url in turbine_tasks
+        ])
+    except Exception as error:
+        raise Exception(f"Failed to run wind turbine via OPC-UA (Error: {error})")
+    finally:
+        await conn.disconnect()
+
+
+# ─────────────────────────── main ────────────────────────────
+
+def main(method: str, conn: RestClient | MqttClient | OpcuaServer | None,
+         publish_topics: list[str] | str = None,
          iterations: int = 10, sleep: float = 10, offset_sleep: float = 0.5):
     """
-    Topic logic:
-        - "#" || None        → all farms and turbines
-        - "farm-1"           → all turbines in farm-1
-        - "farm-2/turbine-1" → specific turbine in a specific farm
+    Spin up one thread (or coroutine) per turbine and publish its data.
 
-    Each turbine runs concurrently. Within each turbine, row i is published
-    across all ~30 of its files before advancing to row i+1.
+    Topic logic:
+        None / "#"           → all farms and turbines
+        "farm-1"             → all turbines in farm-1
+        "farm-2/turbine-1"   → one specific turbine
+
+    Within each turbine, row i is published across all ~30 files before
+    advancing to row i+1.  Turbines run fully independently of each other.
 
     :args:
-        method:str         - publishing method (POST, MQTT, etc.)
-        conn:              - active connection client
-        db_name:str        - target database / table name
-        publish_topics:    - topic filter(s); None or "#" means all
-        iterations:int     - row-groups to publish per turbine (0 = all)
-        sleep:float        - seconds between row-groups
-        offset_sleep:float - seconds between files within a row-group
+        method:str           - "POST", "MQTT", "OPCUA", "PRINT"
+        conn:                - active client connection
+        publish_topics:      - topic filter(s); None / "#" means all
+        iterations:int       - full file cycles per turbine (0 = infinite)
+        sleep:float          - seconds between row groups
+        offset_sleep:float   - seconds between files within a row group
     """
     global FILE_BREAKDOWN
-    _check_turbine(turbine_ids=publish_topics)
 
-    # Flatten FILE_BREAKDOWN → list of (farm, turbine, dir_url)
+    if publish_topics and not (isinstance(publish_topics, str) and publish_topics == "#"):
+        _check_turbine(turbine_ids=publish_topics)
+
+    if method.upper() == "OPCUA":
+        asyncio.run(_main_opcua(conn=conn, iterations=iterations,
+                                sleep=sleep, offset_sleep=offset_sleep))
+        return
+
     turbine_tasks = [
         (farm, turbine, posixpath.join(DATA_DIR, fname))
         for farm, turbines in FILE_BREAKDOWN.items()
@@ -179,16 +308,9 @@ def main(method: str, conn: RestClient | MqttClient, db_name: str, publish_topic
             futures = [
                 executor.submit(
                     _turbine_data,
-                    method=method,
-                    conn=conn,
-                    db_name=db_name,
-                    farm=farm,
-                    turbine=turbine,
-                    dir_url=dir_url,
-                    publish_topics=publish_topics,
-                    iterations=iterations,
-                    sleep=sleep,
-                    offset_sleep=offset_sleep,
+                    method=method, conn=conn,
+                    farm=farm, turbine=turbine, dir_url=dir_url,
+                    iterations=iterations, sleep=sleep, offset_sleep=offset_sleep,
                 )
                 for farm, turbine, dir_url in turbine_tasks
             ]
@@ -202,5 +324,4 @@ def main(method: str, conn: RestClient | MqttClient, db_name: str, publish_topic
 
 
 if __name__ == "__main__":
-    # conn = RestClient(conn="10.0.0.78:7849")
-    main(method="POST", conn=None, db_name="wind_turbine", publish_topics=["farm-2"])
+    main(method="PRINT", conn=None, publish_topics=["farm-2"], iterations=1)
