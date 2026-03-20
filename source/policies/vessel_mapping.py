@@ -17,9 +17,10 @@ DATA_DIR = "http://45.33.11.32/Sample-Data/vessel-data/"
 VESSEL_FILES = get_files_by_url(url=DATA_DIR)
 
 TOPIC = "vessel-data"
+LOCAL_BASE_POLICY = copy.deepcopy(BASE_POLICY)
 
 for column in VESSEL_SCHEMAS.get("_metadata"):
-    BASE_POLICY["mapping"]["schema"][column] = {
+    LOCAL_BASE_POLICY["mapping"]["schema"][column] = {
         **({"type": "int"} if column in ["ip_index", "motor_id"] else {}),
         **({"type": "string"} if column in ["boat_name", "side"] else {}),
         "bring": f"[{column}]",
@@ -47,7 +48,7 @@ def main(conn:RestClient|None, broker:str, port:int, publish_topics:str|None=Non
 
         for table in VESSEL_SCHEMAS:
             if table != "_metadata":
-                mapping_policy = copy.deepcopy(BASE_POLICY)
+                mapping_policy = copy.deepcopy(LOCAL_BASE_POLICY)
                 topic = table.upper().replace('_', '-')
                 mapping_policy["mapping"]["id"] = topic
                 mapping_policy["mapping"]["table"] = table
@@ -75,7 +76,7 @@ def main(conn:RestClient|None, broker:str, port:int, publish_topics:str|None=Non
 
     # for table in VESSEL_INFO:
     #     if table != "general":
-    #         mapping_policy = copy.deepcopy(BASE_POLICY)
+    #         mapping_policy = copy.deepcopy(LOCAL_BASE_POLICY)
     #         mapping_policy["mapping"]["id"] = _to_snake(table).replace('_', '-')
     #         mapping_policy["mapping"]["table"] = _to_snake(table)
     #         for column in VESSEL_INFO.get("general"):

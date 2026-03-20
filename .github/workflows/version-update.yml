@@ -1,0 +1,40 @@
+name: Version Update
+
+on:
+  push:
+    branches:
+      - data-generator2
+
+permissions:
+  contents: write
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0       # needed so rev-parse HEAD works correctly
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Get setup.cfg
+        run: |
+#          git checkout origin/os-dev -- setup.cfg
+
+      - name: Run version update script
+        run: python .github/workflows/generate_git_id.py
+
+      - name: Commit updated setup.cfg
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add setup.cfg
+          git diff --cached --quiet || git commit -m "chore: update version [os-dev] [skip ci]"
+          git push

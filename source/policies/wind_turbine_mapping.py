@@ -17,9 +17,11 @@ TURBINE_FILES = get_files_by_url(url=DATA_DIR)
 TABLE = "wind_turbine"
 TOPIC = "wind-turbine"
 
-def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
+LOCAL_BASE_POLICY = copy.deepcopy(BASE_POLICY)
+
+def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False, turbine_id:str|None=None):
     content = {}
-    topics = f"(name={TOPIC}/# and"
+    topics = f"(name={TOPIC}/# and" if turbine_id is None else f"(name={TOPIC}/turbine-{turbine_id} and"
     for fname in TURBINE_FILES:
         file_path = posixpath.join(DATA_DIR, fname)
         for row_id in range(5):
@@ -34,7 +36,7 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
     for table in WIND_TURBINE_TABLES:
         if table != "identity":
             table_content = {}
-            new_policy = copy.deepcopy(BASE_POLICY)
+            new_policy = copy.deepcopy(LOCAL_BASE_POLICY)
             new_policy["mapping"]["id"] = table.replace('_', "-")
             new_policy["mapping"]["table"] = table
             new_policy["mapping"]["schema"].update({
@@ -58,6 +60,7 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
             topics += f" policy={policy_id} and"
 
     topics = topics.rsplit(" and", 1)[0] + ')'
+    print(topics)
     declare_msg_client(conn=conn, broker=broker, port=port, is_rest=is_rest, topics=topics)
 
 

@@ -1,5 +1,6 @@
 import random
 import posixpath
+import copy
 
 from source.policies.mappings import BASE_POLICY
 from source.support import get_files_by_url
@@ -13,10 +14,11 @@ DATA_DIR = "http://45.33.11.32/Sample-Data/rig-data/"
 RIG_FILES = get_files_by_url(url=DATA_DIR)
 
 TOPIC = "rig-data"
+LOCAL_BASE_POLICY = copy.deepcopy(BASE_POLICY)
 
-
-def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
-    BASE_POLICY["mapping"]["id"] = TOPIC
+def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False, rig_id:str|None=None):
+    LOCAL_BASE_POLICY["mapping"]["id"] = TOPIC
+    topics = f"(name={TOPIC}/rig-{rig_id} " if rig_id is not None else f"(name={TOPIC}/# "
 
     # read_file
     content = {}
@@ -30,9 +32,9 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False):
 
     schema = mapping_policy_config(content=content)
     if schema:
-        BASE_POLICY["mapping"]["schema"].update(schema)
+        LOCAL_BASE_POLICY["mapping"]["schema"].update(schema)
 
-    declare_policy(conn=conn, policy=BASE_POLICY)
+    declare_policy(conn=conn, policy=LOCAL_BASE_POLICY)
     declare_msg_client(conn=conn, broker=broker, port=port, is_rest=is_rest,
-                       topics=f"(name={TOPIC} and policy={TOPIC})")
+                       topics=f"{topics} and policy={TOPIC})")
 

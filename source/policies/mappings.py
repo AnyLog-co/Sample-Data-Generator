@@ -60,83 +60,138 @@ RIG_INFO = {
 }
 
 # Wind Turbine
+# Wind Turbine
 WIND_TURBINE_TABLES = {
-    "identity": {  # identity / identification
+
+    "identity": {
         "turbine_id": "Anlage",
         "alias": "Alias",
         "timestamp": "Zeit"
     },
 
-    "wind": {  # wind measurements
+    "wind": {
         "wind_avg": "Wind Ø [m/s]",
         "wind_max": "Wind max. [m/s]",
         "wind_min": "Wind min. [m/s]"
     },
 
-    "rpm": {  # rotational speed
+    "rpm": {
         "rpm_avg": "Drehzahl Ø [1/min]",
         "rpm_max": "Drehzahl max. [1/min]",
         "rpm_min": "Drehzahl min. [1/min]"
     },
 
-    "power_output": {  # power output
+    "power_output": {
         "power_avg": "Leistung Ø [kW]",
         "power_max": "Leistung max. [kW]",
         "power_min": "Leistung min. [kW]"
     },
 
-    "available_power": {  # available power
+    "available_power": {
         "avail_wind": "Leistung Verfügb. Wind Ø [kW]",
         "avail_tech": "Leistung Verfügb. techn. Ø [kW]",
         "avail_force_majeure": "Leistung Verfügb. force maj. Ø [kW]",
         "avail_external": "Leistung Verfügb. ext. Ø [kW]"
     },
 
-    "reactive_power": {  # reactive power
+    "reactive_power": {
         "reactive_avg": "Blindleistung Ø [kvar]",
         "reactive_max": "Blindleistung max. [kvar]",
         "reactive_min": "Blindleistung min. [kvar]"
     },
 
-    "energy": {  # energy produced
+    "energy": {
         "energy_kwh": "Energie prod. [kWh]"
     },
 
-    "blade_pitch": {  # blade pitch angle
+    "blade_pitch": {
         "pitch_avg": "Blattwinkel Ø [°]"
     },
 
-    "precipitation": {  # rainfall / precipitation
+    "precipitation": {
         "precip_avg": "Niederschlag Ø [mm/min]",
         "precip_max": "Niederschlag max. [mm/min]",
         "precip_min": "Niederschlag min. [mm/min]"
     },
-
-    "visibility": {  # visibility
+    # FIX 1: visibility fields (previously ignored)
+    "visibility": {
         "visibility_avg": "Sichtweite Ø [km]",
         "visibility_max": "Sichtweite max. [km]",
         "visibility_min": "Sichtweite min. [km]"
     },
-
-    "ambient_light": {  # ambient brightness
+    "ambient_light": {
         "ambient_avg": "Umfeldhelligkeit Ø [Lux]"
     },
 
-    "ice_detection": {  # ice detection
+    # FIX 2: ice amplitude field (missing before)
+    "ice_detection": {
         "ice_amplitude_avg": "Labko Eis Amplitude Ø [%]",
         "icing_rate_avg": "Eisans. timer Ø [°C/min]"
     },
 
-    "atmosphere": {  # atmospheric conditions
+    "atmosphere": {
         "pressure_avg": "Luftdruck Ø [mBar]",
         "humidity_avg": "Luftfeuchtigkeit Ø [%]"
     },
 
-    "operations": {  # operational runtime
+    "operations": {
         "operating_hours": "Betriebsstunden",
         "nacelle_position": "Gondelposition [°]"
     }
 }
+
+WIND_TURBINE_MAPPING = {
+    # ── Status ──────────────────────────────────────────────────────────────
+    "WT1 - Status a [-]":                                                  "STATUS_A",
+    "WT1 - Status b [-]":                                                  "STATUS_B",
+    # ── Bearing temperatures ────────────────────────────────────────────────
+    "WT1 - Temperature 1 - spinner (SPINNER) [°C]":                        "TEMP_SPINNER",
+    "WT1 - Temperature 2 - front rotor bearing (FRONT BEAR) [°C]":         "TEMP_FRONT_BEAR",
+    "WT1 - Temperature 3 - rear rotor bearing (REAR BEAR) [°C]":           "TEMP_REAR_BEAR",
+    # ── Pitch motor temperatures ────────────────────────────────────────────
+    "WT1 - Temperature 4 - motor of blade A (PITCH MOTOR TEMP A) [°C]":    "TEMP_PITCH_MOTOR_A",
+    "WT1 - Temperature 5 - motor of blade B (PITCH MOTOR TEMP B) [°C]":    "TEMP_PITCH_MOTOR_B",
+    "WT1 - Temperature 6 - motor of blade C (PITCH MOTOR TEMP C) [°C]":    "TEMP_PITCH_MOTOR_C",
+    # ── Heat sink temperatures ──────────────────────────────────────────────
+    "WT1 - Temperature 7 - heat sink of blade A (HEAT SINK TEMP A) [°C]":  "TEMP_HEAT_SINK_A",
+    "WT1 - Temperature 8 - heat sink of blade B (HEAT SINK TEMP B) [°C]":  "TEMP_HEAT_SINK_B",
+    "WT1 - Temperature 9 - heat sink of blade C (HEAT SINK TEMP C) [°C]":  "TEMP_HEAT_SINK_C",
+    # ── Pitch cabinet temperatures ──────────────────────────────────────────
+    "WT1 - Temperature 10 - control cabinet of blade A (PITCH CAB TEMP A) [°C]": "TEMP_PITCH_CAB_A",
+    "WT1 - Temperature 11 - control cabinet of blade B (PITCH CAB TEMP B) [°C]": "TEMP_PITCH_CAB_B",
+    "WT1 - Temperature 12 - control cabinet of blade C (PITCH CAB TEMP C) [°C]": "TEMP_PITCH_CAB_C",
+    # ── Blade temperatures ──────────────────────────────────────────────────
+    "WT1 - Temperature 13 - blade A (BLADE_A) [°C]":                       "TEMP_BLADE_A",
+    "WT1 - Temperature 14 - blade B (BLADE_B) [°C]":                       "TEMP_BLADE_B",
+    "WT1 - Temperature 15 - blade C (BLADE_C) [°C]":                       "TEMP_BLADE_C",
+    # ── Rotor / stator temperatures ─────────────────────────────────────────
+    "WT1 - Temperature 16 - rotor 1 (ROTOR TEMP 1) [°C]":                  "TEMP_ROTOR_1",
+    "WT1 - Temperature 17 - rotor 2 (ROTOR TEMP 2) [°C]":                  "TEMP_ROTOR_2",
+    "WT1 - Temperature 18 - stator 1 (STATOR TEMP 1) [°C]":                "TEMP_STATOR_1",
+    "WT1 - Temperature 19 - stator 2 (STATOR TEMP 2) [°C]":                "TEMP_STATOR_2",
+    # ── Nacelle temperatures ────────────────────────────────────────────────
+    "WT1 - Temperature 20 - (Nacelle ambient temp.) [°C]":                  "TEMP_NACELLE_AMBIENT",
+    "WT1 - Temperature 21 - (Nacelle temp.) [°C]":                          "TEMP_NACELLE",
+    "WT1 - Temperature 22 - (Nacelle cabinet temp.) [°C]":                  "TEMP_NACELLE_CAB",
+    # ── Ambient / tower / cabinet / transformer temperatures ────────────────
+    "WT1 - Temperature 23 - (Ambient temp.) [°C]":                          "TEMP_AMBIENT",
+    "EW1 - Temperature 24 - (Tower temp.) [°C]":                            "TEMP_TOWER",
+    "EW1 - Temperature 25 - (Control cabinet temp.) [°C]":                  "TEMP_CTRL_CAB",
+    "EW1 - Temperature 26 - (Transformer temp.) [°C]":                      "TEMP_TRANSFORMER",
+    # ── Rotor ───────────────────────────────────────────────────────────────
+    "WT1 - Rotor speed [rpm]":                                              "ROTOR_SPEED",
+    # ── Power ───────────────────────────────────────────────────────────────
+    "WT1 - Momentary production [kW]":                                      "POWER_ACTIVE",
+    "WT1 - Actual reactive power Q [kVar]":                                  "POWER_REACTIVE",
+    "WT1.DCE - Energy produced - this month [kWh]":                         "ENERGY_MONTH",
+    # ── Wind ────────────────────────────────────────────────────────────────
+    "WT1 - Momentary wind speed [m/s]":                                      "WIND_SPEED",
+    "WT1 - Wind direction deviation [°]":                                    "WIND_DIR_DEVIATION",
+    "WT1 - Nacelle direction (without correction) [°]":                      "NACELLE_DIR",
+    # ── Grid ────────────────────────────────────────────────────────────────
+    "WT1 - AC grid frequency [Hz]":                                          "GRID_FREQ",
+}
+
 
 # Vessel / Boat data
 VESSEL_SCHEMAS = {
