@@ -1,4 +1,6 @@
 import argparse
+import threading
+import time
 
 from source.southbound.random_data import main as rand_data
 from source.southbound.rig_data import main as rig_data
@@ -12,6 +14,7 @@ from source.policies.random_mapping import main as random_mapping
 from source.policies.wind_turbine_mapping import main as wind_turbine_mapping
 from source.policies.rig_mapping import main as rig_mapping
 from source.policies.vessel_mapping import main as vessel_mapping
+from source.policies.wind_turbine2_mqtt import run_msg_client as wind_turbine2_msg_client, enable_streamer
 
 from source.northbound.mqtt_calls import MqttClient
 from source.northbound.rest_calls import RestClient
@@ -315,12 +318,23 @@ def main():
             wind_turbine(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.turbine_ids,
                          iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "wind-turbine2":
-        # if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
-        #     turbine_id = args.turbine_ids[0] if len(args.turbine_ids) == 1 else None
-        #     wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, turbine_id=turbine_id)
-        # if not args.skip_inserts:
-        wind_turbine2(method=args.publish_format, conn=data_conn, publish_topics=args.turbine_ids,
-                     iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
+        if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
+            wind_turbine2_msg_client(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest,
+                                     db_name=args.db_name, turbine_id=args.turbine_ids)
+        if not args.skip_inserts and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
+            # run multi thread in order to sleep / run streamer
+            thread = threading.Thread(
+                target=wind_turbine2,
+                kwargs=dict(method=args.publish_format, conn=data_conn, publish_topics=args.turbine_ids,
+                            iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep),
+                daemon=True)
+            thread.start()
+            time.sleep(120)
+            enable_streamer(conn=control_conn)
+            thread.join()
+        elif not args.skip_inserts:
+            wind_turbine2(method=args.publish_format, conn=data_conn, publish_topics=args.turbine_ids,
+                          iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
 
     # elif args.data == "proveit": # conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest
     #     if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
