@@ -166,14 +166,18 @@ def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str|list, i
             "command": f"run msg client where broker={broker} and log=false",
             "User-Agent": "AnyLog/1.23"
         }
+
+        if any("dynamic=True" in topic for topic in topics):
+            declare_msg_client_header["command"] += " and master_node = !ledger_conn"
         for topic in topics:
             declare_msg_client_header["command"] += f" and topic={topic}"
-
 
         if broker not in ["rest", "local"] and port:
             declare_msg_client_header["command"] += f" and port={port}"
         if is_rest:
             declare_msg_client_header["command"] += f" and user-agent=anylog"
+
+        declare_msg_client_header["command"] += f" and user=anyloguser and password=mqtt4AnyLog!"
 
         conn.publish_data(headers=declare_msg_client_header, payload=None, method="POST")
 

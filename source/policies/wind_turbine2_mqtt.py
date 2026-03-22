@@ -6,19 +6,22 @@ TOPIC = "wind-turbine2"
 
 def run_msg_client(conn:RestClient|None, broker:str, port:int, is_rest:bool=False, db_name:str="wind_turbine",
                    turbine_id:list[str]|str|None=None):
-    topic = f"(name=%s and dbms={db_name} and dynamic=True)"
-
-    if turbine_id == '#' or turbine_id is None:
-        declare_msg_client(conn=conn, broker=broker, port=port, is_rest=is_rest, topics=topic %  TOPIC)
-    elif turbine_id is not None and isinstance(turbine_id, str):
+    topic = f"(name=%s and dbms={db_name} and dynamic=True and column.timestamp.timestamp=now())"
+    turbine_ids = turbine_id
+    turbine_topics = []
+    if turbine_id not in [None, '#'] and isinstance(turbine_id, str):
         turbine_ids = turbine_id.split(",")
-        topics = ""
-        for turbine_id in turbine_ids:
-            sub_topic = posixpath.join(TOPIC, turbine_id.rsplit('/')[0].strip() if topic.endswith('/#') else topic.strip())
-            topics += topic % sub_topic
-        topics = topics.rsplit(" and ").strip()
-        declare_msg_client(conn=conn, broker=broker, port=port, is_rest=is_rest, topics=topics)
 
+    if turbine_id in [None, '#']:
+        turbine_topics.append(topic %  TOPIC)
+    else:
+        for turbine_id in turbine_ids:
+            sub_topic = posixpath.join(TOPIC, turbine_id)
+            if not sub_topic.endswith("/#"):
+                sub_topic = posixpath.join(sub_topic, '#')
+            turbine_topics.append(topic % sub_topic)
+
+    declare_msg_client(conn=conn, broker=broker, port=port, is_rest=is_rest, topics=turbine_topics)
 
 def enable_streamer(conn:RestClient|None):
     headers = {
