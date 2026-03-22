@@ -372,18 +372,20 @@ def main():
     data_conn    = None
     data_broker = None
     data_port = None
+    data_user = None
+    data_password = None
     is_rest = False
     if args.publish_format != "PRINT":
         if args.control_conn:
             broker, port, user, password = extract_credentials(args.control_conn)
             control_conn = RestClient(conn=f"{broker}:{port}", auth=(user, password), timeout=args.timeout)
         if args.data_conn:
-            broker, port, user, password = extract_credentials(args.data_conn)
+            broker, port, data_user, data_password = extract_credentials(args.data_conn)
             if args.publish_format in ["POST", "PUT"]:
-                data_conn = RestClient(conn=f"{broker}:{port}", auth=(user, password), timeout=args.timeout)
+                data_conn = RestClient(conn=f"{broker}:{port}", auth=(data_user, data_password), timeout=args.timeout)
                 is_rest = True
             elif args.publish_format == "MQTT":
-                data_conn = MqttClient(host=broker, port=port, user=user, password=password, timeout=args.timeout)
+                data_conn = MqttClient(host=broker, port=port, user=data_user, password=data_password, timeout=args.timeout)
             elif args.publish_format == "OPCUA":
                 data_conn = OpcuaServer(host=broker, port=port)
 
@@ -394,27 +396,32 @@ def main():
     # publish msg client and define data
     if args.data == "random":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
-            random_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
+            random_mapping(conn=control_conn, broker=data_broker, port=data_port, user=data_user, password=data_password,
+                           is_rest=is_rest)
         if not args.skip_inserts:
             rand_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
     elif args.data == "rig":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             rig_ids = args.rig_ids[0] if len(args.rig_ids) == 1 else None
-            rig_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, rig_id=rig_ids)
+            rig_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, user=data_user,
+                        password=data_password, rig_id=rig_ids)
         if not args.skip_inserts:
             rig_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.rig_ids,
                      iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
-    if args.data == "vessel":
+    if args.data == "vessel": #
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             vessel_ids = args.vessel_ids[0] if len(args.vessel_ids) == 1 else None
-            vessel_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, publish_topics=vessel_ids)
+            vessel_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest,
+                           user=data_user, password=data_password,
+                           publish_topics=vessel_ids)
         if not args.skip_inserts:
-            vessel_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.vessel_ids,
-                        iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
+            vessel_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.vessel_ids, iterations=args.repeat,
+                        sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "wind-turbine":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             turbine_id = args.turbine_ids[0] if len(args.turbine_ids) == 1 else None
-            wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, turbine_id=turbine_id)
+            wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, user=data_user,
+                                 password=data_password, is_rest=is_rest, turbine_id=turbine_id)
         if not args.skip_inserts:
             wind_turbine(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.turbine_ids,
                          iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)

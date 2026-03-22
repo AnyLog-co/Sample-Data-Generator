@@ -16,7 +16,7 @@ RIG_FILES = get_files_by_url(url=DATA_DIR)
 TOPIC = "rig-data"
 LOCAL_BASE_POLICY = copy.deepcopy(BASE_POLICY)
 
-def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False, rig_id:str|None=None):
+def main(conn:RestClient|None, broker:str, port:int, user:str=None, password:str=None, is_rest:bool=False, rig_id:str|None=None):
     LOCAL_BASE_POLICY["mapping"]["id"] = TOPIC
     topics = f"(name={TOPIC}/rig-{rig_id} " if rig_id is not None else f"(name={TOPIC}/# "
 
@@ -35,6 +35,6 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False, rig_id:
         LOCAL_BASE_POLICY["mapping"]["schema"].update(schema)
 
     declare_policy(conn=conn, policy=LOCAL_BASE_POLICY)
-    declare_msg_client(conn=conn, broker=broker, port=port, is_rest=is_rest,
+    declare_msg_client(conn=conn, broker=broker, port=port, is_rest=is_rest, user=user, password=password,
                        topics=f"{topics} and policy={TOPIC})")
 

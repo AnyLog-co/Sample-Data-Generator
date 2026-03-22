@@ -155,7 +155,8 @@ def check_msg_client(conn:RestClient, topics:str|list):
 
     return is_topics
 
-def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str|list, is_rest:bool=True):
+def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str|list, user:str=None, password:str=None,
+                        is_rest:bool=True):
     # --- To review ---#
     is_topics = False
     if not isinstance(topics, list):
@@ -167,15 +168,21 @@ def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str|list, i
             "User-Agent": "AnyLog/1.23"
         }
 
+        if broker not in ["rest", "local"] and port:
+            declare_msg_client_header["command"] += f" and port={port}"
+        if user:
+            declare_msg_client_header["command"] += f" and user={user}"
+        if password:
+            declare_msg_client_header["command"] += f" and password={password}"
+        if is_rest:
+            declare_msg_client_header["command"] += f" and user-agent=anylog"
+
+
         if any("dynamic=True" in topic for topic in topics):
             declare_msg_client_header["command"] += " and master_node = !ledger_conn"
         for topic in topics:
             declare_msg_client_header["command"] += f" and topic={topic}"
 
-        if broker not in ["rest", "local"] and port:
-            declare_msg_client_header["command"] += f" and port={port}"
-        if is_rest:
-            declare_msg_client_header["command"] += f" and user-agent=anylog"
 
         declare_msg_client_header["command"] += f" and user=anyloguser and password=mqtt4AnyLog!"
 
