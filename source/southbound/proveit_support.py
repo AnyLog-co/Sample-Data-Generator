@@ -9,7 +9,7 @@ from source.northbound.mqtt_calls import MqttClient
 from source.northbound.opcua import OpcuaServer
 from source.northbound.rest_functions import publish_data
 from source.support import read_json_content
-from source.support import get_files_by_url
+# from source.support import get_files_by_url
 
 
 
@@ -76,7 +76,8 @@ def proveit_data(method:str, conn:RestClient|MqttClient|OpcuaServer|None, url:st
     while is_active:
         row = read_json_content(url=url, row_id=line_count)
         row = row[1]
-        if row and (row.get("topic") and ( not publish_topics or row.get("topic") in publish_topics)):
+        # print(row)
+        if row and (row.get("topic") and ( not publish_topics or any(topic in row.get("topic") for topic in publish_topics)) ):
             if row.get("topic") in used_topics:
                 used_topics = []
                 time.sleep(offset_sleep)
