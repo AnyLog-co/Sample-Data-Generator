@@ -19,7 +19,8 @@ TOPIC = "wind-turbine"
 
 LOCAL_BASE_POLICY = copy.deepcopy(BASE_POLICY)
 
-def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False, turbine_id:str|None=None):
+def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False, user:str=None, password:str=None,
+         turbine_id:str|None=None):
     content = {}
     topics = f"(name={TOPIC}/# and" if turbine_id is None else f"(name={TOPIC}/turbine-{turbine_id} and"
     for fname in TURBINE_FILES:
@@ -61,7 +62,7 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False, turbine
 
     topics = topics.rsplit(" and", 1)[0] + ')'
     print(topics)
-    declare_msg_client(conn=conn, broker=broker, port=port, is_rest=is_rest, topics=topics)
+    declare_msg_client(conn=conn, broker=broker, port=port, user=user, password=password, is_rest=is_rest, topics=topics)
 
 
 # if __name__ == "__main__":

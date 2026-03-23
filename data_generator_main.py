@@ -1,4 +1,6 @@
 import argparse
+import threading
+import time
 
 from source.southbound.random_data import main as rand_data
 from source.southbound.rig_data import main as rig_data
@@ -12,6 +14,7 @@ from source.policies.random_mapping import main as random_mapping
 from source.policies.wind_turbine_mapping import main as wind_turbine_mapping
 from source.policies.rig_mapping import main as rig_mapping
 from source.policies.vessel_mapping import main as vessel_mapping
+from source.policies.wind_turbine2_mqtt import run_msg_client as wind_turbine2_msg_client, enable_streamer
 
 from source.northbound.mqtt_calls import MqttClient
 from source.northbound.rest_calls import RestClient
@@ -88,11 +91,111 @@ def build_parser(parser:argparse.ArgumentParser):
     proveit_parser.add_argument("publish_format", nargs='?', choices=["print", "post", "mqtt", "opcua"],
                                 default="print", help=publish_format_help)
     proveit_parser.add_argument("--proveit-topics", type=str, nargs="+",
-                                choices=["Enterprise A",  "Enterprise A/Dallas", "Enterprise A/opto22",
+                                choices=["Enterprise A", "Enterprise A/Dallas/Line 1", "Enterprise A/Dallas/Site",
+                                         "Enterprise A/opto22",
+                                        "Enterprise A/opto22/Utilities/Air Dryers",
+                                         "Enterprise A/opto22/Utilities/Building Power",
+                                         "Enterprise A/opto22/Utilities/Compressors",
+                                         "Enterprise A/opto22/Utilities/Electrical Panels",
+                                         "Enterprise A/opto22/Utilities/Environmental",
+
                                          "Enterprise B", "Enterprise B/Site1", "Enterprise B/Site2",
-                                         "Enterprise B/Site3",
-                                         "Enterprise C", "Enterprise C/sub", "Enterprise C/tff", "Enterprise C/chrom",
-                                         "Enterprise C/sum"],
+                                         "Enterprise B/Site3", "Enterprise B/Metric",
+                                         "Enterprise B/Metric/input", "Enterprise B/Site1/fillerproduction",
+                                         "Enterprise B/Site1/liquidprocessing", "Enterprise B/Site1/metric",
+                                         "Enterprise B/Site1/node", "Enterprise B/Site1/packaging",
+                                         "Enterprise B/Site1/palletizing", "Enterprise B/Site2/fillerproduction",
+                                         "Enterprise B/Site2/liquidprocessing", "Enterprise B/Site2/metric",
+                                         "Enterprise B/Site2/node", "Enterprise B/Site2/packaging",
+                                         "Enterprise B/Site2/palletizing", "Enterprise B/Site3/fillerproduction",
+                                         "Enterprise B/Site3/liquidprocessing", "Enterprise B/Site3/metric",
+                                         "Enterprise B/Site3/node", "Enterprise B/Site3/packaging",
+                                         "Enterprise B/Site3/palletizing",
+
+                                         "Enterprise C", "Enterprise C/chrom", "Enterprise C/opto22", "Enterprise C/tff",
+                                         "Enterprise C/sum", "Enterprise C/sub", "Enterprise C/chrom/CHR01",
+                                         "Enterprise C/chrom/CHR01/AT001", "Enterprise C/chrom/CHR01/AT002",
+                                         "Enterprise C/chrom/CHR01/AT003", "Enterprise C/chrom/CHR01/FT001",
+                                         "Enterprise C/chrom/CHR01/P001A", "Enterprise C/chrom/CHR01/P001B",
+                                         "Enterprise C/chrom/CHR01/PHASE",  "Enterprise C/chrom/CHR01/PROD",
+                                         "Enterprise C/chrom/CHR01/PROMPT", "Enterprise C/chrom/CHR01/PT002",
+                                        "Enterprise C/chrom/CHR01/PT003",
+                                        "Enterprise C/chrom/CHR01/STATE",
+                                        "Enterprise C/chrom/CHR01/TT001",
+                                        "Enterprise C/chrom/CHR01/V001",
+                                        "Enterprise C/chrom/CHR01/V002",
+                                        "Enterprise C/chrom/CHR01/V003",
+                                        "Enterprise C/chrom/CHR01/V004",
+                                        "Enterprise C/chrom/CHR01/V005",
+                                        "Enterprise C/chrom/CHR01/V006",
+                                        "Enterprise C/chrom/CHR01/WASTE",
+                                        "Enterprise C/chrom/CHR01/RECIPE_NAME",
+
+                                        "Enterprise C/sub/AIC-250-001",
+                                        "Enterprise C/sub/AIC-250-002",
+                                        "Enterprise C/sub/AIC-250-003",
+                                        "Enterprise C/sub/FCV-250-001",
+                                        "Enterprise C/sub/FCV-250-002",
+                                        "Enterprise C/sub/FCV-250-003",
+                                        "Enterprise C/sub/FIC-250-001",
+                                        "Enterprise C/sub/FIC-250-002",
+                                        "Enterprise C/sub/FIC-250-003",
+                                        "Enterprise C/sub/HV-250-001",
+                                        "Enterprise C/sub/HV-250-002",
+                                        "Enterprise C/sub/HV-250-003",
+                                        "Enterprise C/sub/HV-250-004",
+                                        "Enterprise C/sub/HV-250-005",
+                                        "Enterprise C/sub/PIC-250-001",
+                                        "Enterprise C/sub/SIC-250-002",
+                                        "Enterprise C/sub/SIC-250-003",
+                                        "Enterprise C/sub/SIC-250-004",
+                                        "Enterprise C/sub/SIC-250-005",
+                                        "Enterprise C/sub/SIC-250-006",
+                                        "Enterprise C/sub/SIC-250-008",
+                                        "Enterprise C/sub/SIC-250-MEDIA",
+                                        "Enterprise C/sub/TI-250-001",
+                                        "Enterprise C/sub/TI-250-002",
+                                        "Enterprise C/sub/TIC-250-001",
+                                        "Enterprise C/sub/TIC-250-002",
+                                        "Enterprise C/sub/UNIT-250",
+                                        "Enterprise C/sub/WI-250-001",
+
+                                        "Enterprise C/sum",
+                                        "Enterprise C/sum/AI501",
+                                        "Enterprise C/sum/SIC501",
+                                        "Enterprise C/sum/SIC501A",
+                                        "Enterprise C/sum/SIC502",
+                                        "Enterprise C/sum/SIC503",
+                                        "Enterprise C/sum/SIC504",
+                                        "Enterprise C/sum/TIC501",
+                                        "Enterprise C/sum/WI501",
+                                        "Enterprise C/sum/XV501",
+                                        "Enterprise C/sum/XV502",
+                                        "Enterprise C/sum/XV503",
+                                        "Enterprise C/sum/XV504",
+
+                                        "Enterprise C/tff",
+                                        "Enterprise C/tff/CI8R",
+                                        "Enterprise C/tff/DPI7M",
+                                        "Enterprise C/tff/FI7F",
+                                        "Enterprise C/tff/FI8P",
+                                        "Enterprise C/tff/FX7F",
+                                        "Enterprise C/tff/FX8P",
+                                        "Enterprise C/tff/P5R5",
+                                        "Enterprise C/tff/P8P7",
+                                        "Enterprise C/tff/P9A1",
+                                        "Enterprise C/tff/P9A2",
+                                        "Enterprise C/tff/PCV7X",
+                                        "Enterprise C/tff/PI5R8",
+                                        "Enterprise C/tff/PI7F",
+                                        "Enterprise C/tff/PI8R",
+                                        "Enterprise C/tff/TFF300",
+                                        "Enterprise C/tff/TI8R",
+                                        "Enterprise C/tff/TMP7M",
+                                        "Enterprise C/tff/UV8R",
+                                        "Enterprise C/tff/WI17K"
+
+                                ],
                                 help="Space-separated ProveIT topics. If omitted, all topics")
 
     # -------------------------
@@ -269,20 +372,23 @@ def main():
     data_conn    = None
     data_broker = None
     data_port = None
+    data_user = None
+    data_password = None
     is_rest = False
     if args.publish_format != "PRINT":
         if args.control_conn:
             broker, port, user, password = extract_credentials(args.control_conn)
             control_conn = RestClient(conn=f"{broker}:{port}", auth=(user, password), timeout=args.timeout)
         if args.data_conn:
-            broker, port, user, password = extract_credentials(args.data_conn)
+            broker, port, data_user, data_password = extract_credentials(args.data_conn)
             if args.publish_format in ["POST", "PUT"]:
-                data_conn = RestClient(conn=f"{broker}:{port}", auth=(user, password), timeout=args.timeout)
+                data_conn = RestClient(conn=f"{broker}:{port}", auth=(data_user, data_password), timeout=args.timeout)
                 is_rest = True
             elif args.publish_format == "MQTT":
-                data_conn = MqttClient(host=broker, port=port, user=user, password=password, timeout=args.timeout)
+                data_conn = MqttClient(host=broker, port=port, user=data_user, password=data_password, timeout=args.timeout)
             elif args.publish_format == "OPCUA":
                 data_conn = OpcuaServer(host=broker, port=port)
+
             data_broker = broker
             data_port = port
 
@@ -290,37 +396,53 @@ def main():
     # publish msg client and define data
     if args.data == "random":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
-            random_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest)
+            random_mapping(conn=control_conn, broker=data_broker, port=data_port, user=data_user, password=data_password,
+                           is_rest=is_rest)
         if not args.skip_inserts:
             rand_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
     elif args.data == "rig":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             rig_ids = args.rig_ids[0] if len(args.rig_ids) == 1 else None
-            rig_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, rig_id=rig_ids)
+            rig_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, user=data_user,
+                        password=data_password, rig_id=rig_ids)
         if not args.skip_inserts:
             rig_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.rig_ids,
                      iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
-    if args.data == "vessel":
+    if args.data == "vessel": #
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             vessel_ids = args.vessel_ids[0] if len(args.vessel_ids) == 1 else None
-            vessel_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, publish_topics=vessel_ids)
+            vessel_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest,
+                           user=data_user, password=data_password,
+                           publish_topics=vessel_ids)
         if not args.skip_inserts:
-            vessel_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.vessel_ids,
-                        iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
+            vessel_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.vessel_ids, iterations=args.repeat,
+                        sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "wind-turbine":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             turbine_id = args.turbine_ids[0] if len(args.turbine_ids) == 1 else None
-            wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, turbine_id=turbine_id)
+            wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, user=data_user,
+                                 password=data_password, is_rest=is_rest, turbine_id=turbine_id)
         if not args.skip_inserts:
             wind_turbine(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.turbine_ids,
                          iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "wind-turbine2":
-        # if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
-        #     turbine_id = args.turbine_ids[0] if len(args.turbine_ids) == 1 else None
-        #     wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, turbine_id=turbine_id)
-        # if not args.skip_inserts:
-        wind_turbine2(method=args.publish_format, conn=data_conn, publish_topics=args.turbine_ids,
-                     iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
+        if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
+            wind_turbine2_msg_client(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest,
+                                     db_name=args.db_name, turbine_id=args.turbine_ids)
+        if not args.skip_inserts and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
+            # run multi thread in order to sleep / run streamer
+            # thread = threading.Thread(
+            #     target=wind_turbine2,
+            #     kwargs=dict(method=args.publish_format, conn=data_conn, publish_topics=args.turbine_ids,
+            #                 iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep),
+            #     daemon=True)
+            # thread.start()
+            time.sleep(120)
+            enable_streamer(conn=control_conn)
+            # thread.join()
+        elif not args.skip_inserts:
+            wind_turbine2(method=args.publish_format, conn=data_conn, publish_topics=args.turbine_ids,
+                          iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
 
     # elif args.data == "proveit": # conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest
     #     if control_conn is not None and args.publish_format in ["POST", "MQTT"]:

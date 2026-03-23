@@ -31,7 +31,8 @@ for column in VESSEL_SCHEMAS.get("_metadata"):
 
 
 # , =None, port:int, is_rest:bool=False
-def main(conn:RestClient|None, broker:str, port:int, publish_topics:str|None=None, is_rest:bool=False):
+def main(conn:RestClient|None, broker:str, port:int, publish_topics:str|None=None, user=None, password:str=None,
+         is_rest:bool=False):
     topics = f"(name={TOPIC}/{publish_topics.upper()} " if publish_topics is not None else f"(name={TOPIC}/# "
     if not check_msg_client(conn=conn, topics=topics):
         columns = {}
@@ -71,7 +72,8 @@ def main(conn:RestClient|None, broker:str, port:int, publish_topics:str|None=Non
                 declare_policy(conn=conn, policy=mapping_policy)
 
         topics += ')'
-        declare_msg_client(conn=conn, broker=broker, port=port, topics=topics, is_rest=is_rest)
+        declare_msg_client(conn=conn, broker=broker, port=port, topics=topics, user=user, password=password,
+                           is_rest=is_rest)
 
 
     # for table in VESSEL_INFO:
