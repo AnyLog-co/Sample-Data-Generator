@@ -1,5 +1,5 @@
 [Unit]
-Description=MQTT Wind Turbine Generator
+Description=MQTT Oil Rig Generator
 After=network.target
 
 [Service]

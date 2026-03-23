@@ -1,5 +1,5 @@
 [Unit]
-Description=MQTT Wind Turbine Generator
+Description=MQTT Random value Generator
 After=network.target
 
 [Service]
