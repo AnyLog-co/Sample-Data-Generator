@@ -242,7 +242,7 @@ class VideoProcessing:
             prev_frame_time = time.time()
 
         self.cap.release()
-        cv2.destroyAllWindows()  # Close the video window if it was opened
+        # cv2.destroyAllWindows()  # Close the video window if it was opened
 
         self.obj_count = np.sum(car_count_grid)
         if len(car_speed) > 0:

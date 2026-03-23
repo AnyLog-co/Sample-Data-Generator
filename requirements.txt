@@ -12,7 +12,8 @@ paho-mqtt==1.5.1
 kafka-python==2.0.6
 
 # -- AI / cars data --
-tensorflow>=0.0
-numpy==2.2.3
+numpy==1.26.4              # ✅ Compatible with TensorFlow and OpenCV
+tensorflow>=2.17.0         # Optional: pin to a compatible major version if needed
 opencv-python-headless>=4.10.0.84
 opcua==0.98.13
+
