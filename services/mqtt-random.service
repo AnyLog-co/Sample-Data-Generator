@@ -1,5 +1,5 @@
 [Unit]
-Description=MQTT Random Data Generator
+Description=MQTT Wind Turbine Generator
 After=network.target
 
 [Service]
@@ -11,7 +11,7 @@ ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generat
   --db-name mydb \
   --skip-msg-client \
   --repeat 0 random mqtt
-Restart=on-failure
+Restart=always
 RestartSec=5
 
 [Install]

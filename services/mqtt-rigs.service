@@ -13,10 +13,8 @@ ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generat
   --db-name timbergrove_rigs \
   --skip-msg-client \
   --repeat 0 rig mqtt
-Restart=on-failure
+Restart=always
 RestartSec=5
-MemoryMax=150M
-
 
 [Install]
 WantedBy=multi-user.target

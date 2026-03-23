@@ -13,10 +13,8 @@ ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generat
   --db-name proveit \
   --topic "Enterprise B" \
   --repeat 0 proveit mqtt
-Restart=on-failure
+Restart=always
 RestartSec=5
-MemoryMax=200M
-
 
 [Install]
 WantedBy=multi-user.target
