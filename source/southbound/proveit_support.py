@@ -75,7 +75,6 @@ def proveit_data(method:str, conn:RestClient|MqttClient|OpcuaServer|None, url:st
 
     while is_active:
         row = read_json_content(url=url, row_id=line_count)
-        # print(row)
         row = row[1]
         if row and (row.get("topic") and ( not publish_topics or row.get("topic") in publish_topics)):
             if row.get("topic") in used_topics:
