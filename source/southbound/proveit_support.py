@@ -12,51 +12,43 @@ from source.support import read_json_content
 from source.support import get_files_by_url
 
 
-DATA_DIR = "http://45.33.11.32/Sample-Data/proveit-data/"
-PROVEIT_FILES = get_files_by_url(url=DATA_DIR)
+
+import asyncio
+
+async def worker(conn, fname, line_count):
+    loop = asyncio.get_running_loop()
+
+    row = await loop.run_in_executor(
+        None,
+        read_json_content,
+        fname,
+        line_count
+    )
+
+    row = row[1]
+
+    await conn.publish_data(
+        topic=row.get("topic"),
+        payload=row.get("msg")
+    )
 
 
-async def proveit_opcua(conn:OpcuaServer, publish_topics:list[str]|str=None, iterations:int=10, sleep:float=10,
-                        offset_sleep:float=0.5):
+async def proveit_opcua(conn, proveit_files, concurrency=25):
+
     await conn.connect()
-    used_topics = []
-    counter = True
-    is_active = True
-    line_count = 0
 
-    last_fname = None
-    fname = None
+    sem = asyncio.Semaphore(concurrency)
 
-    while is_active:
-        while last_fname ==  fname:
-            fname = random.choice(PROVEIT_FILES)
-        url = posixpath.join(DATA_DIR, fname)
-        last_fname = copy.deepcopy(fname)
-        # row = read_json_content(url=full_path, row_id=line_count)
-        loop = asyncio.get_running_loop()
-        row = await loop.run_in_executor(None,  read_json_content,url, line_count)
-        if row and (row.get("topic") and (not publish_topics or row.get("topic") in publish_topics)):
-            if row.get("topic") in used_topics:
-                used_topics = []
-                await asyncio.sleep(offset_sleep)
+    async def limited_worker(fname):
+        async with sem:
+            await worker(conn, fname, 0)
 
-            # await conn.publish_data(topic=row.get("topic"), payload=row.get("msg"))
-            try:
-                await conn.publish_data(topic=row.get("topic"), payload=row.get("msg"))
-            except Exception as e:
-                raise Exception(f"Failed to publish {row.get('topic')}: {e}")
-            # else:
-            #     # print(row.get("topic"))
-            #     # exit(1)
-            used_topics.append(row.get("topic"))
-            line_count += 1
-        else:
-            line_count = 0
-            counter += 1
-            if 0 < iterations <= counter:
-                is_active = False
-            else:
-                await asyncio.sleep(sleep)
+    while True:
+        tasks = [
+            asyncio.create_task(limited_worker(fname))
+            for fname in proveit_files
+        ]
+        await asyncio.gather(*tasks)
 
 
 def proveit_data(method:str, conn:RestClient|MqttClient|OpcuaServer|None, url:str, publish_topics:list[str]|str=None,
@@ -83,6 +75,8 @@ def proveit_data(method:str, conn:RestClient|MqttClient|OpcuaServer|None, url:st
 
     while is_active:
         row = read_json_content(url=url, row_id=line_count)
+        # print(row)
+        row = row[1]
         if row and (row.get("topic") and ( not publish_topics or row.get("topic") in publish_topics)):
             if row.get("topic") in used_topics:
                 used_topics = []

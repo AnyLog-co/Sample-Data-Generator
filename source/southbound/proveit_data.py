@@ -1,6 +1,7 @@
 import asyncio
 import posixpath
 import concurrent.futures
+import copy
 
 from source.northbound.rest_calls import RestClient
 from source.northbound.mqtt_calls import MqttClient
@@ -10,22 +11,27 @@ from source.southbound.proveit_support import proveit_opcua
 from source.support import get_files_by_url
 
 
-DATA_DIR = "http://45.33.11.32/Sample-Data/proveit-data/"
+DATA_DIR = "http://45.33.11.32/Sample-Data/proveit-data2/"
 PROVEIT_FILES = get_files_by_url(url=DATA_DIR)
+TOPIC="proveit"
 
 def _check_files_topics(topics:list[str]):
     global PROVEIT_FILES
+    proveit_files = []
+    if isinstance(topics, str) and topics in [None, '#']:
+        return
+    elif isinstance(topics, str):
+        topics = topics.split(',')
 
-    for letter in ['A', 'B', 'C']:
-        # Check if any topic contains this Enterprise letter
-        if not any(f"Enterprise {letter}" in t for t in topics):
-            for fname in PROVEIT_FILES:
-                if fname.startswith(f"Enterprise_{letter}"):
-                    try:
-                        PROVEIT_FILES.remove(file_name)
-                    except ValueError:
-                        # file was not in the list, skip
-                        pass
+    for topic in topics:
+        topic_parts = topic.split('/')
+        for fname in PROVEIT_FILES:
+            if (topic_parts[-1] == '#' and all(part.replace(' ', '_') in fname for part in topic_parts[:-1]) ) or \
+                (all(part.replace(' ', '_') in fname for part in topic_parts)):
+                proveit_files.append(fname)
+
+
+    PROVEIT_FILES = copy.deepcopy(proveit_files)
 
 
 
@@ -84,8 +90,8 @@ def main(method:str, conn:RestClient|MqttClient|OpcuaServer|None, publish_topics
         except Exception as error:
             raise Exception(f"Failed to execute threading from Proveit (Error: {error})")
     else:
-        asyncio.run(proveit_opcua(conn=conn, publish_topics=publish_topics, iterations=iterations, sleep=sleep,
-                                  offset_sleep=offset_sleep))
+        proveit_files = [posixpath.join(DATA_DIR, fname) for fname in PROVEIT_FILES]
+        asyncio.run(proveit_opcua(conn=conn, proveit_files=proveit_files, concurrency=25))
 
 
 if __name__ == "__main__":
