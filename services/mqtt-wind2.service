@@ -12,8 +12,10 @@ ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generat
   --db-name wind_turbine \
   --skip-msg-client \
   --repeat 0 wind-turbine2 mqtt
-Restart=always
+Restart=on-failure
 RestartSec=5
+MemoryMax=250M
+
 
 [Install]
 WantedBy=multi-user.target
