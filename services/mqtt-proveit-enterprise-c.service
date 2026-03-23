@@ -11,8 +11,8 @@ ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generat
   --data-conn anyloguser:mqtt4AnyLog!@172.104.228.251:1883 \
   --skip-msg-client \
   --db-name proveit \
-  --topic "Enterprise C" \
-  --repeat 0 proveit mqtt
+  --repeat 0 proveit mqtt \
+  --topic "Enterprise C"
 
 Restart=on-failure
 RestartSec=5
