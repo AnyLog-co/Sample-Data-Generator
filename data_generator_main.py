@@ -8,7 +8,7 @@ from source.southbound.vessel_data import main as vessel_data
 from source.southbound.wind_turbine import main as wind_turbine
 from source.southbound.wind_turbine2 import main as wind_turbine2
 
-# from source.southbound.proveit_data import main as proveit_data
+from source.southbound.proveit_data import main as proveit_data
 
 from source.policies.random_mapping import main as random_mapping
 from source.policies.wind_turbine_mapping import main as wind_turbine_mapping
@@ -444,11 +444,12 @@ def main():
             wind_turbine2(method=args.publish_format, conn=data_conn, publish_topics=args.turbine_ids,
                           iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
 
-    # elif args.data == "proveit": # conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest
-    #     if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
-    #         pass
-    #     proveit_data(method=args.publish_format, conn=data_conn, publish_topics=args.proveit_topics,
-    #                  iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
+    elif args.data == "proveit": # conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest
+        if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
+            pass
+        if not args.skip_inserts:
+            proveit_data(method=args.publish_format, conn=data_conn, publish_topics=args.proveit_topics,
+                         iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
 
 
 if __name__ == "__main__":
