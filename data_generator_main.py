@@ -1,5 +1,4 @@
 import argparse
-import threading
 import time
 
 from source.southbound.random_data import main as rand_data
@@ -47,7 +46,7 @@ def build_parser(parser:argparse.ArgumentParser):
     rig_parser = subparsers.add_parser("rig")
     rig_parser.add_argument("publish_format", nargs="?", choices=["print", "put", "post", "mqtt"],
                             default="print", help=publish_format_help)
-    rig_parser.add_argument("--rig-ids", type=int, nargs="+", choices=list(RIG_INFO.keys()), default=None,
+    rig_parser.add_argument("--ids", type=int, nargs="+", choices=list(RIG_INFO.keys()), default=None,
                             help="Space-separated rig IDs. If omitted, all rigs are used.")
 
     # -------------------------
@@ -56,7 +55,7 @@ def build_parser(parser:argparse.ArgumentParser):
     vessel_parser = subparsers.add_parser("vessel")
     vessel_parser.add_argument("publish_format", nargs="?", choices=["print", "put", "post", "mqtt"],
                                default="print", help=publish_format_help)
-    vessel_parser.add_argument("--vessel-ids", nargs="+", choices=["DLB", "DLT"], default=None,
+    vessel_parser.add_argument("--ids", nargs="+", choices=["DLB", "DLT"], default=None,
                                help="Vessel engine side(s)")
 
     # -------------------------
@@ -65,7 +64,7 @@ def build_parser(parser:argparse.ArgumentParser):
     wt_parser = subparsers.add_parser("wind-turbine")
     wt_parser.add_argument("publish_format", nargs="?", choices=["print", "post", "mqtt"],
                            default="print", help=publish_format_help)
-    wt_parser.add_argument("--turbine-ids", type=int, nargs="+",
+    wt_parser.add_argument("--ids", type=int, nargs="+",
                            choices=[i for i in range(1, 12) if i != 4], default=None,
                            help="Space-separated turbine IDs. If omitted, all turbines except 4.")
 
@@ -81,7 +80,7 @@ def build_parser(parser:argparse.ArgumentParser):
     wt2_parser = subparsers.add_parser("wind-turbine2")
     wt2_parser.add_argument("publish_format", nargs="?", choices=["print", "post", "mqtt", "opcua"],
                                 default="print", help=publish_format_help)
-    wt2_parser.add_argument("--turbine-ids", type=str, nargs="+", choices=turbine_ids, default=None,
+    wt2_parser.add_argument("--ids", type=str, nargs="+", choices=turbine_ids, default=None,
                            help="Space-separated turbine IDs.")
 
     # -------------------------
@@ -90,7 +89,7 @@ def build_parser(parser:argparse.ArgumentParser):
     proveit_parser = subparsers.add_parser("proveit")
     proveit_parser.add_argument("publish_format", nargs='?', choices=["print", "post", "mqtt", "opcua"],
                                 default="print", help=publish_format_help)
-    proveit_parser.add_argument("--proveit-topics", type=str, nargs="+",
+    proveit_parser.add_argument("--topics", type=str, nargs="+", default="#",
                                 choices=["Enterprise A", "Enterprise A/Dallas/Line 1", "Enterprise A/Dallas/Site",
                                          "Enterprise A/opto22",
                                         "Enterprise A/opto22/Utilities/Air Dryers",
@@ -402,53 +401,42 @@ def main():
             rand_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
     elif args.data == "rig":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
-            rig_ids = args.rig_ids[0] if len(args.rig_ids) == 1 else None
+            rig_ids = args.ids[0] if len(args.ids) == 1 else None
             rig_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, user=data_user,
                         password=data_password, rig_id=rig_ids)
         if not args.skip_inserts:
-            rig_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.rig_ids,
+            rig_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.ids,
                      iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     if args.data == "vessel": #
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
-            vessel_ids = args.vessel_ids[0] if len(args.vessel_ids) == 1 else None
+            vessel_ids = args.ids[0] if len(args.ids) == 1 else None
             vessel_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest,
                            user=data_user, password=data_password,
                            publish_topics=vessel_ids)
         if not args.skip_inserts:
-            vessel_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.vessel_ids, iterations=args.repeat,
+            vessel_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.ids, iterations=args.repeat,
                         sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "wind-turbine":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
-            turbine_id = args.turbine_ids[0] if len(args.turbine_ids) == 1 else None
+            turbine_id = args.ids[0] if len(args.ids) == 1 else None
             wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, user=data_user,
                                  password=data_password, is_rest=is_rest, turbine_id=turbine_id)
         if not args.skip_inserts:
-            wind_turbine(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.turbine_ids,
+            wind_turbine(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.ids,
                          iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "wind-turbine2":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             wind_turbine2_msg_client(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest,
-                                     db_name=args.db_name, turbine_id=args.turbine_ids)
-        if not args.skip_inserts and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
-            # run multi thread in order to sleep / run streamer
-            # thread = threading.Thread(
-            #     target=wind_turbine2,
-            #     kwargs=dict(method=args.publish_format, conn=data_conn, publish_topics=args.turbine_ids,
-            #                 iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep),
-            #     daemon=True)
-            # thread.start()
-            time.sleep(120)
-            enable_streamer(conn=control_conn)
-            # thread.join()
+                                     db_name=args.db_name, turbine_id=args.ids)
         elif not args.skip_inserts:
-            wind_turbine2(method=args.publish_format, conn=data_conn, publish_topics=args.turbine_ids,
+            wind_turbine2(method=args.publish_format, conn=data_conn, publish_topics=args.ids,
                           iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
 
     elif args.data == "proveit": # conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest
         if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
             pass
         if not args.skip_inserts:
-            proveit_data(method=args.publish_format, conn=data_conn, publish_topics=args.proveit_topics,
+            proveit_data(method=args.publish_format, conn=data_conn, publish_topics=args.topics,
                          iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
 
 
