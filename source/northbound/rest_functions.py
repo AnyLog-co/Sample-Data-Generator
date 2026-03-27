@@ -1,4 +1,5 @@
 import json
+import time
 from typing import List
 
 from source.northbound.mqtt_calls import MqttClient
@@ -128,6 +129,7 @@ def declare_policy(conn:RestClient, policy:dict)->str:
         if index > 0:
             raise ConnectionError(f"Failed to publish policy against {conn.url}")
         conn.publish_data(headers=headers, payload=new_policy, method="POST")
+        time.sleep(0.5)
         policy_id = check_policy(conn=conn, policy_type=policy_type, id=base_id, name=name, namespace=namespace)
         index += 1
 
@@ -184,8 +186,9 @@ def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str|list, u
             declare_msg_client_header["command"] += f" and topic={topic}"
 
 
-        declare_msg_client_header["command"] += f" and user=anyloguser and password=mqtt4AnyLog!"
+        # declare_msg_client_header["command"] += f" and user=anyloguser and password=mqtt4AnyLog!"
 
+        print(declare_msg_client_header["command"])
         conn.publish_data(headers=declare_msg_client_header, payload=None, method="POST")
 
     return is_topics

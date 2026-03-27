@@ -1,13 +1,19 @@
+import io
+import csv
 import ast
 import copy
 import datetime
 import json
-import locale
+# import locale
 import re
 
 import requests
 from bs4 import BeautifulSoup
 from source.northbound.rest_functions import get_file_content
+from source.northbound.error_codes import HTTP_STATUS_CODES
+from source.northbound.error_codes import REQUEST_EXCEPTION_MAP
+from source.northbound.error_codes import REST_EXCEPTION_CODES
+
 
 def find_closest_row(index, target_ts):
     # index = list[(timestamp, row_id)]
@@ -96,41 +102,74 @@ def get_files_by_url(url:str)->list:
 
     return [fname for fname in content if fname.rsplit('.')[-1] in ext_types]
 
-def read_csv_content(url:str, row_id:int=0)->dict|None:
-    """
-    Read content from CSV file
-    :args:
-        url:str - RIG files url path
-        row_id:int - row number to extract content from
-    :params:
-        response:response.Requests - raw request response
-        raw_content:dict - raw content from request
-        content:str|None - actual content to store
-    :return:
-        content
-    """
-    response = get_file_content(url=url, timeout=30)
-    raw_content = {}
-    content = None
-    if response:
-        try:
-            headers = response.text.split("\n")[0].split(",")
-            row = response.text.split("\n")[row_id + 1].split(",")
-            for index in range(len(headers)):
-                raw_content[headers[index]] = row[index]
-        except IndexError:
-            raw_content = None
-    if raw_content:
-        content = {}
-        for key, value in raw_content.items():
-            try:
-                content[key.strip()] = ast.literal_eval(value)
-            except:
-                content[key.strip()] = value
-            if key == "timestamp":
-                content[key.strip()] = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+import requests
+import csv
+import io
 
-    return content
+def read_csv_content(url: str, row_id: int = 0) -> dict | None:
+    """
+    Read content from a CSV file at a given URL and extract a specific row.
+
+    Args:
+        url (str): URL to the CSV file.
+        row_id (int): Index of the row to extract (default is 0).
+
+    Returns:
+        dict | None: Dictionary representing the CSV row, or None if not found.
+
+    Raises:
+        requests.exceptions.HTTPError: If HTTP request fails.
+        Exception: For network errors or CSV parsing issues.
+    """
+    try:
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as error:
+        status_code = error.response.status_code
+        status_msg = HTTP_STATUS_CODES.get(status_code) or \
+                     REST_EXCEPTION_CODES.get(int(str(status_code)[0]), "Unknown REST error")
+        raise requests.exceptions.HTTPError(
+            f"Failed to GET {url} (HTTP {status_code}: {status_msg} | Response: {error.response.text})",
+            response=error.response
+        ) from error
+    except Exception as error:
+        error_type = type(error).__name__
+        error_code = REQUEST_EXCEPTION_MAP.get(error_type, 899)
+        error_msg = REST_EXCEPTION_CODES.get(error_code, str(error))
+        raise Exception(
+            f"Failed to GET {url} (Transport Error {error_code}: {error_msg})"
+        ) from error
+
+    try:
+        csv_file = io.StringIO(response.text)
+        reader = csv.DictReader(csv_file)
+        rows = list(reader)
+        if row_id >= len(rows):
+            raise IndexError(f"row_id {row_id} out of range for CSV with {len(rows)} rows")
+        return rows[row_id]
+    except Exception as error:
+        raise Exception(f"Failed to extract CSV content from {url} (Error: {error})") from error
+
+    #     try:
+    #
+    #         headers = response.text.split("\n")[0].split(",")
+    #
+    #         row = response.text.split("\n")[row_id + 1].split(",")
+    #         for index in range(len(headers)):
+    #             raw_content[headers[index]] = row[index]
+    #     except IndexError:
+    #         raw_content = None
+    # if raw_content:
+    #     content = {}
+    #     for key, value in raw_content.items():
+    #         try:
+    #             content[key.strip()] = ast.literal_eval(value)
+    #         except:
+    #             content[key.strip()] = value
+    #         if key == "timestamp":
+    #             content[key.strip()] = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    #
+    # return content
 
 def _parse_german_number(value)->str|float|int:
     """

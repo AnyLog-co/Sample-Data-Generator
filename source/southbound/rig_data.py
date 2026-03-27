@@ -87,18 +87,21 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
     while is_active:
         timestamp = datetime.datetime.now(tz=datetime.timezone.utc)
         for id_index, (rig_id, file_path) in enumerate(rig_paths.items()):
+            print(file_path)
             if line_counts[rig_id] is not None:
                 row = read_csv_content(file_path, row_id=line_counts[rig_id])
-                row["timestamp"] = timestamp_calculator(timestamp=timestamp, offset=offset_sleep, id_index=id_index)
                 if row:
+                    row["timestamp"] = timestamp_calculator(timestamp=timestamp, offset=offset_sleep, id_index=id_index)
                     if method in ["MQTT", "POST"]:
                         row["dbms"] = db_name
                         row["table"] = TABLE
 
                     publish_data(method=method, conn=conn, topic=f"{TOPIC}/rig-{rig_id}", table_name=TABLE, db_name=db_name,
-                                 payload=row)
+                                     payload=row)
+                    line_counts[rig_id] += 1
                 else:
-                    line_counts[rig_id] = None
+                    line_counts[rig_id] = 0
+
 
         counter += 1
         if 0 < iterations <= counter:
