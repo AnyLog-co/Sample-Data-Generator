@@ -8,7 +8,7 @@ User=root
 WorkingDirectory=/root/Sample-Data-Generator
 ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generator/data_generator_main.py \
   --sleep 1 \
-  --data-conn --data-conn 0.0.0.0:4841 \
+  --data-conn 0.0.0.0:4843 \
   --skip-msg-client \
   --db-name proveit \
   --repeat 0 proveit opcua \

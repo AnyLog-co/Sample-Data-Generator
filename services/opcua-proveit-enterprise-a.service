@@ -8,10 +8,10 @@ User=root
 WorkingDirectory=/root/Sample-Data-Generator
 ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generator/data_generator_main.py \
   --sleep 1 \
-  --data-conn anyloguser:mqtt4AnyLog!@172.104.228.251:1883 \
+  --data-conn 0.0.0.0:4841 \
   --skip-msg-client \
   --db-name proveit \
-  --repeat 0 proveit mqtt \
+  --repeat 0 proveit opcua \
   --topic "Enterprise A"
 
 Restart=on-failure
