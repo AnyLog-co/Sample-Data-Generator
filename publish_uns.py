@@ -22,7 +22,9 @@ def __publish_policies(conn:RestClient, full_path:str):
                 if policy.get("uns").get(param) is not None:
                     policy["uns"].pop(param)
 
-            parent_namespace = namespace.rsplit("/", 1)[0]
+            parent_namespace, name = namespace.rsplit("/", 1)
+            if policy["uns"]["uns_level"] == "sensor":
+                policy["uns"]["name"] = f"{parent_namespace.rsplit('/', 1)[-1]} - {name}"
             if namespace != parent_namespace:
                 parent_id = check_policy(conn=conn, policy_type="uns", namespace=parent_namespace)
                 if not parent_id or parent_id == "[]":

@@ -1003,20 +1003,8 @@
   },
   {
     "uns": {
-      "name": "uv",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_analog/uv/uv",
-      "uns_level": "device",
-      "dbms": "cos",
-      "table": "wwp_analog",
-      "parent": "02d93780da93e476e49512a42eed3a99",
-      "id": "e2c0dfc2069d24df25095a02ce5468da",
-      "date": "2026-01-01T00:00:00.000000Z"
-    }
-  },
-  {
-    "uns": {
       "name": "signal1_ai",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_analog/uv/uv/signal1_ai",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_analog/uv/signal1_ai",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_analog",
@@ -1024,7 +1012,7 @@
       "data_type": "integer",
       "unit": "",
       "sensor_type": "signal",
-      "parent": "e2c0dfc2069d24df25095a02ce5468da",
+      "parent": "02d93780da93e476e49512a42eed3a99",
       "id": "3ebdaeb05276b4f010a99b5898ced459",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -1032,7 +1020,7 @@
   {
     "uns": {
       "name": "signal2_ai",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_analog/uv/uv/signal2_ai",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_analog/uv/signal2_ai",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_analog",
@@ -1040,7 +1028,7 @@
       "data_type": "integer",
       "unit": "",
       "sensor_type": "signal",
-      "parent": "e2c0dfc2069d24df25095a02ce5468da",
+      "parent": "02d93780da93e476e49512a42eed3a99",
       "id": "9e4c3da304c8daa8834f183284cf8e41",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -1048,7 +1036,7 @@
   {
     "uns": {
       "name": "room_temp_ai",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_analog/uv/uv/room_temp_ai",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_analog/uv/room_temp_ai",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_analog",
@@ -1056,7 +1044,7 @@
       "data_type": "integer",
       "unit": "\u00b0C",
       "sensor_type": "temperature",
-      "parent": "e2c0dfc2069d24df25095a02ce5468da",
+      "parent": "02d93780da93e476e49512a42eed3a99",
       "id": "7d1efdb39081eb7245d69e828dc7c8e9",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -1089,20 +1077,8 @@
   },
   {
     "uns": {
-      "name": "ss",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/ss/ss",
-      "uns_level": "device",
-      "dbms": "cos",
-      "table": "wwp_digital",
-      "parent": "6244d684e4f3907ead8cf03e8c2fee95",
-      "id": "d582e7bf4e987cccc15fd76e1008a0eb",
-      "date": "2026-01-01T00:00:00.000000Z"
-    }
-  },
-  {
-    "uns": {
       "name": "screenrun_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/ss/ss/screenrun_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/ss/screenrun_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -1110,7 +1086,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "d582e7bf4e987cccc15fd76e1008a0eb",
+      "parent": "6244d684e4f3907ead8cf03e8c2fee95",
       "id": "9114acfad4a94bb13a05f1c24285bbd3",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -1118,7 +1094,7 @@
   {
     "uns": {
       "name": "jam_a_alarm",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/ss/ss/jam_a_alarm",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/ss/jam_a_alarm",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -1126,7 +1102,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "alarm",
-      "parent": "d582e7bf4e987cccc15fd76e1008a0eb",
+      "parent": "6244d684e4f3907ead8cf03e8c2fee95",
       "id": "095f07015329a37aa9ea6c8679d29f2a",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -1134,7 +1110,7 @@
   {
     "uns": {
       "name": "hl_a_alarm",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/ss/ss/hl_a_alarm",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/ss/hl_a_alarm",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -1142,7 +1118,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "alarm",
-      "parent": "d582e7bf4e987cccc15fd76e1008a0eb",
+      "parent": "6244d684e4f3907ead8cf03e8c2fee95",
       "id": "6ebcf1e11b5f8ee75c797c661bfdd85f",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -1150,7 +1126,7 @@
   {
     "uns": {
       "name": "auto_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/ss/ss/auto_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/ss/auto_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -1158,7 +1134,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "control",
-      "parent": "d582e7bf4e987cccc15fd76e1008a0eb",
+      "parent": "6244d684e4f3907ead8cf03e8c2fee95",
       "id": "0f95d6ec6749c22ecb224d39dc7a4fa4",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2161,20 +2137,8 @@
   },
   {
     "uns": {
-      "name": "am",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/am/am",
-      "uns_level": "device",
-      "dbms": "cos",
-      "table": "wwp_digital",
-      "parent": "b56b838ca36ba841a4b31ec9690256df",
-      "id": "c3067ade8376551a562cc5485fb42fdd",
-      "date": "2026-01-01T00:00:00.000000Z"
-    }
-  },
-  {
-    "uns": {
       "name": "estop",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/am/am/estop",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/am/estop",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2182,7 +2146,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "control",
-      "parent": "c3067ade8376551a562cc5485fb42fdd",
+      "parent": "b56b838ca36ba841a4b31ec9690256df",
       "id": "49071f4ef5f62ee1c0bac18b8d6eb3c1",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2190,7 +2154,7 @@
   {
     "uns": {
       "name": "hvefrng_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/am/am/hvefrng_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/am/hvefrng_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2198,7 +2162,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "c3067ade8376551a562cc5485fb42fdd",
+      "parent": "b56b838ca36ba841a4b31ec9690256df",
       "id": "b20154eac85f51d8cced1cb51f3d22cb",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2206,7 +2170,7 @@
   {
     "uns": {
       "name": "hvgas_a_in",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/am/am/hvgas_a_in",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/am/hvgas_a_in",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2214,7 +2178,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "alarm",
-      "parent": "c3067ade8376551a562cc5485fb42fdd",
+      "parent": "b56b838ca36ba841a4b31ec9690256df",
       "id": "25f8336860a129cb274ca7a462e2fffc",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2233,20 +2197,8 @@
   },
   {
     "uns": {
-      "name": "mcc",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/mcc",
-      "uns_level": "device",
-      "dbms": "cos",
-      "table": "wwp_digital",
-      "parent": "ffe1333f57a208487f8c8354721c7b8f",
-      "id": "83f0f462533fc975fc3ad64747c1f313",
-      "date": "2026-01-01T00:00:00.000000Z"
-    }
-  },
-  {
-    "uns": {
       "name": "brfrng_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/mcc/brfrng_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/brfrng_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2254,7 +2206,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "83f0f462533fc975fc3ad64747c1f313",
+      "parent": "ffe1333f57a208487f8c8354721c7b8f",
       "id": "ab81a76a6cf0e782df24b9982cdf490d",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2262,7 +2214,7 @@
   {
     "uns": {
       "name": "npwprng1_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/mcc/npwprng1_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/npwprng1_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2270,7 +2222,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "83f0f462533fc975fc3ad64747c1f313",
+      "parent": "ffe1333f57a208487f8c8354721c7b8f",
       "id": "326fe74a0d3ab22673a023717cd283b6",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2278,7 +2230,7 @@
   {
     "uns": {
       "name": "npwprng2_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/mcc/npwprng2_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/npwprng2_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2286,7 +2238,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "83f0f462533fc975fc3ad64747c1f313",
+      "parent": "ffe1333f57a208487f8c8354721c7b8f",
       "id": "34c6373d899449064ac2f43a57e277cd",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2294,7 +2246,7 @@
   {
     "uns": {
       "name": "gen_a_alarm",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/mcc/gen_a_alarm",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/gen_a_alarm",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2302,7 +2254,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "alarm",
-      "parent": "83f0f462533fc975fc3ad64747c1f313",
+      "parent": "ffe1333f57a208487f8c8354721c7b8f",
       "id": "1558f9fef0aa49e11d94d5c8fa91fcbd",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2310,7 +2262,7 @@
   {
     "uns": {
       "name": "genrng_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/mcc/genrng_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/genrng_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2318,7 +2270,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "83f0f462533fc975fc3ad64747c1f313",
+      "parent": "ffe1333f57a208487f8c8354721c7b8f",
       "id": "88fd958b7d14296ed522307d8672b118",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2326,7 +2278,7 @@
   {
     "uns": {
       "name": "srfrng_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/mcc/srfrng_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/srfrng_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2334,7 +2286,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "83f0f462533fc975fc3ad64747c1f313",
+      "parent": "ffe1333f57a208487f8c8354721c7b8f",
       "id": "c4bf270286728e53b79e39cb3b9a7452",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2342,7 +2294,7 @@
   {
     "uns": {
       "name": "tsnprdy_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/mcc/tsnprdy_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/tsnprdy_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2350,7 +2302,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "83f0f462533fc975fc3ad64747c1f313",
+      "parent": "ffe1333f57a208487f8c8354721c7b8f",
       "id": "6eb624c7f4a39155ad95cc8e64a0b8c4",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2358,7 +2310,7 @@
   {
     "uns": {
       "name": "tsstdby_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/mcc/tsstdby_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/tsstdby_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2366,7 +2318,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "83f0f462533fc975fc3ad64747c1f313",
+      "parent": "ffe1333f57a208487f8c8354721c7b8f",
       "id": "a13cfcc6fcae00c36ff6a515fe6f9e04",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2374,7 +2326,7 @@
   {
     "uns": {
       "name": "tstdbyrdy_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/mcc/tstdbyrdy_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/mcc/tstdbyrdy_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2382,7 +2334,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "83f0f462533fc975fc3ad64747c1f313",
+      "parent": "ffe1333f57a208487f8c8354721c7b8f",
       "id": "d71028f9fbf2e8a95b53b70fe9f17df2",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2401,20 +2353,8 @@
   },
   {
     "uns": {
-      "name": "gk",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/gk/gk",
-      "uns_level": "device",
-      "dbms": "cos",
-      "table": "wwp_digital",
-      "parent": "83844632da350c51fc11cc7fb59df3e5",
-      "id": "ba8dfdef958b16c5f7a7f549706cf174",
-      "date": "2026-01-01T00:00:00.000000Z"
-    }
-  },
-  {
-    "uns": {
       "name": "shand_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/gk/gk/shand_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/gk/shand_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2422,7 +2362,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "control",
-      "parent": "ba8dfdef958b16c5f7a7f549706cf174",
+      "parent": "83844632da350c51fc11cc7fb59df3e5",
       "id": "9d764464edccec7b4ca9d0e29054f36a",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2430,7 +2370,7 @@
   {
     "uns": {
       "name": "classrng_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/gk/gk/classrng_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/gk/classrng_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2438,7 +2378,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "ba8dfdef958b16c5f7a7f549706cf174",
+      "parent": "83844632da350c51fc11cc7fb59df3e5",
       "id": "8676cf0cc4ef7fd8f3222b2e8b5c362d",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2446,7 +2386,7 @@
   {
     "uns": {
       "name": "fvo_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/gk/gk/fvo_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/gk/fvo_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2454,7 +2394,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "ba8dfdef958b16c5f7a7f549706cf174",
+      "parent": "83844632da350c51fc11cc7fb59df3e5",
       "id": "224e4227ae29705a5ec303569e24ef21",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2462,7 +2402,7 @@
   {
     "uns": {
       "name": "gsf_s_in",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/gk/gk/gsf_s_in",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/gk/gsf_s_in",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2470,7 +2410,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "ba8dfdef958b16c5f7a7f549706cf174",
+      "parent": "83844632da350c51fc11cc7fb59df3e5",
       "id": "cd35055c1580c6e8f8c50b9b9ff7e920",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2478,7 +2418,7 @@
   {
     "uns": {
       "name": "pmprng_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/gk/gk/pmprng_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/gk/pmprng_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2486,7 +2426,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "ba8dfdef958b16c5f7a7f549706cf174",
+      "parent": "83844632da350c51fc11cc7fb59df3e5",
       "id": "825a671b8aa46701c4081a892b64f8d0",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2505,20 +2445,8 @@
   },
   {
     "uns": {
-      "name": "cg",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/cg/cg",
-      "uns_level": "device",
-      "dbms": "cos",
-      "table": "wwp_digital",
-      "parent": "9a5781f9bca73b3b9e49b1f6256347c5",
-      "id": "d9ef153f9c56bffbdac23172a1da3d32",
-      "date": "2026-01-01T00:00:00.000000Z"
-    }
-  },
-  {
-    "uns": {
       "name": "a_in",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/cg/cg/a_in",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/cg/a_in",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2526,7 +2454,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "status",
-      "parent": "d9ef153f9c56bffbdac23172a1da3d32",
+      "parent": "9a5781f9bca73b3b9e49b1f6256347c5",
       "id": "5ababdf81312b59b97f74cace8dd5c4d",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2534,7 +2462,7 @@
   {
     "uns": {
       "name": "fwdrev_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/cg/cg/fwdrev_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/cg/fwdrev_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2542,7 +2470,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "control",
-      "parent": "d9ef153f9c56bffbdac23172a1da3d32",
+      "parent": "9a5781f9bca73b3b9e49b1f6256347c5",
       "id": "b4096c91dc63f4db81f315916edd0bda",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2550,7 +2478,7 @@
   {
     "uns": {
       "name": "start_s",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/cg/cg/start_s",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/cg/start_s",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2558,7 +2486,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "control",
-      "parent": "d9ef153f9c56bffbdac23172a1da3d32",
+      "parent": "9a5781f9bca73b3b9e49b1f6256347c5",
       "id": "54b79f626b8460ebb1de0a4b54990723",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2577,20 +2505,8 @@
   },
   {
     "uns": {
-      "name": "uv",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/uv",
-      "uns_level": "device",
-      "dbms": "cos",
-      "table": "wwp_digital",
-      "parent": "65451ffca62bae8627a688fc0b75ae9e",
-      "id": "eda18f0117b13bb084eb8b60b459a1a2",
-      "date": "2026-01-01T00:00:00.000000Z"
-    }
-  },
-  {
-    "uns": {
       "name": "lf1_a_alarm",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/uv/lf1_a_alarm",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/lf1_a_alarm",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2598,7 +2514,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "alarm",
-      "parent": "eda18f0117b13bb084eb8b60b459a1a2",
+      "parent": "65451ffca62bae8627a688fc0b75ae9e",
       "id": "d74e58b6c2157badf08f86ee7e02df75",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2606,7 +2522,7 @@
   {
     "uns": {
       "name": "lf2_a_alarm",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/uv/lf2_a_alarm",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/lf2_a_alarm",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2614,7 +2530,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "alarm",
-      "parent": "eda18f0117b13bb084eb8b60b459a1a2",
+      "parent": "65451ffca62bae8627a688fc0b75ae9e",
       "id": "eefc61e07f83c915fece30c7c1eac513",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2622,7 +2538,7 @@
   {
     "uns": {
       "name": "wf1_a_alarm",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/uv/wf1_a_alarm",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/wf1_a_alarm",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2630,7 +2546,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "alarm",
-      "parent": "eda18f0117b13bb084eb8b60b459a1a2",
+      "parent": "65451ffca62bae8627a688fc0b75ae9e",
       "id": "c051cf6dfccc7daa573fe5988acbe9cc",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2638,7 +2554,7 @@
   {
     "uns": {
       "name": "wf2_a_alarm",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/uv/wf2_a_alarm",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/wf2_a_alarm",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2646,7 +2562,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "alarm",
-      "parent": "eda18f0117b13bb084eb8b60b459a1a2",
+      "parent": "65451ffca62bae8627a688fc0b75ae9e",
       "id": "c5df7693431f4c3e7052ba6694bbe733",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2654,7 +2570,7 @@
   {
     "uns": {
       "name": "gfd1_s_alarm",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/uv/gfd1_s_alarm",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/gfd1_s_alarm",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2662,7 +2578,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "alarm",
-      "parent": "eda18f0117b13bb084eb8b60b459a1a2",
+      "parent": "65451ffca62bae8627a688fc0b75ae9e",
       "id": "c255456bcf8c95e585510896a1fa3e1b",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2670,7 +2586,7 @@
   {
     "uns": {
       "name": "gfd2_s_alarm",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/uv/gfd2_s_alarm",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/gfd2_s_alarm",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2678,7 +2594,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "alarm",
-      "parent": "eda18f0117b13bb084eb8b60b459a1a2",
+      "parent": "65451ffca62bae8627a688fc0b75ae9e",
       "id": "3b168393438014e4b5fb1e47ca491c72",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2686,7 +2602,7 @@
   {
     "uns": {
       "name": "cabht1_a_alarm",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/uv/cabht1_a_alarm",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/cabht1_a_alarm",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2694,7 +2610,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "alarm",
-      "parent": "eda18f0117b13bb084eb8b60b459a1a2",
+      "parent": "65451ffca62bae8627a688fc0b75ae9e",
       "id": "89b3049f82430ced9503ab8ceb73e928",
       "date": "2026-01-01T00:00:00.000000Z"
     }
@@ -2702,7 +2618,7 @@
   {
     "uns": {
       "name": "cabht2_a_alarm",
-      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/uv/cabht2_a_alarm",
+      "namespace": "Smart_City/Waste_Water_Plant/wwp_digital/uv/cabht2_a_alarm",
       "uns_level": "sensor",
       "dbms": "cos",
       "table": "wwp_digital",
@@ -2710,7 +2626,7 @@
       "data_type": "boolean",
       "unit": "",
       "sensor_type": "alarm",
-      "parent": "eda18f0117b13bb084eb8b60b459a1a2",
+      "parent": "65451ffca62bae8627a688fc0b75ae9e",
       "id": "0a9c2276e0c9b3318187ff71f94fe645",
       "date": "2026-01-01T00:00:00.000000Z"
     }
