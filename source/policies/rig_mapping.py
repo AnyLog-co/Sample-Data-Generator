@@ -4,6 +4,8 @@ import copy
 
 from source.policies.mappings import BASE_POLICY
 from source.support import get_files_by_url
+from source.support import url_read_content
+
 from source.support import read_csv_content
 from source.northbound.rest_calls import RestClient
 from source.northbound.rest_functions import declare_msg_client
@@ -23,7 +25,8 @@ def main(conn:RestClient|None, broker:str, port:int, user:str=None, password:str
     # read_file
     content = {}
     for row_id in range(10):
-        row = read_csv_content(posixpath.join(DATA_DIR, random.choice(RIG_FILES)), row_id=row_id)
+        url  = posixpath.join(DATA_DIR, random.choice(RIG_FILES))
+        row = url_read_content(url=url, line=row_id, is_german=False)
         for key in row:
             if key not in content:
                 content[key] = []

@@ -2,7 +2,8 @@ import copy
 import posixpath
 
 from source.northbound.rest_calls import RestClient
-from source.support import read_json_content
+
+from source.support import url_read_content
 from source.support import get_files_by_url
 from source.support import mapping_param
 from source.policies.mappings import BASE_POLICY
@@ -40,7 +41,8 @@ def main(conn:RestClient|None, broker:str, port:int, publish_topics:str|None=Non
             # print(fname)
             url = posixpath.join(DATA_DIR, fname)
             for row_id in range(3):
-                _, row = read_json_content(url=url, row_id=row_id, timestamp=None, german_format=False, timeout=30)
+                row = url_read_content(url=url, line=row_id, is_german=False)
+                # _, row = read_json_content(url=url, row_id=row_id, timestamp=None, german_format=False, timeout=30)
                 for column in row:
                     if column not in columns:
                         columns[column] = []
@@ -75,38 +77,6 @@ def main(conn:RestClient|None, broker:str, port:int, publish_topics:str|None=Non
         declare_msg_client(conn=conn, broker=broker, port=port, topics=topics, user=user, password=password,
                            is_rest=is_rest)
 
-
-    # for table in VESSEL_INFO:
-    #     if table != "general":
-    #         mapping_policy = copy.deepcopy(LOCAL_BASE_POLICY)
-    #         mapping_policy["mapping"]["id"] = _to_snake(table).replace('_', '-')
-    #         mapping_policy["mapping"]["table"] = _to_snake(table)
-    #         for column in VESSEL_INFO.get("general"):
-    #             mapping_policy["mapping"]["schema"].update({
-    #                 _to_snake(name=column): {
-    #                     "type": VESSEL_INFO.get("general").get(column),
-    #                     "default": None if VESSEL_INFO.get("general").get(column) in ["float", "int"] else "",
-    #                     "bring": f"[{column}]"
-    #                 }
-    #             })
-    #         for column in VESSEL_INFO[table]:
-    #             if columns.get(column):
-    #
-    #                 mapping_policy["mapping"]["schema"].update({
-    #                     _to_snake(name=column): {
-    #                         "type": data_type,
-    #                         "default": None if data_type in ["float", "int"] else "",
-    #                         "bring": f"[{column}]",
-    #                         **({"optional": True} if VESSEL_INFO.get("general").get(column) is None else {})
-    #                     }
-    #                 })
-    #
-    #         policy_id = declare_policy(conn=conn, policy=mapping_policy)
-    #         topics += f" and policy={policy_id}"
-    #
-    # topics += ')'
-    # # print(topics)
-    #
 
 
 

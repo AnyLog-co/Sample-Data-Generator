@@ -7,7 +7,7 @@ from source.policies.mappings import WIND_TURBINE_TABLES
 from source.northbound.rest_functions import declare_msg_client
 from source.northbound.rest_functions import declare_policy
 from source.northbound.rest_calls import RestClient
-from source.support import read_json_content
+from source.support import url_read_content
 from source.support import mapping_policy_config
 
 
@@ -26,7 +26,7 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False, user:st
     for fname in TURBINE_FILES:
         file_path = posixpath.join(DATA_DIR, fname)
         for row_id in range(5):
-            row = read_json_content(url=file_path, row_id=row_id, timestamp=None, german_format=True)
+            row = url_read_content(url=file_path, line=row_id, is_german=False)
             # row = read_turbine_data(file_path, row_id=row_id)
             for key in row:
                 if key not in content:
@@ -61,7 +61,6 @@ def main(conn:RestClient|None, broker:str, port:int, is_rest:bool=False, user:st
             topics += f" policy={policy_id} and"
 
     topics = topics.rsplit(" and", 1)[0] + ')'
-    print(topics)
     declare_msg_client(conn=conn, broker=broker, port=port, user=user, password=password, is_rest=is_rest, topics=topics)
 
 

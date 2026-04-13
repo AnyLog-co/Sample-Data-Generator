@@ -4,6 +4,7 @@ import datetime
 import json
 import re
 
+from bs4 import BeautifulSoup
 from source.northbound.rest_calls import RestClient
 
 TIMESTAMP_RE = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}):\s*(.*)")
@@ -148,13 +149,39 @@ def _decouple_content(row, is_german:bool=False):
 
     return output
 
+def get_files_by_url(url):
+    """
+    Given a URL address - extract list of files under it.
+    Think of it like an `ls` command against the URL
+    """
+    client = RestClient(conn=url, auth=None, timeout=120)
+    raw_response = client.get_data(headers=None, raw_response=True)
+    toc_content = []
+    if 200 <= int(raw_response.status_code) < 300:
+        try:
+            soup = BeautifulSoup(raw_response.text, "html.parser")
+            links = [a.get("href") for a in soup.find_all("a")]
+            content = [link for link in links if link and (link.endswith(f".{ending}") for ending in ["csv", "json"])]
+        except Exception as error:
+            raise Exception(f"Failed to access data files {url} (Error: {error})")
+        else:
+            toc_content = [fname for fname in content if fname.rsplit('.')[-1] in ["csv", "json"]]
+    return toc_content
+
 def url_read_content(url:str, line:int|None=None, is_german:bool=False):
     file_name = os.path.basename(url)
     client = RestClient(conn=url, auth=None, timeout=120)
-    content = client.get_file_data(line_num=line, is_german=is_german, is_csv=file_name.endswith("csv"))
+    content = client.get_file_data(line_num=line+1, is_german=is_german, is_csv=file_name.endswith("csv"))
 
     return _decouple_content(content, is_german=is_german)
 
+def url_read_content_full(url:str):
+    """
+    Extract ful content from file
+    """
+    client = RestClient(conn=url, auth=None, timeout=120)
+    content = client.get_data(headers=None, raw_response=any(url.endswith(ext) for ext in ["json", "csv"]))
+    return content
 
 def read_json_file(file_path:str):
     """
@@ -217,3 +244,8 @@ def mapping_policy_config(content:dict, function=None)->dict:
                     "bring": f"[{value}]"
                 }
     return schema
+
+
+if __name__ == "__main__":
+    get_files_by_url("http://45.33.11.32/Sample-Data/vessel-data/")
+    # url_read_content_full("http://45.33.11.32/Sample-Data/vessel-data/2024-08-15_Helios_DLB_BMWix_IP_3_ID_33.json")
