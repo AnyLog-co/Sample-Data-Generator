@@ -1,5 +1,4 @@
-import io
-import csv
+
 import ast
 import copy
 import datetime
@@ -7,13 +6,13 @@ import json
 # import locale
 import re
 
-import requests
 from bs4 import BeautifulSoup
-from source.northbound.rest_functions import get_file_content
+from source.northbound.rest_calls import RestClient
 from source.northbound.error_codes import HTTP_STATUS_CODES
 from source.northbound.error_codes import REQUEST_EXCEPTION_MAP
 from source.northbound.error_codes import REST_EXCEPTION_CODES
 
+# ====== Basic support functions ======
 
 def find_closest_row(index, target_ts):
     # index = list[(timestamp, row_id)]
@@ -78,6 +77,8 @@ def extract_credentials(credentials:str):
 
     return broker, port, user, password
 
+# ====== Data File processing ======
+# to cleanup
 def get_files_by_url(url:str)->list:
     """
     Get list of files based on a URL
@@ -240,8 +241,7 @@ def _standard_json_content(content, row_id:int|None=None, timestamp:str|datetime
 
 
 def read_json_content(url:str, row_id:int|None=None, timestamp:str|datetime.datetime|None=None, german_format:bool=False, timeout:float=30)->(dict|None) or (dict|None, str):
-    line = None
-    response = get_file_content(url=url, timeout=timeout)
+    rest_client = Rest
     if not response:
         return None
     elif german_format:
@@ -359,6 +359,7 @@ def timestamp_calculator(timestamp:datetime.datetime, offset:float, id_index:int
     except Exception as error:
         raise Exception(f"Failed to calculate timestamp (Error: {error})")
 
+# ====== Mapping code ======
 
 def mapping_param(content:list):
     data_type = "string"

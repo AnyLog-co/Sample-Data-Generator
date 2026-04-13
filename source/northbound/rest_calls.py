@@ -1,5 +1,10 @@
+import io
 import json
+from typing import Any
+
 import requests
+import csv
+
 from source.northbound.error_codes import REST_EXCEPTION_CODES
 from source.northbound.error_codes import HTTP_STATUS_CODES
 from source.northbound.error_codes import REQUEST_EXCEPTION_MAP
@@ -103,6 +108,40 @@ class RestClient:
             return response.json()
         except Exception:
             return response.text
+
+
+    def get_file_data(self, line_num:int|None=None, timeout:float=120, is_german:bool=False, is_csv:bool=False):
+        """
+        Extract data from file - used for pulling data generator data from cloud
+        :args:
+            line_num:int - line number to extract content from
+        :response:
+            if line not set execute `get_data` and return raw response
+            else return line (unsolicited / manipulated)
+            if no file found returns None
+        """
+        encoding = "utf-8-sig" if is_german else "utf-8"
+        header_row = None
+        if line_num is None:
+            return self.get_data(headers=None, raw_response=True)
+
+        try:
+            with requests.request(method="GET", url=self.url, auth=None, timeout=timeout, stream=True) as response:
+                response.raise_for_status()
+                for current_line, line in enumerate(response.iter_lines(), start=1):
+                    if is_csv and current_line == 1:
+                        header_row = next(csv.reader(io.StringIO(line.decode(encoding))))
+
+                    if current_line == line_num:
+                        values = next(csv.reader(io.StringIO(line.decode(encoding)))) if is_csv else line.decode(encoding)
+                        return dict(zip(header_row, values)) if header_row else values
+
+        except Exception as error:
+            raise Exception(f"Failed to execute GET against {self.url} (Error: {error})")
+
+        return None
+
+
 
 
 
