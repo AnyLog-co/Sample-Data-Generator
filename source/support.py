@@ -1,16 +1,12 @@
-
-import ast
+import os
 import copy
 import datetime
 import json
-# import locale
 import re
 
-from bs4 import BeautifulSoup
 from source.northbound.rest_calls import RestClient
-from source.northbound.error_codes import HTTP_STATUS_CODES
-from source.northbound.error_codes import REQUEST_EXCEPTION_MAP
-from source.northbound.error_codes import REST_EXCEPTION_CODES
+
+TIMESTAMP_RE = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}):\s*(.*)")
 
 # ====== Basic support functions ======
 
@@ -78,99 +74,30 @@ def extract_credentials(credentials:str):
     return broker, port, user, password
 
 # ====== Data File processing ======
-# to cleanup
-def get_files_by_url(url:str)->list:
+def _decouple_vessel_data_format(match:re.match)->dict:
     """
-    Get list of files based on a URL
+    If data is in the following format (used with vessels) then to the correct format
+    :sample format:
+        2026-01-01 00:00:00: '{"column1": .... }'
     :args:
-        url:str - URL with files
+        match - broken up string
     :params:
-        ext_types:list - list of extension type(s) - currently supporting CSV and JSON
+        timestamp:str - timestamp
+        json_part:str - json
     :return:
-        list of files
+        if all is correct then dict (from json_part) that includes timestamp
+        else raises Exception
     """
-    ext_types = ["csv", "json"]
-
-    response = get_file_content(url=url, timeout=30)
-    content = None
-    if response:
-        try:
-            soup = BeautifulSoup(response.text, "html.parser")
-            links = [a.get("href") for a in soup.find_all("a")]
-            content = [link for link in links if link and (link.endswith(f".{ending}") for ending in ext_types)]
-        except Exception as error:
-            raise Exception(f"Failed to access data files {url} (Error: {error})")
-
-    return [fname for fname in content if fname.rsplit('.')[-1] in ext_types]
-
-import requests
-import csv
-import io
-
-def read_csv_content(url: str, row_id: int = 0) -> dict | None:
-    """
-    Read content from a CSV file at a given URL and extract a specific row.
-
-    Args:
-        url (str): URL to the CSV file.
-        row_id (int): Index of the row to extract (default is 0).
-
-    Returns:
-        dict | None: Dictionary representing the CSV row, or None if not found.
-
-    Raises:
-        requests.exceptions.HTTPError: If HTTP request fails.
-        Exception: For network errors or CSV parsing issues.
-    """
-    try:
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as error:
-        status_code = error.response.status_code
-        status_msg = HTTP_STATUS_CODES.get(status_code) or \
-                     REST_EXCEPTION_CODES.get(int(str(status_code)[0]), "Unknown REST error")
-        raise requests.exceptions.HTTPError(
-            f"Failed to GET {url} (HTTP {status_code}: {status_msg} | Response: {error.response.text})",
-            response=error.response
-        ) from error
-    except Exception as error:
-        error_type = type(error).__name__
-        error_code = REQUEST_EXCEPTION_MAP.get(error_type, 899)
-        error_msg = REST_EXCEPTION_CODES.get(error_code, str(error))
-        raise Exception(
-            f"Failed to GET {url} (Transport Error {error_code}: {error_msg})"
-        ) from error
+    timestamp = match.group(1)  # "2024-08-15 00:13:59"
+    json_part = match.group(2)  # '{"batteryErrorCode": 0,is ...'
 
     try:
-        csv_file = io.StringIO(response.text)
-        reader = csv.DictReader(csv_file)
-        rows = list(reader)
-        if row_id >= len(rows):
-            raise IndexError(f"row_id {row_id} out of range for CSV with {len(rows)} rows")
-        return rows[row_id]
+        content = json.loads(match.group(2)) if  not isinstance(match.group(2), dict) else match.group(2)
+        content["timestamp"] = timestamp
     except Exception as error:
-        raise Exception(f"Failed to extract CSV content from {url} (Error: {error})") from error
+        raise Exception(f"Invalid content extracted from file - {timestamp}: {json_part} (Error: {error})")
 
-    #     try:
-    #
-    #         headers = response.text.split("\n")[0].split(",")
-    #
-    #         row = response.text.split("\n")[row_id + 1].split(",")
-    #         for index in range(len(headers)):
-    #             raw_content[headers[index]] = row[index]
-    #     except IndexError:
-    #         raw_content = None
-    # if raw_content:
-    #     content = {}
-    #     for key, value in raw_content.items():
-    #         try:
-    #             content[key.strip()] = ast.literal_eval(value)
-    #         except:
-    #             content[key.strip()] = value
-    #         if key == "timestamp":
-    #             content[key.strip()] = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    #
-    # return content
+    return content
 
 def _parse_german_number(value)->str|float|int:
     """
@@ -195,169 +122,50 @@ def _parse_german_number(value)->str|float|int:
         return value
 
 
-def _german_content(content, row_id:int|None=None):
-    try:
-        text = content.content.decode("utf-8-sig")
-    except Exception as error:
-        # raise  Exception(f"Failed to parse content from wind-turbine / German (Error: {error})")
-        return None
-
-    if row_id is None or len(text.splitlines()) <= row_id:
-        return None
-
-    raw_content = text.splitlines()[row_id].strip()
-    raw_content = json.loads(raw_content)
+def _decouple_german_content(content):
+    if isinstance(content, str):
+        content = json.loads(content.strip())
     return {
-        key.strip(): _parse_german_number(value)
-        for key, value in raw_content.items()
+        key.strip(): _parse_german_number(value) for key, value in content.items()
     }
 
+def _decouple_content(row, is_german:bool=False):
+    output = row
+    if isinstance(row, str) and (match := TIMESTAMP_RE.match(row)):
+        output = _decouple_vessel_data_format(match)
+    elif is_german:
+        output = _decouple_german_content(content=row)
+    elif isinstance(row, str):
+        try:
+            output = json.loads(row)
+        except Exception as error:
+            raise Exception(f"Failed to parse content from {url} (Error: {error})")
 
-def _standard_json_content(content, row_id:int|None=None, timestamp:str|datetime.datetime|None=None):
-    try:
-        data = content.json()
-        if row_id is not None:
-            return data[row_id]
-        return data
+    if isinstance(output, list):
+        return [
+            _decouple_content(orow) for orow in output
+        ]
 
-    except requests.JSONDecodeError:
-        # fallback to line-based JSON
-        lines = content.text.splitlines()
+    return output
 
-        if timestamp is not None:
-            for line in lines:
-                if str(timestamp) in line:
-                    return json.loads(line.strip())
+def url_read_content(url:str, line:int|None=None, is_german:bool=False):
+    file_name = os.path.basename(url)
+    client = RestClient(conn=url, auth=None, timeout=120)
+    content = client.get_file_data(line_num=line, is_german=is_german, is_csv=file_name.endswith("csv"))
 
-        if row_id is not None and row_id < len(lines):
-            line = lines[row_id].strip()
-            if line and ": {" in line and not line.startswith("{"):
-                timestamp, line = line.split(": ", 1)
-                timestamp = datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+    return _decouple_content(content, is_german=is_german)
 
-            return timestamp, json.loads(line.strip())
-
-        return None
-
-
-def read_json_content(url:str, row_id:int|None=None, timestamp:str|datetime.datetime|None=None, german_format:bool=False, timeout:float=30)->(dict|None) or (dict|None, str):
-    rest_client = Rest
-    if not response:
-        return None
-    elif german_format:
-        return _german_content(content=response, row_id=row_id)
-    else:
-        return _standard_json_content(content=response, row_id=row_id, timestamp=timestamp)
-
-
-
-# def read_json_content(url:str, row_id:int|None=None, timestamp:str|datetime.datetime|None=None, german_format:bool=False, timeout:float=30)->(dict|None) or (dict|None, str):
-#     """
-#     Read content from a given (URL) file
-#     :args:
-#         url:str - URL with files
-#         row_id:int|None - row number to extract content from
-#         timestamp:str|None=None - timestamp for row
-#         german_format:bool - whether data is German format
-#         timeout:float - REST timeout
-#     :params:
-#         response:response.Requests - raw request response
-#         raw_content:dict - raw content from request
-#         content:str|None - actual content to store
-#     :return:
-#         content
-#     """
-#     line = None
-#     response = get_file_content(url=url, timeout=timeout)
-#     is_split = False
-#     if not response:
-#         return None
-#
-#     try:
-#         if german_format:
-#             # Line-by-line JSON (wind turbine format)
-#             locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
-#             text = response.content.decode("utf-8-sig")
-#             rows = [json.loads(line) for line in text.splitlines() if line.strip()]
-#             if row_id:
-#                 raw_content = rows[row_id]
-#         else:
-#             # Standard JSON array
-#             try:
-#                 raw_content = response.json()[row_id]
-#             except requests.JSONDecodeError:
-#                 # Fallback to line-based parsing
-#
-#                 line = None
-#                 if timestamp is not None:
-#                     line = None
-#                     lines = response.text.splitlines()
-#                     for read_lines in lines:
-#                         if timestamp in read_lines:
-#                             line = read_lines
-#                             break
-#
-#                 if not line:
-#                     line = response.text.splitlines()[row_id]
-#                 if line and ": {" in line.strip() and not line.strip().startswith("{"):
-#                     is_split = True
-#                     timestamp, line = line.split(": ", 1)
-#                     try: # convert timestamp to datetime
-#                         timestamp = datetime.datetime.strftime(timestamp, "%Y-%m-%d %H:%M:%S")
-#                     except Exception as error:
-#                         pass
-#                 if line is None:
-#                     print(url)
-#                     exit(1)
-#                 else:
-#                     raw_content = json.loads(line.strip())
-#     except (IndexError, ValueError, json.JSONDecodeError):
-#         return None
-#
-#     if not german_format and not is_split:
-#         return raw_content
-#     elif not german_format:
-#         return timestamp, raw_content
-#
-#     # German numeric normalization
-#     content = {}
-#     for key, value in raw_content.items():
-#         try:
-#             value = locale.atof(value)
-#             if key == "Anlage":
-#                 value = int(value)
-#         except Exception:
-#             pass
-#
-#         try:
-#             content[key.strip()] = ast.literal_eval(value)
-#         except Exception:
-#             content[key.strip()] = value
-#
-#     return content
 
 def read_json_file(file_path:str):
+    """
+    Read JSON file into memory
+    """
     try:
         with open(file_path, 'r') as f:
             return json.load(f)
     except Exception as error:
         raise Exception(f"Failed to read content in {file_path} (Error: {error})")
 
-def timestamp_calculator(timestamp:datetime.datetime, offset:float, id_index:int)->str:
-    """
-    Calculate new timestamp based on base-timestamp
-    :args:
-        timestamp:datetime.datetime - base timestamp
-        id_index:int - row ID
-        offset:float - time offset if  "topic ID" changes
-    :return:
-        updated timestamp based on id_index and offset
-    """
-    try:
-        timestamp += datetime.timedelta(seconds=offset*id_index)
-        return timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f')
-    except Exception as error:
-        raise Exception(f"Failed to calculate timestamp (Error: {error})")
 
 # ====== Mapping code ======
 
