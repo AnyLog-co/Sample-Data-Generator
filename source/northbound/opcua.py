@@ -1,6 +1,5 @@
 from asyncua import ua, Server
 import ast
-import asyncio
 
 
 class OpcuaServer:

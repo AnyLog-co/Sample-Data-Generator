@@ -1,6 +1,5 @@
 import io
 import json
-from typing import Any
 
 import requests
 import csv
