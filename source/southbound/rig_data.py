@@ -104,6 +104,7 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
     while is_active:
         for id_index, (rig_id, file_path) in enumerate(rig_paths.items()):
             row = url_read_content(file_path, line=line_counts[rig_id]["line_num"])
+
             if row:
                 row["timestamp"] = calculate_timestamp(row_id=line_counts[rig_id]["line_num"], off_set=offset_sleep,
                                                        current_timestamp=line_counts[rig_id]["timestamp"],

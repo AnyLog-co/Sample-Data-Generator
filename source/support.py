@@ -3,6 +3,7 @@ import copy
 import datetime
 import json
 import re
+import zoneinfo
 
 from bs4 import BeautifulSoup
 from source.northbound.rest_calls import RestClient
@@ -194,7 +195,7 @@ def read_json_file(file_path:str):
 
 # ========== Timestamp Calculator =====
 def calculate_timestamp(row_id:int, off_set:float, current_timestamp:str|datetime.datetime|None=None,
-                        timezone:datetime.timezone=datetime.timezone.utc):
+                        timezone:datetime.timezone|zoneinfo.ZoneInfo=datetime.timezone.utc):
     """
     Calculate timestamp based on offset - if not provided start at "now"
     :args:

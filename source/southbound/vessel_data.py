@@ -1,12 +1,6 @@
-"""
-1. copy appropriate file(s) into cloud instance (1 time process - manual)
-2. convert to select DLB vs DLT
-3. begin with `vessel`, then get relevant data file(s) based on timestamp
-4. publish data into AnyLog / EdgeLake
-"""
-import datetime
+import copy
 import posixpath
-import time
+import zoneinfo
 
 from source.policies.mappings import BASE_VESSEL_FILES
 from source.policies.mappings import VESSEL_INFO
@@ -16,9 +10,10 @@ from source.northbound.rest_calls import RestClient
 from source.northbound.mqtt_calls import MqttClient
 
 from source.support import get_files_by_url
-# from source.support import
+from source.support import url_read_content
+from source.support import calculate_timestamp
 from source.northbound.rest_functions import publish_data
-from source.support import find_closest_row
+
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/vessel-data/"
 VESSEL_FILES = get_files_by_url(url=DATA_DIR)
@@ -32,69 +27,43 @@ EXPECTED_RESULTS = {table: 0 for table in VESSEL_SCHEMAS}
 FILE_INDEX = {}
 RAW_DATA = {}
 
-def _check_vessels(vessel_ids: list[str] | str = None) -> dict:
+def _check_vessels(vessel_ids:list[str]|str=None)->dict:
     global FILE_INDEX
-    vessel_files = {}
-    if vessel_ids and isinstance(vessel_ids, str):
-        vessels = [vessel_ids]
-    elif vessel_ids and isinstance(vessel_ids, list):
-        vessels = vessel_ids
-    else:
-        vessels = ["DLB", "DLT"]
+    tmp = {}
+    vessel_files = {"DLB": {}, "DLT": {}}
 
-    for base_side in vessels:
-        vessel_files[base_side] = {}
-        for group in BASE_VESSEL_FILES.get(base_side, {}):
-            for fname in BASE_VESSEL_FILES[base_side][group]:
-                if fname in VESSEL_FILES and group not in vessel_files[base_side]:
-                    vessel_files[base_side][group] = [fname]
-                elif fname in VESSEL_FILES:
+
+    if vessel_ids and (isinstance(vessel_ids, str) or isinstance(vessel_ids, list)):
+        vessel_ids = vessel_ids.split(",") if isinstance(vessel_ids, str) else vessel_ids
+        if not any(vessel.endswith("/#") for vessel in vessel_ids):
+            vessel_files = {}
+            for vessel in vessel_ids:
+                if "DLB" in vessel:
+                    vessel_files["DLB"] = {}
+                elif "DLT" in vessel:
+                    vessel_files["DLT"] = {}
+
+    for base_side in vessel_files:
+        for group in BASE_VESSEL_FILES.get(base_side):
+            if vessel_files.get(base_side).get(group) is None:
+                vessel_files[base_side][group]  = []
+            if BASE_VESSEL_FILES.get(base_side).get(group):
+                for fname in BASE_VESSEL_FILES.get(base_side).get(group):
                     vessel_files[base_side][group].append(fname)
 
-    FILE_INDEX = {
-        side: {
-            group: {
-                file: _preload_file_index(posixpath.join(DATA_DIR, file))
-                for file in vessel_files[side][group]
-            }
-            for group in vessel_files[side]
+    for side in vessel_files:
+        tmp[side] = {
+            "line_num": {},
+            "timestamp": {}
         }
-        for side in vessel_files
-    }
+        for group in vessel_files.get(side):
+            for fname in vessel_files.get(side).get(group):
+                tmp[side]["line_num"][fname] = 0
+                tmp[side]["timestamp"][fname] = None
 
+    vessel_files = copy.deepcopy(tmp)
     return vessel_files
 
-
-def _provide_expectations(payload):
-    global EXPECTED_RESULTS
-    global RAW_DATA
-    RAW_DATA = {table: {column: 0 for column in VESSEL_SCHEMAS[table]} for table in VESSEL_SCHEMAS}
-
-    for row in payload:
-        for column in row:
-            for table in RAW_DATA:
-                if RAW_DATA[table].get(column) is not None:
-                    RAW_DATA[table][column] += 1
-
-    for table in EXPECTED_RESULTS:
-        EXPECTED_RESULTS[table] = max(list(RAW_DATA[table].values()))
-
-
-def _preload_file_index(url):
-    response = get_file_content(url)
-    lines = response.text.splitlines()
-    index = []
-
-    for i, line in enumerate(lines):
-        if ": {" in line:
-            ts_str, json_part = line.split(": ", 1)
-            try:
-                ts = datetime.datetime.strptime(ts_str.strip(), "%Y-%m-%d %H:%M:%S")
-                index.append((ts, i))
-            except:
-                continue
-
-    return index
 
 
 def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topics:list[str]|str=None,
@@ -119,92 +88,54 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
         payload:list - payload to publish data
         is_active:bool
         is_null:bool
-    :miising:
+    :mising:
         1. if DLT / DLB in parallel - then it's 2 threads
     """
-
-
     vessel_files = _check_vessels(publish_topics)
 
     counter = 0
     is_active = True
-    # row counter per group
-    row_counts = {
-        side: {group: {file: 0 for file in vessel_files[side][group]} for group in vessel_files[side]} for side in vessel_files
-    }
 
     while is_active:
         for side in vessel_files:
-            base_row = {
-                "dbms": db_name,
-                "side": side,
-                "boat_name": None,
-                "timestamp": timestamp_calculator(timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
-                                                  offset=offset_sleep,  id_index=list(vessel_files.keys()).index(side))
-            }
-
-            target_ts = None
-            side_payload = []
-            for id_index, group in enumerate(vessel_files[side]):
-                if base_row["boat_name"] is None:
-                    base_row["boat_name"] = group.split('_')[0]
-                if not group.endswith("vessel"):
-                    base_row.update({
-                        "motor_id": int(group.split('_')[-1]),
-                        "ip_index": int(group.split("IP_")[-1].split("_")[0]),
-                    })
-
-                for file_name in vessel_files.get(side).get(group):
-                    url = posixpath.join(DATA_DIR, file_name)
-                    file_index = FILE_INDEX[side][group][file_name]
-
-                    row_id = row_counts[side][group][file_name]
-                    if target_ts is not None:
-                        row_id = find_closest_row(index=file_index, target_ts=target_ts)
-                    target_ts, file_row = read_json_content(url=url, timestamp=None, row_id=row_id)
-                    if not file_row:
-                        continue
-
-                    file_row.update(base_row)
-                    side_payload.append(file_row)
-
             payload = []
-            if method.upper() != "PUT":
-                for row in side_payload:
-                    if not payload:
-                        payload.append(row)
-                    # If first payload item has None for all keys in row → update it
-                    elif all(payload[0].get(column) is None for column in row):
-                        payload[0].update(row)
-                    # If ANY existing payload item has all None for row's keys → update that one
-                    elif any(all(item.get(column) is None for column in row) for item in payload):
-                        for item in payload:
-                            if all(item.get(column) is None for column in row):
-                                item.update(row)
-                                break
-                    # Otherwise append
-                    else:
-                        payload.append(row)
+            for filename in vessel_files.get(side).get("line_num"):
+                file_path = posixpath.join(DATA_DIR, filename)
+                row = url_read_content(file_path, line=vessel_files.get(side).get("line_num").get(filename))
+                
+                if row:
+                    row["timestamp"] = calculate_timestamp(row_id=vessel_files[side]["line_num"][filename], off_set=offset_sleep,
+                                                           current_timestamp=vessel_files.get(side).get("timestamp").get(filename),
+                                                           timezone=zoneinfo.ZoneInfo("Europe/Zurich"))
+                    if not vessel_files[side]["timestamp"][filename]:
+                        vessel_files[side]["timestamp"][filename] = row["timestamp"]
 
-            publish_data(
-                method=method,
-                conn=conn,
-                topic=f"{TOPIC}/{side.upper()}",
-                payload=payload if method.upper() != "PUT" and payload else side_payload,  # ← FIX 3: list not dict
-                db_name=db_name,
-                table_name="boat_insight" if method.upper() == "PUT" else None
-            )
+                    if method in ["MQTT", "POST"]:
+                        row["dbms"] = db_name
+                    payload.append(row)
 
-        # ── loop control ──────────────────────────────────────────────
-        payload = []
+                    vessel_files[side]["line_num"][filename] += 1
+                else:
+                    vessel_files[side]["timestamp"][filename] = None
+                    vessel_files[side]["line_num"][filename] = 0
+
+            if payload:
+                publish_data(
+                    method=method,
+                    conn=conn,
+                    topic=f"{TOPIC}/{side.upper()}",
+                    payload=payload, # ← FIX 3: list not dict
+                    db_name=db_name,
+                    table_name="boat_insight" if method.upper() == "PUT" else None
+                )
+
         counter += 1
         if 0 < iterations <= counter:
             is_active = False
-        else:
-            time.sleep(sleep)
 
-#
-# if __name__ == "__main__":
-#     conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)
-#     # conn = RestClient(conn="10.0.0.78:7849", auth=(), timeout=30)
-#     main(method="POST", conn=conn, publish_topics=None, db_name="anotherpeak", iterations=10)
+
+if __name__ == "__main__":
+    # conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)
+    # conn = RestClient(conn="10.0.0.78:7849", auth=(), timeout=30)
+    conn = MqttClient(host="172.104.228.251", port=1883, user="anyloguser", password="mqtt4AnyLog!", timeout=90)
+    main(method="MQTT", conn=conn, publish_topics="DLT", db_name="anotherpeak", iterations=10)
