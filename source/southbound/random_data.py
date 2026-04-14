@@ -3,6 +3,7 @@ import random
 import time
 
 from source.northbound.rest_functions import publish_data
+from source.support import calculate_timestamp
 
 TABLE = "rand_data"
 TOPIC = "rand-data"
@@ -12,7 +13,7 @@ def get_data():
     Generate random data
     """
     return {
-        "timestamp": datetime.datetime.now(tz=datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f'),
+        "timestamp": calculate_timestamp(row_id=0, off_set=0, current_timestamp=None),
         "value": random.random()
     }
 

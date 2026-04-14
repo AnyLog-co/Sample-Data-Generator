@@ -141,7 +141,6 @@ def _decouple_content(row, is_german:bool=False):
             output = json.loads(row)
         except Exception as error:
             raise Exception(f"Failed to parse content from {url} (Error: {error})")
-
     if isinstance(output, list):
         return [
             _decouple_content(orow) for orow in output
@@ -192,6 +191,27 @@ def read_json_file(file_path:str):
             return json.load(f)
     except Exception as error:
         raise Exception(f"Failed to read content in {file_path} (Error: {error})")
+
+# ========== Timestamp Calculator =====
+def calculate_timestamp(row_id:int, off_set:float, current_timestamp:str|datetime.datetime|None=None,
+                        timezone:datetime.timezone=datetime.timezone.utc):
+    """
+    Calculate timestamp based on offset - if not provided start at "now"
+    :args:
+        row_id:int - current row ID
+        off_set:float - timestamp offset
+        current_timestamp:str - starting point timestamp 
+        timezone:str - user defined timezone
+    """
+    timestamp = datetime.datetime.now(tz=timezone)
+
+    if current_timestamp:
+        if isinstance(current_timestamp, str):
+            current_timestamp = datetime.datetime.strptime(current_timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+        timestamp = current_timestamp + datetime.timedelta(seconds=off_set * row_id)
+
+    return timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
 
 
 # ====== Mapping code ======

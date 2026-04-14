@@ -1,12 +1,13 @@
-import datetime
 import posixpath
 import time
+import zoneinfo
+from typing import  Dict
+import re
 
-from typing import Optional, Dict
 from source.policies.mappings import RIG_INFO
 from source.support import get_files_by_url
-from source.support import read_csv_content
-from source.support import timestamp_calculator
+from source.support import url_read_content
+from source.support import calculate_timestamp
 
 from source.northbound.rest_functions import publish_data
 from source.northbound.rest_calls import RestClient
@@ -18,8 +19,17 @@ RIG_FILES = get_files_by_url(url=DATA_DIR)
 TABLE = "rig_data"
 TOPIC = "rig-data"
 
+TIMEZONES = {
+    1:  zoneinfo.ZoneInfo('America/Chicago'),   # Permian Basin, West Texas    UTC-6
+    7:  zoneinfo.ZoneInfo('America/Chicago'),   # Eagle Ford, South Texas      UTC-6
+    12: zoneinfo.ZoneInfo('America/Chicago'),   # Bakken, North Dakota         UTC-6
+    23: zoneinfo.ZoneInfo('America/Chicago'),   # Gulf of Mexico               UTC-6
+    31: zoneinfo.ZoneInfo('America/Denver'),    # Delaware Basin, West Texas   UTC-7
+    44: zoneinfo.ZoneInfo('America/Chicago'),   # STACK, Oklahoma              UTC-6
+}
 
-def _check_rigs(rig_ids:list[str]|str)->list:
+
+def _check_rigs(rig_ids:list[str]|str|None=None)->list:
     """
     Validate Rigs have data (files) and if not specified then set to all rigs
     :args:
@@ -27,28 +37,29 @@ def _check_rigs(rig_ids:list[str]|str)->list:
     :return:
         list of rigs
     """
-    if isinstance(rig_ids, str):
-        try:
-            rig_ids = [int(rig_id) for rig_id in rig_ids.split(",")]
-        except Exception as error:
-            raise TypeError(f"Rig ID is of wrong type; should be numeric - Options: {', '.join(map(str,list(RIG_INFO.keys())))} (Error: {error})")
-
-
-    # check if user input is valid and file(s) exist
-    if rig_ids:
-        for rig_id in rig_ids:
-            if rig_id not in RIG_INFO:
-                raise ValueError(f"Invalid rig {rig_id} in rig options")
-    else:
+    if (isinstance(rig_ids, str) and rig_ids.endswith("/#")) or not rig_ids:
         rig_ids = list(RIG_INFO.keys())
-
-    for rig_id in rig_ids:
-        if rig_id in RIG_INFO:
-            file_name = RIG_INFO.get(rig_id).get("file")
-            if file_name not in RIG_FILES:
-                raise FileNotFoundError(f"Failed to locate {posixpath.join(DATA_DIR, file_name)}")
-        else:
-            raise ValueError(f"Invalid rig {rig_id} in rig options")
+    elif isinstance(rig_ids, int) and rig_ids in list(RIG_INFO.keys()):
+        rig_ids = [rig_ids]
+    elif isinstance(rig_ids, str) or isinstance(rig_ids, list):
+        rigs = rig_ids.split(",") if isinstance(rig_ids, str) else rig_ids
+        rig_ids = []
+        if any(rig.endswith("/#") for rig in rigs):
+            rigs_ids = list(RIG_INFO.keys())
+        elif not rig_ids:
+            for rig in rigs:
+                rig = rig.split('/')[-1] if '/' in rig else rig
+                if re.match(r"^rig-\d+$", rig):
+                    rig = rig.split("-")[-1]
+                try:
+                    rig = int(rig)
+                    file_name = RIG_INFO.get(rig).get("file")
+                    if file_name not in RIG_FILES:
+                        raise FileNotFoundError(f"Failed to locate {posixpath.join(DATA_DIR, file_name)}")
+                    else:
+                        rig_ids.append(rig)
+                except Exception as error:
+                    raise Exception(f"Invalid rig ID {rig} (Error: {error})")
 
     return rig_ids
 
@@ -79,28 +90,37 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
     """
     rig_ids = _check_rigs(rig_ids=publish_topics)
     rig_paths: Dict[str, str] = {rig_id: posixpath.join(DATA_DIR, RIG_INFO[rig_id]["file"]) for rig_id in rig_ids}
-    line_counts: Dict[str, Optional[int]] = {rig_id: 0 for rig_id in rig_ids}
+    # line_counts: Dict[str, Optional[int]] = {rig_id: 0 for rig_id in rig_ids}
+    line_counts = {
+        rig_id: {
+            "line_num": 0,
+            "timestamp": None
+        } for rig_id in rig_ids
 
+    }
     counter = 0
     is_active = True
 
     while is_active:
-        timestamp = datetime.datetime.now(tz=datetime.timezone.utc)
         for id_index, (rig_id, file_path) in enumerate(rig_paths.items()):
-            if line_counts[rig_id] is not None:
-                row = read_csv_content(file_path, row_id=line_counts[rig_id])
-                if row:
-                    row["timestamp"] = timestamp_calculator(timestamp=timestamp, offset=offset_sleep, id_index=id_index)
-                    if method in ["MQTT", "POST"]:
-                        row["dbms"] = db_name
-                        row["table"] = TABLE
+            row = url_read_content(file_path, line=line_counts[rig_id]["line_num"])
+            if row:
+                row["timestamp"] = calculate_timestamp(row_id=line_counts[rig_id]["line_num"], off_set=offset_sleep,
+                                                       current_timestamp=line_counts[rig_id]["timestamp"],
+                                                       timezone=TIMEZONES[rig_id])
+                if method in ["MQTT", "POST"]:
+                    row["dbms"] = db_name
+                    row["table"] = TABLE
 
-                    publish_data(method=method, conn=conn, topic=f"{TOPIC}/rig-{rig_id}", table_name=TABLE, db_name=db_name,
-                                     payload=row)
-                    line_counts[rig_id] += 1
-                else:
-                    line_counts[rig_id] = 0
+                publish_data(method=method, conn=conn, topic=f"{TOPIC}/rig-{rig_id}", table_name=TABLE, db_name=db_name,
+                             payload=row)
 
+                line_counts[rig_id]["line_num"] += 1
+            if not line_counts[rig_id]["timestamp"]:
+                line_counts[rig_id]["timestamp"] = row["timestamp"]
+            elif row is None:
+                line_counts[rig_id]["timestamp"] = None
+                line_counts[rig_id]["line_num"] = 0
 
         counter += 1
         if 0 < iterations <= counter:
@@ -113,4 +133,4 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
 
 
 if __name__ == "__main__":
-    main(method="POST", conn=None, publish_topics="a", db_name="rig_db",  iterations=5)
+    main(method="PRINT", conn=None, publish_topics=f"{TOPIC}/1", db_name="rig_db",  iterations=5)

@@ -8,15 +8,16 @@ import datetime
 import posixpath
 import time
 
-from source.northbound.rest_calls import RestClient
-from source.northbound.mqtt_calls import MqttClient
-from source.support import get_files_by_url, timestamp_calculator
 from source.policies.mappings import BASE_VESSEL_FILES
 from source.policies.mappings import VESSEL_INFO
-from source.support import get_file_content
-from source.northbound.rest_functions import publish_data
-from source.support import read_json_content
 from source.policies.mappings import VESSEL_SCHEMAS
+
+from source.northbound.rest_calls import RestClient
+from source.northbound.mqtt_calls import MqttClient
+
+from source.support import get_files_by_url
+# from source.support import
+from source.northbound.rest_functions import publish_data
 from source.support import find_closest_row
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/vessel-data/"
