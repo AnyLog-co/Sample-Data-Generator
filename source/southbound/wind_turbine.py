@@ -1,16 +1,22 @@
 import datetime
 import posixpath
 import time
+import zoneinfo
 
 from typing import Optional, Dict
-from source.support import get_files_by_url
-from source.support import read_json_content
 
-from source.northbound.rest_functions import publish_data
+from source.policies.mappings import WIND_TURBINE_TABLES
 from source.northbound.rest_calls import RestClient
 from source.northbound.mqtt_calls import MqttClient
-from source.policies.mappings import WIND_TURBINE_TABLES
-from  source.support import timestamp_calculator
+
+from source.support import get_files_by_url
+from source.support import url_read_content
+from source.support import calculate_timestamp
+from source.northbound.rest_functions import publish_data
+
+
+
+
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/wind-turbine/"
 TURBINE_FILES = get_files_by_url(url=DATA_DIR)
@@ -18,6 +24,7 @@ TURBINE_FILES = get_files_by_url(url=DATA_DIR)
 TABLE = "wind_turbine"
 TOPIC = "wind-turbine"
 
+TIMEZONE = zoneinfo.ZoneInfo("Europe/Berlin")
 
 def _check_turbines(turbine_ids:list[int]|str)->list:
     """
@@ -53,12 +60,15 @@ def _turbine_translate(content:dict, timestamp:datetime.datetime, offset_sleep:f
     for table in WIND_TURBINE_TABLES:
         for key, value in WIND_TURBINE_TABLES[table].items():
             if key == "timestamp":
-                updated_content[key] =  timestamp_calculator(timestamp=timestamp, offset=offset_sleep,
-                                                             id_index=id_index)
+                updated_content[key] =  calculate_timestamp(row_id=id_index, off_set=offset_sleep,
+                                                       current_timestamp=timestamp,
+                                                       timezone=zoneinfo.ZoneInfo("Europe/Berlin"))
+
                 # datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")
             elif content.get(value):
                 updated_content[key] = content.get(value)
     return updated_content
+
 
 def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:list[str]|str=None, iterations:int=10,
          sleep:float=10, offset_sleep:float=0.5):
@@ -86,37 +96,41 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
     """
     turbine_ids = _check_turbines(turbine_ids=publish_topics)
     turbine_paths:Dict[str, str] = {turbine_id: posixpath.join(DATA_DIR, f"wind_turbine_{turbine_id}.json") for turbine_id in turbine_ids}
-    line_counts:Dict[str, Optional[int]] = {turbine_id: 0 for turbine_id in turbine_ids}
+    # line_counts:Dict[str, Optional[int]] = {turbine_id: 0 for turbine_id in turbine_ids}
+
+    line_counts = {
+        turbine_id: {
+            "line_num": 0,
+            "timestamp": None
+        } for turbine_id in turbine_ids
+
+    }
 
     counter = 0
     is_active = True
 
     while is_active:
-        payload = []
-        timestamp = datetime.datetime.now(tz=datetime.timezone.utc)
+        timestamp = datetime.datetime.now(tz=TIMEZONE)  # was datetime.timezone.utc
         for id_index, (turbine_id, file_path) in enumerate(turbine_paths.items()):
             if line_counts[turbine_id] is not None:
-                row = read_json_content(file_path, row_id=line_counts[turbine_id], german_format=True)
+                row = url_read_content(file_path, line=line_counts[turbine_id]["line_num"], is_german=True)
 
                 if row:
                     row = _turbine_translate(content=row, timestamp=timestamp, offset_sleep=offset_sleep,
-                                             id_index=id_index)
+                                             id_index=line_counts[turbine_id]["line_num"])
                     if method in ["MQTT", "POST"]:
-                        row.update({
-                            "dbms": db_name,
-                            "table": TABLE
-                        })
+                        row.update({"dbms": db_name, "table": TABLE})
 
-                    publish_data(method=method, conn=conn, topic=f"{TOPIC}/turbine-{row.get('turbine_id')}", table_name=TABLE, db_name=db_name,
-                                 payload=row)
+                    publish_data(method=method, conn=conn, topic=f"{TOPIC}/turbine-{row.get('turbine_id')}",
+                                 table_name=TABLE, db_name=db_name, payload=row)
 
-                    line_counts[turbine_id] += 1
-                    # if len(turbine_ids) > 1:
-                    #     time.sleep(offset_sleep)
+                    line_counts[turbine_id]["line_num"] += 1
+                
+                if not line_counts[turbine_id]["timestamp"]:
+                    line_counts[turbine_id]["timestamp"] = row["timestamp"]
                 else:
-                    line_counts[turbine_id] = None
-
-        # print(payload)
+                    line_counts[turbine_id]["timestamp"] = None
+                    line_counts[turbine_id]["line_num"] = 0
 
         counter += 1
         if 0 < iterations <= counter:
@@ -129,4 +143,4 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
 
 
 if __name__ == "__main__":
-    main(method="POST", conn=None, db_name="rig_db", publish_topics=None, iterations=5)
+    main(method="PRINT", conn=None, db_name="rig_db", publish_topics=None, iterations=5)
