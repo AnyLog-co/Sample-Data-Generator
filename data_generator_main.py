@@ -4,7 +4,7 @@ from source.southbound.random_data import main as rand_data
 from source.southbound.rig_data import main as rig_data
 from source.southbound.vessel_data import main as vessel_data
 from source.southbound.wind_turbine import main as wind_turbine
-from source.southbound.wind_turbine2 import main as wind_turbine2
+#from source.southbound.wind_turbine2 import main as wind_turbine2
 
 from source.southbound.proveit_data import main as proveit_data
 
@@ -331,6 +331,7 @@ def main():
         if not args.skip_inserts:
             wind_turbine(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.ids,
                          iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
+"""
     elif args.data == "wind-turbine2":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             wind_turbine2_msg_client(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest,
@@ -338,7 +339,7 @@ def main():
         elif not args.skip_inserts:
             wind_turbine2(method=args.publish_format, conn=data_conn, publish_topics=args.ids,
                           iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
-
+"""
     elif args.data == "proveit": # conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest
         if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
             pass
