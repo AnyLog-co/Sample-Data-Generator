@@ -295,7 +295,7 @@ def main():
     parser = build_parser(parser=parser)
     args = parser.parse_args()
 
-    imports = _import_parser(data=args.data, skip_insert=args.skip_insert, skip_msg_client=args.skip_msg_client)
+    imports = _import_parser(data=args.data, skip_insert=args.skip_inserts, skip_msg_client=args.skip_msg_client)
     insert_fn = imports.get("insert")
     msg_fn = imports.get("msg_client")
 
