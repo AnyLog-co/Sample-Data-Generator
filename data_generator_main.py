@@ -1,18 +1,5 @@
 import argparse
 
-from source.southbound.random_data import main as rand_data
-from source.southbound.rig_data import main as rig_data
-from source.southbound.vessel_data import main as vessel_data
-from source.southbound.wind_turbine import main as wind_turbine
-#from source.southbound.wind_turbine2 import main as wind_turbine2
-
-from source.southbound.proveit_data import main as proveit_data
-
-from source.policies.random_mapping import main as random_mapping
-from source.policies.wind_turbine_mapping import main as wind_turbine_mapping
-from source.policies.rig_mapping import main as rig_mapping
-from source.policies.vessel_mapping import main as vessel_mapping
-from source.policies.wind_turbine2_mqtt import run_msg_client as wind_turbine2_msg_client, enable_streamer
 
 from source.northbound.mqtt_calls import MqttClient
 from source.northbound.rest_calls import RestClient
@@ -21,6 +8,62 @@ from source.northbound.opcua import OpcuaServer
 from source.policies.mappings import RIG_INFO
 from source.support import extract_credentials
 
+
+def _import_parser(data:str, skip_insert:bool=False, skip_msg_client:bool=False)->dict:
+    """
+    Import `msg client` and data generator based on used defined params as opposed to importing everything
+    :Args:
+        data:str - data generator
+        skip_insert:bool - whether to skip insert or not
+        skip_msg_client:bool - whether to skip message client or not
+    :params:
+        imports:dict defined import functions
+    :return:
+        imports
+    """
+    imports = {}
+
+    if data == "random":
+        if not skip_insert:
+            from source.southbound.random_data import main as rand_data
+            imports["insert"] = rand_data
+        if not skip_msg_client:
+            from source.policies.random_mapping import main as random_mapping
+            imports["msg_client"] = random_mapping
+    elif data == "rig":
+        if not skip_insert:
+            from source.southbound.rig_data import main as rig_data
+            imports["insert"] = rig_data
+        if not skip_msg_client:
+            from source.policies.rig_mapping import main as rig_mapping
+            imports["msg_client"] = rig_mapping
+    elif data == "vessel":
+        if not skip_insert:
+            from source.southbound.vessel_data import main as vessel_data
+            imports["insert"] = vessel_data              # ← was missing
+        if not skip_msg_client:
+            from source.policies.vessel_mapping import main as vessel_mapping
+            imports["msg_client"] = vessel_mapping           # ← was missing
+    elif data == "wind-turbine":
+        if not skip_insert:
+            from source.southbound.wind_turbine import main as wind_turbine
+            imports["insert"] = wind_turbine             # ← was missing
+        if not skip_msg_client:
+            from source.policies.wind_turbine_mapping import main as wind_turbine_mapping
+            imports["msg_client"] = wind_turbine_mapping     # ← was missing
+    elif data == "wind-turbine2":
+        if not skip_insert:
+            from source.southbound.wind_turbine2 import main as wind_turbine2
+            imports["insert"] = wind_turbine2            # ← was missing
+        if not skip_msg_client:
+            from source.policies.wind_turbine2_mqtt import run_msg_client as wind_turbine2_msg_client, enable_streamer
+            imports["msg_client"] = wind_turbine2_msg_client # ← was missing
+    elif data == "proveit":
+        if not skip_insert:
+            from source.southbound.proveit_data import main as proveit_data
+            imports["insert"] = proveit_data             # ← was missing
+
+    return imports
 
 
 def build_parser(parser:argparse.ArgumentParser):
@@ -252,6 +295,10 @@ def main():
     parser = build_parser(parser=parser)
     args = parser.parse_args()
 
+    imports = _import_parser(data=args.data, skip_insert=args.skip_insert, skip_msg_client=args.skip_msg_client)
+    insert_fn = imports.get("insert")
+    msg_fn = imports.get("msg_client")
+
     # -------------------------
     # CONDITIONAL VALIDATION
     # -------------------------
@@ -302,49 +349,48 @@ def main():
     # publish msg client and define data
     if args.data == "random":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
-            random_mapping(conn=control_conn, broker=data_broker, port=data_port, user=data_user, password=data_password,
+            msg_fn(conn=control_conn, broker=data_broker, port=data_port, user=data_user, password=data_password,
                            is_rest=is_rest)
         if not args.skip_inserts:
-            rand_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
+            insert_fn(method=args.publish_format, conn=data_conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
     elif args.data == "rig":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             rig_ids = args.ids[0] if len(args.ids) == 1 else None
-            rig_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, user=data_user,
+            msg_fn(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, user=data_user,
                         password=data_password, rig_id=rig_ids)
         if not args.skip_inserts:
-            rig_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.ids,
+            insert_fn(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.ids,
                      iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
-    if args.data == "vessel": #
+    elif args.data == "vessel": #
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             vessel_ids = args.ids[0] if len(args.ids) == 1 else None
-            vessel_mapping(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest,
+            msg_fn(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest,
                            user=data_user, password=data_password,
                            publish_topics=vessel_ids)
         if not args.skip_inserts:
-            vessel_data(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.ids, iterations=args.repeat,
+            insert_fn(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.ids, iterations=args.repeat,
                         sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "wind-turbine":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
             turbine_id = args.ids[0] if len(args.ids) == 1 else None
-            wind_turbine_mapping(conn=control_conn, broker=data_broker, port=data_port, user=data_user,
+            msg_fn(conn=control_conn, broker=data_broker, port=data_port, user=data_user,
                                  password=data_password, is_rest=is_rest, turbine_id=turbine_id)
         if not args.skip_inserts:
-            wind_turbine(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.ids,
+            insert_fn(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.ids,
                          iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
-"""
+
     elif args.data == "wind-turbine2":
         if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
-            wind_turbine2_msg_client(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest,
+            msg_fn(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest,
                                      db_name=args.db_name, turbine_id=args.ids)
         elif not args.skip_inserts:
-            wind_turbine2(method=args.publish_format, conn=data_conn, publish_topics=args.ids,
+            insert_fn(method=args.publish_format, conn=data_conn, publish_topics=args.ids,
                           iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
-"""
     elif args.data == "proveit": # conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest
         if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
             pass
         if not args.skip_inserts:
-            proveit_data(method=args.publish_format, conn=data_conn, publish_topics=args.topics,
+            insert_fn(method=args.publish_format, conn=data_conn, publish_topics=args.topics,
                          iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
 
 
