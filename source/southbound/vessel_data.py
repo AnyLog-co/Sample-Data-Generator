@@ -1,6 +1,7 @@
 import copy
 import posixpath
 import zoneinfo
+import time
 
 from source.policies.mappings import BASE_VESSEL_FILES
 from source.policies.mappings import VESSEL_INFO
@@ -98,18 +99,43 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
 
     while is_active:
         for side in vessel_files:
+            base_row = {
+                "dbms": db_name,
+                "side": side,
+                "boat_name": None,
+                "motor_id": None,
+                "ip_index": None
+            }
+
             payload = []
             for filename in vessel_files.get(side).get("line_num"):
                 file_path = posixpath.join(DATA_DIR, filename)
+                filename_to_base = filename.split(".json")[0]
+                if filename_to_base.endswith("DEVICE"):
+                    filename_to_base = filename_to_base.rsplit("_DEVICE")[0]
+                base_row["boat_name"] = filename_to_base.split("_")[1] if not base_row.get("boat_name") else base_row.get("boat_name")
+                if not filename_to_base.endswith("vessel"):
+
+                    try:
+                        base_row.update({
+                            "motor_id": int(filename_to_base.split('_')[-1]),
+                            "ip_index": int(filename_to_base.split("IP_")[-1].split("_")[0]),
+                        })
+                    except: 
+                        print(filename_to_base)
+                        exit(1)
+
                 row = url_read_content(file_path, line=vessel_files.get(side).get("line_num").get(filename))
-                
+
+
                 if row:
+                    row.update(base_row)
                     row["timestamp"] = calculate_timestamp(row_id=vessel_files[side]["line_num"][filename], off_set=offset_sleep,
                                                            current_timestamp=vessel_files.get(side).get("timestamp").get(filename),
                                                            timezone=zoneinfo.ZoneInfo("Europe/Zurich"))
                     if not vessel_files[side]["timestamp"][filename]:
                         vessel_files[side]["timestamp"][filename] = row["timestamp"]
-
+                    row["side"] = side
                     if method in ["MQTT", "POST"]:
                         row["dbms"] = db_name
                     payload.append(row)
@@ -128,6 +154,8 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                     db_name=db_name,
                     table_name="boat_insight" if method.upper() == "PUT" else None
                 )
+            else:
+                time.sleep(sleep)
 
         counter += 1
         if 0 < iterations <= counter:
@@ -138,4 +166,4 @@ if __name__ == "__main__":
     # conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)
     # conn = RestClient(conn="10.0.0.78:7849", auth=(), timeout=30)
     conn = MqttClient(host="172.104.228.251", port=1883, user="anyloguser", password="mqtt4AnyLog!", timeout=90)
-    main(method="MQTT", conn=conn, publish_topics="DLT", db_name="anotherpeak", iterations=10)
+    main(method="PRINT", conn=conn, publish_topics="DLT", db_name="anotherpeak", iterations=10)
