@@ -2,9 +2,10 @@ import json
 import time
 from typing import List
 
-from source.northbound.mqtt_calls import MqttClient
+from source.northbound.mqtt import MqttClient
 from source.northbound.rest_calls import RestClient
 from source.northbound.opcua import OpcuaServer
+from source.northbound.kafka import KafkaClient
 
 def publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer, payload:dict|List[dict],  topic:str=None, table_name:str=None,
                  db_name:str=None):
@@ -27,7 +28,7 @@ def publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer, payload:dic
 
     if method == "PRINT":
         print(json.dumps(payload, indent=2))
-    if method == "MQTT":
+    if method in ["MQTT", "KAFKA"]:
         conn.publish_data(topic=topic, payload=payload)
     elif method == "PUT":
         headers.update({

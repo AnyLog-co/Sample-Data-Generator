@@ -24,7 +24,7 @@ def main(method:str, conn, db_name:str="test", iterations:int=10, sleep:float=10
 
     while is_active:
         payload = get_data()
-        if method in ["MQTT", "POST"]:
+        if method in ["MQTT", "POST", "KAFKA"]:
             payload.update({
                 "dbms": db_name,
                 "table": TABLE,

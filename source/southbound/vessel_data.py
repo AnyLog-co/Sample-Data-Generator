@@ -8,7 +8,7 @@ from source.policies.mappings import VESSEL_INFO
 from source.policies.mappings import VESSEL_SCHEMAS
 
 from source.northbound.rest_calls import RestClient
-from source.northbound.mqtt_calls import MqttClient
+from source.northbound.mqtt import MqttClient
 
 from source.support import get_files_by_url
 from source.support import url_read_content
@@ -136,7 +136,7 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                     if not vessel_files[side]["timestamp"][filename]:
                         vessel_files[side]["timestamp"][filename] = row["timestamp"]
                     row["side"] = side
-                    if method in ["MQTT", "POST"]:
+                    if method in ["MQTT", "POST", "KAFKA"]:
                         row["dbms"] = db_name
                     payload.append(row)
 
@@ -146,14 +146,15 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                     vessel_files[side]["line_num"][filename] = 0
 
             if payload:
-                publish_data(
-                    method=method,
-                    conn=conn,
-                    topic=f"{TOPIC}/{side.upper()}",
-                    payload=payload, # ← FIX 3: list not dict
-                    db_name=db_name,
-                    table_name="boat_insight" if method.upper() == "PUT" else None
-                )
+                for row in payload:
+                    publish_data(
+                        method=method,
+                        conn=conn,
+                        topic=f"{TOPIC}/{side.upper()}",
+                        payload=[row], # ← FIX 3: list not dict
+                        db_name=db_name,
+                        table_name="boat_insight" if method.upper() == "PUT" else None
+                    )
             else:
                 time.sleep(sleep)
 
@@ -165,5 +166,5 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
 if __name__ == "__main__":
     # conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)
     # conn = RestClient(conn="10.0.0.78:7849", auth=(), timeout=30)
-    conn = MqttClient(host="172.104.228.251", port=1883, user="anyloguser", password="mqtt4AnyLog!", timeout=90)
-    main(method="PRINT", conn=conn, publish_topics="DLT", db_name="anotherpeak", iterations=10)
+    conn = MqttClient(host="127.0.0.1", port=32150, timeout=90)
+    main(method="MQTT", conn=conn, publish_topics="DLT", db_name="mydb", iterations=10)

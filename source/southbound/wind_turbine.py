@@ -7,7 +7,7 @@ from typing import Optional, Dict
 
 from source.policies.mappings import WIND_TURBINE_TABLES
 from source.northbound.rest_calls import RestClient
-from source.northbound.mqtt_calls import MqttClient
+from source.northbound.mqtt import MqttClient
 
 from source.support import get_files_by_url
 from source.support import url_read_content
@@ -118,7 +118,7 @@ def main(method:str, conn:RestClient|MqttClient, db_name:str, publish_topics:lis
                 if row:
                     row = _turbine_translate(content=row, timestamp=timestamp, offset_sleep=offset_sleep,
                                              id_index=line_counts[turbine_id]["line_num"])
-                    if method in ["MQTT", "POST"]:
+                    if method in ["MQTT", "POST", "KAFKA"]:
                         row.update({"dbms": db_name, "table": TABLE})
 
                     publish_data(method=method, conn=conn, topic=f"{TOPIC}/turbine-{row.get('turbine_id')}",

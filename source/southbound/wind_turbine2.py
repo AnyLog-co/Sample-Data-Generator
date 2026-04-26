@@ -6,7 +6,7 @@ import time
 import concurrent.futures
 
 from source.northbound.rest_calls import RestClient
-from source.northbound.mqtt_calls import MqttClient
+from source.northbound.mqtt import MqttClient
 from source.northbound.opcua import OpcuaServer
 from source.northbound.rest_functions import publish_data
 from source.support import get_files_by_url, read_json_content

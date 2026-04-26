@@ -1,7 +1,8 @@
 import argparse
 
 
-from source.northbound.mqtt_calls import MqttClient
+from source.northbound.mqtt import MqttClient
+from source.northbound.kafka import KafkaClient
 from source.northbound.rest_calls import RestClient
 from source.northbound.opcua import OpcuaServer
 
@@ -79,14 +80,14 @@ def build_parser(parser:argparse.ArgumentParser):
     # RANDOM
     # -------------------------
     random_parser = subparsers.add_parser("random")
-    random_parser.add_argument("publish_format", nargs="?",  choices=["print", "put", "post", "mqtt"],
+    random_parser.add_argument("publish_format", nargs="?",  choices=["print", "put", "post", "mqtt", "kafka"],
                                default="print", help=publish_format_help)
 
     # -------------------------
     # RIG
     # -------------------------
     rig_parser = subparsers.add_parser("rig")
-    rig_parser.add_argument("publish_format", nargs="?", choices=["print", "put", "post", "mqtt"],
+    rig_parser.add_argument("publish_format", nargs="?", choices=["print", "put", "post", "mqtt", "kafka"],
                             default="print", help=publish_format_help)
     rig_parser.add_argument("--ids", type=int, nargs="+", choices=list(RIG_INFO.keys()), default=None,
                             help="Space-separated rig IDs. If omitted, all rigs are used.")
@@ -95,7 +96,7 @@ def build_parser(parser:argparse.ArgumentParser):
     # VESSEL
     # -------------------------
     vessel_parser = subparsers.add_parser("vessel")
-    vessel_parser.add_argument("publish_format", nargs="?", choices=["print", "put", "post", "mqtt"],
+    vessel_parser.add_argument("publish_format", nargs="?", choices=["print", "put", "post", "mqtt", "kafka"],
                                default="print", help=publish_format_help)
     vessel_parser.add_argument("--ids", nargs="+", choices=["DLB", "DLT"], default=None,
                                help="Vessel engine side(s)")
@@ -104,7 +105,7 @@ def build_parser(parser:argparse.ArgumentParser):
     # WIND TURBINE
     # -------------------------
     wt_parser = subparsers.add_parser("wind-turbine")
-    wt_parser.add_argument("publish_format", nargs="?", choices=["print", "post", "mqtt"],
+    wt_parser.add_argument("publish_format", nargs="?", choices=["print", "post", "mqtt", "kafka"],
                            default="print", help=publish_format_help)
     wt_parser.add_argument("--ids", type=int, nargs="+",
                            choices=[i for i in range(1, 12) if i != 4], default=None,
@@ -120,7 +121,7 @@ def build_parser(parser:argparse.ArgumentParser):
             turbine_ids.append(f"farm-{farm_id}/turbine-{turbine_id}")
 
     wt2_parser = subparsers.add_parser("wind-turbine2")
-    wt2_parser.add_argument("publish_format", nargs="?", choices=["print", "post", "mqtt", "opcua"],
+    wt2_parser.add_argument("publish_format", nargs="?", choices=["print", "post", "mqtt", "kafka", "opcua"],
                                 default="print", help=publish_format_help)
     wt2_parser.add_argument("--ids", type=str, nargs="+", choices=turbine_ids, default=None,
                            help="Space-separated turbine IDs.")
@@ -129,7 +130,7 @@ def build_parser(parser:argparse.ArgumentParser):
     # PROVEIT
     # -------------------------
     proveit_parser = subparsers.add_parser("proveit")
-    proveit_parser.add_argument("publish_format", nargs='?', choices=["print", "post", "mqtt", "opcua"],
+    proveit_parser.add_argument("publish_format", nargs='?', choices=["print", "post", "mqtt", "kafka", "opcua"],
                                 default="print", help=publish_format_help)
     proveit_parser.add_argument("--topics", type=str, nargs="+", default="#",
                                 choices=["Enterprise A", "Enterprise A/Dallas/", "Enterprise A/Dallas/Line 1",
@@ -316,7 +317,7 @@ def main():
     elif args.publish_format not in ["MQTT", "OPCUA"] and not args.control_conn and args.data_conn: # warning only
         print(f"Missing `--control-conn` for {args.publish_format}, will not declare mapping or `msg client`")
     # 5. Exception: missing both control_conn and data_conn
-    elif args.publish_format in ["POST", "MQTT"] and not args.control_conn and not args.data_conn:
+    elif args.publish_format in ["POST", "mqtt", "kafka"] and not args.control_conn and not args.data_conn:
         raise argparse.ArgumentError(argument=None, message=f"publishing format {args.publish_format} requires missing connection information")
 
 
@@ -339,6 +340,8 @@ def main():
                 is_rest = True
             elif args.publish_format == "MQTT":
                 data_conn = MqttClient(host=broker, port=port, user=data_user, password=data_password, timeout=args.timeout)
+            elif args.publish_format == "KAFKA":
+                data_conn = KafkaClient(host=broker, port=port, user=data_user, password=data_password, timeout=args.timeout)
             elif args.publish_format == "OPCUA":
                 data_conn = OpcuaServer(host=broker, port=port)
 
@@ -348,13 +351,13 @@ def main():
 
     # publish msg client and define data
     if args.data == "random":
-        if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
+        if control_conn is not None and args.publish_format in ["POST", "mqtt", "kafka"] and not args.skip_msg_client:
             msg_fn(conn=control_conn, broker=data_broker, port=data_port, user=data_user, password=data_password,
                            is_rest=is_rest)
         if not args.skip_inserts:
             insert_fn(method=args.publish_format, conn=data_conn, db_name=args.db_name, iterations=args.repeat, sleep=args.sleep)
     elif args.data == "rig":
-        if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
+        if control_conn is not None and args.publish_format in ["POST", "mqtt", "kafka"] and not args.skip_msg_client:
             rig_ids = args.ids[0] if len(args.ids) == 1 else None
             msg_fn(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest, user=data_user,
                         password=data_password, rig_id=rig_ids)
@@ -362,7 +365,7 @@ def main():
             insert_fn(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.ids,
                      iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "vessel": #
-        if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
+        if control_conn is not None and args.publish_format in ["POST", "mqtt", "kafka"] and not args.skip_msg_client:
             vessel_ids = args.ids[0] if len(args.ids) == 1 else None
             msg_fn(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest,
                            user=data_user, password=data_password,
@@ -371,7 +374,7 @@ def main():
             insert_fn(method=args.publish_format, conn=data_conn, db_name=args.db_name, publish_topics=args.ids, iterations=args.repeat,
                         sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "wind-turbine":
-        if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
+        if control_conn is not None and args.publish_format in ["POST", "mqtt", "kafka"] and not args.skip_msg_client:
             turbine_id = args.ids[0] if len(args.ids) == 1 else None
             msg_fn(conn=control_conn, broker=data_broker, port=data_port, user=data_user,
                                  password=data_password, is_rest=is_rest, turbine_id=turbine_id)
@@ -380,14 +383,14 @@ def main():
                          iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
 
     elif args.data == "wind-turbine2":
-        if control_conn is not None and args.publish_format in ["POST", "MQTT"] and not args.skip_msg_client:
+        if control_conn is not None and args.publish_format in ["POST", "mqtt", "kafka"] and not args.skip_msg_client:
             msg_fn(conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest,
                                      db_name=args.db_name, turbine_id=args.ids)
         elif not args.skip_inserts:
             insert_fn(method=args.publish_format, conn=data_conn, publish_topics=args.ids,
                           iterations=args.repeat, sleep=args.sleep, offset_sleep=args.offset_sleep)
     elif args.data == "proveit": # conn=control_conn, broker=data_broker, port=data_port, is_rest=is_rest
-        if control_conn is not None and args.publish_format in ["POST", "MQTT"]:
+        if control_conn is not None and args.publish_format in ["POST", "mqtt", "kafka"]:
             pass
         if not args.skip_inserts:
             insert_fn(method=args.publish_format, conn=data_conn, publish_topics=args.topics,

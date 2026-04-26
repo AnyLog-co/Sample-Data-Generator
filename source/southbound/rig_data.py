@@ -11,7 +11,7 @@ from source.support import calculate_timestamp
 
 from source.northbound.rest_functions import publish_data
 from source.northbound.rest_calls import RestClient
-from source.northbound.mqtt_calls import MqttClient
+from source.northbound.mqtt import MqttClient
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/rig-data/"
 RIG_FILES = get_files_by_url(url=DATA_DIR)
@@ -109,7 +109,7 @@ def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topic
                 row["timestamp"] = calculate_timestamp(row_id=line_counts[rig_id]["line_num"], off_set=offset_sleep,
                                                        current_timestamp=line_counts[rig_id]["timestamp"],
                                                        timezone=TIMEZONES[rig_id])
-                if method in ["MQTT", "POST"]:
+                if method in ["MQTT", "POST", "KAFKA"]:
                     row["dbms"] = db_name
                     row["table"] = TABLE
 

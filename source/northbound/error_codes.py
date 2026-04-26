@@ -1,6 +1,8 @@
 """
 Dicts with error consistent error message to be used for REST and MQTT
 """
+from kafka.errors import KafkaError
+
 MQTT_ERROR_CODES = {
     -1: "MQTT_ERR_NO_CONN",
     1: "Connection Refused: Unacceptable protocol version",
@@ -11,6 +13,33 @@ MQTT_ERROR_CODES = {
     7: "Connection Lost",
     16: "Malformed MQTT packet",
 }
+
+# CONFLUENT_KAFKA_ERROR_CODES = {
+#     KafkaError._ALL_BROKERS_DOWN:        "All brokers are down",
+#     KafkaError._AUTHENTICATION:          "Authentication failure",
+#     KafkaError._BAD_MSG:                 "Malformed message",
+#     KafkaError.UNKNOWN_TOPIC_OR_PART:    "Unknown topic or partition",
+#     KafkaError.MSG_SIZE_TOO_LARGE:       "Message size too large",
+#     KafkaError.TOPIC_AUTHORIZATION_FAILED: "Topic authorization failed",
+#     KafkaError.BROKER_NOT_AVAILABLE:     "Broker not available",
+#     KafkaError._TIMED_OUT:               "Request timed out",
+#     KafkaError._TRANSPORT:               "Transport failure",
+#     KafkaError._UNKNOWN_PARTITION:       "Unknown partition",
+#     KafkaError._UNKNOWN_TOPIC:           "Unknown topic",
+# }
+
+KAFKA_ERROR_CODES = {
+    "NoBrokersAvailable":           "No brokers available",
+    "KafkaTimeoutError":            "Request timed out",
+    "TopicAuthorizationFailed":     "Topic authorization failed",
+    "MessageSizeTooLargeError":     "Message size too large",
+    "UnknownTopicOrPartitionError": "Unknown topic or partition",
+    "BrokerNotAvailableError":      "Broker not available",
+    "AuthenticationFailedError":    "Authentication failure",
+    "KafkaConnectionError":         "Connection to broker failed",
+}
+
+
 
 REST_EXCEPTION_CODES = {
     1:  "ConnectionError - Failed to establish a new connection",

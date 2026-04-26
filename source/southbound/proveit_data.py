@@ -4,7 +4,7 @@ import concurrent.futures
 import copy
 
 from source.northbound.rest_calls import RestClient
-from source.northbound.mqtt_calls import MqttClient
+from source.northbound.mqtt import MqttClient
 from source.northbound.opcua import OpcuaServer
 from source.southbound.proveit_support import proveit_data
 from source.southbound.proveit_support import proveit_opcua

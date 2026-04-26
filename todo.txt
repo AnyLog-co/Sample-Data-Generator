@@ -1,7 +1,0 @@
-1. `run msg client` - missing username password
-2. proveit-data
-    - mqtt
-    - post
-    - OPC-UA
-3. historical Blobs
-4. updated README
