@@ -1,0 +1,25 @@
+[Unit]
+Description=MQTT ProveIt Generator
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/Sample-Data-Generator
+ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generator/data_generator_main.py \
+  --sleep 1 \
+  --data-conn 0.0.0.0:4842 \
+  --skip-msg-client \
+  --db-name proveit \
+  --repeat 0 proveit opcua \
+  --topic "Enterprise B"
+
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+MemoryMax=200M
+CPUQuota=50%
+
+
+[Install]
+WantedBy=multi-user.target

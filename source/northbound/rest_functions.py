@@ -1,0 +1,135 @@
+import json
+import time
+from typing import List
+
+from source.northbound.mqtt import MqttClient
+from source.northbound.rest_calls import RestClient
+from source.northbound.opcua import OpcuaServer
+from source.northbound.kafka import KafkaClient
+
+
+
+def check_policy(conn:RestClient, policy_type:str=None, **kwargs)->str:
+    """
+    Check
+    Args:
+        conn:
+        policy_type:
+        **kwargs:
+
+    Returns:
+
+    """
+    headers = {
+        "command": f"blockchain get {policy_type if policy_type is not None else '*'}",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if kwargs:
+        headers["command"] += " where"
+        for key, value in kwargs.items():
+            if value is not None and not isinstance(value, int) and not isinstance(value, float):
+                headers["command"] += f' {key}="{value.strip()}" and'
+            elif value is not None:
+                headers["command"] += f' {key}={value} and'
+        headers["command"] = headers["command"].rsplit(" and", 1)[0]
+
+    headers["command"] += " bring [*][id]"
+    response = conn.get_data(headers=headers)
+    return response
+
+def declare_policy(conn:RestClient, policy:dict)->str:
+    """
+    Declare policy on blockchain - if does not exit
+    can be used for
+        - mapping
+        - UNS
+    :args:
+        conn:RestClient - connection to REST
+        policy:dict - Policy to publish
+        kwargs:dict - arguments for WHERE when checking if policy exists
+    :params:
+        policy_id:str - extract policy ID if exists
+    """
+    headers = {
+        "command": "blockchain insert where policy=!new_policy and local=true and master=!ledger_conn",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    policy_type = list(policy.keys())[0]
+    new_policy = f"<new_policy={json.dumps(policy)}>"
+
+    base_id = policy.get(policy_type).get("id")
+    name = policy.get(policy_type).get("name")
+    namespace = policy.get(policy_type).get("namespace")
+    table = policy.get(policy_type).get("table")
+    policy_id = check_policy(conn=conn, policy_type=policy_type, id=base_id, name=name, namespace=namespace, table=table)
+
+    index = 0
+    while not policy_id or policy_id == "[]":
+        if index > 0:
+            raise ConnectionError(f"Failed to publish policy against {conn.url}")
+        conn.publish_data(headers=headers, payload=new_policy, method="POST")
+        time.sleep(0.5)
+        policy_id = check_policy(conn=conn, policy_type=policy_type, id=base_id, name=name, namespace=namespace)
+        index += 1
+
+    return policy_id
+
+
+def check_msg_client(conn:RestClient, topics:str|list):
+    is_topics = False
+    if not isinstance(topics, list):
+        topics = topics.split(',')
+
+
+    for topic in topics:
+        msg_topic = topic.split('name=', 1)[-1].split('and', 1)[0].strip()
+        headers = {
+            "command": f"get msg client where topic={msg_topic}",
+            "User-Agent": "AnyLog/1.23"
+        }
+
+        response = conn.get_data(headers=headers)
+        if not (response.strip() in ["No message client subscriptions", "No such client subscription"]):
+            is_topics = True
+            if len(topics) > 1:
+                print(f"Topic {msg_topic} already defined, cannot define `msg client` for provided topics")
+
+    return is_topics
+
+def declare_msg_client(conn:RestClient, broker:str, port:int, topics:str|list, user:str=None, password:str=None,
+                        is_rest:bool=True):
+    # --- To review ---#
+    is_topics = False
+    if not isinstance(topics, list):
+        topics = topics.split(',')
+
+    if not check_msg_client(conn=conn, topics=topics):
+        declare_msg_client_header = {
+            "command": f"run msg client where broker={broker} and log=false",
+            "User-Agent": "AnyLog/1.23"
+        }
+
+        if broker not in ["rest", "local"] and port:
+            declare_msg_client_header["command"] += f" and port={port}"
+        if user:
+            declare_msg_client_header["command"] += f" and user={user}"
+        if password:
+            declare_msg_client_header["command"] += f" and password={password}"
+        if is_rest:
+            declare_msg_client_header["command"] += f" and user-agent=anylog"
+
+
+        if any("dynamic=True" in topic for topic in topics):
+            declare_msg_client_header["command"] += " and master_node = !ledger_conn"
+        for topic in topics:
+            declare_msg_client_header["command"] += f" and topic={topic}"
+
+
+        # declare_msg_client_header["command"] += f" and user=anyloguser and password=mqtt4AnyLog!"
+
+        print(declare_msg_client_header["command"])
+        conn.publish_data(headers=declare_msg_client_header, payload=None, method="POST")
+
+    return is_topics
