@@ -32,7 +32,6 @@ def _publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer|KafkaClient
                         conn.publish_data(topic=f"{topic}/{idx}", payload=payload[idx]), loop
                     )
             else:
-                print(loop)
                 future = asyncio.run_coroutine_threadsafe(
                     conn.publish_data(topic=topic, payload=payload), loop
                 )
