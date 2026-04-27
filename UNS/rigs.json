@@ -1,0 +1,1652 @@
+[
+  {
+    "uns": {
+      "name": "wits",
+      "uns_layer": "root",
+      "namespace": "wits",
+      "standard": "WITS Level 0",
+      "version": "1.0",
+      "description": "Wellsite Information Transfer Specification - Root Namespace"
+    }
+  },
+  {
+    "uns": {
+      "name": "record01",
+      "uns_layer": "namespace",
+      "namespace": "wits/record01",
+      "parent": "wits",
+      "wits_record": "1",
+      "description": "WITS Record 1 - General Time-Based Drilling Data",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data"
+    }
+  },
+  {
+  "uns": {
+    "name": "RIG-TX-001",
+    "uns_layer": "rig",
+    "namespace": "wits/record01/RIG-TX-001",
+    "parent": "wits/record01",
+    "rig_id": "RIG-TX-001",
+    "rig_name": "Permian Basin",
+    "region": "West Texas",
+    "location": "land",
+    "loc": "31.8498, -102.3614",
+    "dbms": "timbergrove_rigs",
+    "table": "rig_data",
+    "where": "rig_id='RIG-TX-001'"
+  }
+},
+  {
+    "uns": {
+      "name": "RIG-TX-007",
+      "uns_layer": "rig",
+      "namespace": "wits/record01/RIG-TX-007",
+      "parent": "wits/record01",
+      "rig_id": "RIG-TX-007",
+      "rig_name": "Eagle Ford",
+      "region": "South Texas",
+      "location": "land",
+      "loc": "28.9724, -98.6428",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/timestamp",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/timestamp",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "timestamp",
+      "wits_record": "1",
+      "wits_item": "1",
+      "wits_description": "Date and Time",
+      "data_type": "timestamp",
+      "unit": "UTC",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/rig_id",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/rig_id",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "rig_id",
+      "wits_record": "1",
+      "wits_item": "2",
+      "wits_description": "Rig Identifier",
+      "data_type": "string",
+      "unit": "",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/activity",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/activity",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "activity",
+      "wits_record": "1",
+      "wits_item": "4",
+      "wits_description": "Activity Code",
+      "data_type": "string",
+      "unit": "",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/status",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/status",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "status",
+      "wits_record": "1",
+      "wits_item": "5",
+      "wits_description": "Rig Status",
+      "data_type": "string",
+      "unit": "",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/bit_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/bit_depth",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "bit_depth",
+      "wits_record": "1",
+      "wits_item": "7",
+      "wits_description": "Bit Measured Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/measured_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/measured_depth",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "measured_depth",
+      "wits_record": "1",
+      "wits_item": "8",
+      "wits_description": "Hole Measured Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/true_vertical_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/true_vertical_depth",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "true_vertical_depth",
+      "wits_record": "1",
+      "wits_item": "9",
+      "wits_description": "Hole True Vertical Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/rop",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/rop",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "rop",
+      "wits_record": "1",
+      "wits_item": "10",
+      "wits_description": "Rate of Penetration",
+      "data_type": "float",
+      "unit": "ft/hr",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/block_height",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/block_height",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "block_height",
+      "wits_record": "1",
+      "wits_item": "11",
+      "wits_description": "Block Height",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/hookload",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/hookload",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "hookload",
+      "wits_record": "1",
+      "wits_item": "12",
+      "wits_description": "Hookload",
+      "data_type": "float",
+      "unit": "klbf",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/wob",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/wob",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "wob",
+      "wits_record": "1",
+      "wits_item": "14",
+      "wits_description": "Weight on Bit",
+      "data_type": "float",
+      "unit": "klbf",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/hole_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/hole_depth",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "hole_depth",
+      "wits_record": "1",
+      "wits_item": "15",
+      "wits_description": "Hole Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/rpm",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/rpm",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "rpm",
+      "wits_record": "1",
+      "wits_item": "16",
+      "wits_description": "Rotary Speed",
+      "data_type": "float",
+      "unit": "rpm",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/torque",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/torque",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "torque",
+      "wits_record": "1",
+      "wits_item": "17",
+      "wits_description": "Rotary Torque",
+      "data_type": "float",
+      "unit": "ft-klbf",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/standpipe_pressure",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/standpipe_pressure",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "standpipe_pressure",
+      "wits_record": "1",
+      "wits_item": "18",
+      "wits_description": "Standpipe Pressure",
+      "data_type": "float",
+      "unit": "psi",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/choke_pressure",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/choke_pressure",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "choke_pressure",
+      "wits_record": "1",
+      "wits_item": "20",
+      "wits_description": "Choke Pressure",
+      "data_type": "float",
+      "unit": "psi",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/flow_rate",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/flow_rate",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "flow_rate",
+      "wits_record": "1",
+      "wits_item": "24",
+      "wits_description": "Pump Output Flow Rate",
+      "data_type": "float",
+      "unit": "gal/min",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/mud_weight_in",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/mud_weight_in",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "mud_weight_in",
+      "wits_record": "1",
+      "wits_item": "27",
+      "wits_description": "Mud Weight In",
+      "data_type": "float",
+      "unit": "g/cc",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/mud_weight_out",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/mud_weight_out",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "mud_weight_out",
+      "wits_record": "1",
+      "wits_item": "28",
+      "wits_description": "Mud Weight Out",
+      "data_type": "float",
+      "unit": "g/cc",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/mud_temp_in",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/mud_temp_in",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "mud_temp_in",
+      "wits_record": "1",
+      "wits_item": "29",
+      "wits_description": "Mud Temperature In",
+      "data_type": "float",
+      "unit": "degF",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/mud_temp_out",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/mud_temp_out",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "mud_temp_out",
+      "wits_record": "1",
+      "wits_item": "30",
+      "wits_description": "Mud Temperature Out",
+      "data_type": "float",
+      "unit": "degF",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-001/total_gas",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-001/total_gas",
+      "parent": "wits/record01/RIG-TX-001",
+      "rig_id": "RIG-TX-001",
+      "column": "total_gas",
+      "wits_record": "1",
+      "wits_item": "38",
+      "wits_description": "Total Gas",
+      "data_type": "float",
+      "unit": "%",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-001'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/rig_id",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/rig_id",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "rig_id",
+      "wits_record": "1",
+      "wits_item": "2",
+      "wits_description": "Rig Identifier",
+      "data_type": "string",
+      "unit": "",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/activity",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/activity",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "activity",
+      "wits_record": "1",
+      "wits_item": "4",
+      "wits_description": "Activity Code",
+      "data_type": "string",
+      "unit": "",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/status",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/status",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "status",
+      "wits_record": "1",
+      "wits_item": "5",
+      "wits_description": "Rig Status",
+      "data_type": "string",
+      "unit": "",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/bit_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/bit_depth",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "bit_depth",
+      "wits_record": "1",
+      "wits_item": "7",
+      "wits_description": "Bit Measured Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/measured_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/measured_depth",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "measured_depth",
+      "wits_record": "1",
+      "wits_item": "8",
+      "wits_description": "Hole Measured Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/true_vertical_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/true_vertical_depth",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "true_vertical_depth",
+      "wits_record": "1",
+      "wits_item": "9",
+      "wits_description": "Hole True Vertical Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/rop",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/rop",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "rop",
+      "wits_record": "1",
+      "wits_item": "10",
+      "wits_description": "Rate of Penetration",
+      "data_type": "float",
+      "unit": "ft/hr",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/block_height",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/block_height",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "block_height",
+      "wits_record": "1",
+      "wits_item": "11",
+      "wits_description": "Block Height",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/hookload",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/hookload",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "hookload",
+      "wits_record": "1",
+      "wits_item": "12",
+      "wits_description": "Hookload",
+      "data_type": "float",
+      "unit": "klbf",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/wob",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/wob",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "wob",
+      "wits_record": "1",
+      "wits_item": "14",
+      "wits_description": "Weight on Bit",
+      "data_type": "float",
+      "unit": "klbf",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/hole_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/hole_depth",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "hole_depth",
+      "wits_record": "1",
+      "wits_item": "15",
+      "wits_description": "Hole Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/rpm",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/rpm",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "rpm",
+      "wits_record": "1",
+      "wits_item": "16",
+      "wits_description": "Rotary Speed",
+      "data_type": "float",
+      "unit": "rpm",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/torque",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/torque",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "torque",
+      "wits_record": "1",
+      "wits_item": "17",
+      "wits_description": "Rotary Torque",
+      "data_type": "float",
+      "unit": "ft-klbf",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/standpipe_pressure",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/standpipe_pressure",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "standpipe_pressure",
+      "wits_record": "1",
+      "wits_item": "18",
+      "wits_description": "Standpipe Pressure",
+      "data_type": "float",
+      "unit": "psi",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/choke_pressure",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/choke_pressure",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "choke_pressure",
+      "wits_record": "1",
+      "wits_item": "20",
+      "wits_description": "Choke Pressure",
+      "data_type": "float",
+      "unit": "psi",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/flow_rate",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/flow_rate",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "flow_rate",
+      "wits_record": "1",
+      "wits_item": "24",
+      "wits_description": "Pump Output Flow Rate",
+      "data_type": "float",
+      "unit": "gal/min",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/mud_weight_in",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/mud_weight_in",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "mud_weight_in",
+      "wits_record": "1",
+      "wits_item": "27",
+      "wits_description": "Mud Weight In",
+      "data_type": "float",
+      "unit": "g/cc",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/mud_weight_out",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/mud_weight_out",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "mud_weight_out",
+      "wits_record": "1",
+      "wits_item": "28",
+      "wits_description": "Mud Weight Out",
+      "data_type": "float",
+      "unit": "g/cc",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/mud_temp_in",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/mud_temp_in",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "mud_temp_in",
+      "wits_record": "1",
+      "wits_item": "29",
+      "wits_description": "Mud Temperature In",
+      "data_type": "float",
+      "unit": "degF",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/mud_temp_out",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/mud_temp_out",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "mud_temp_out",
+      "wits_record": "1",
+      "wits_item": "30",
+      "wits_description": "Mud Temperature Out",
+      "data_type": "float",
+      "unit": "degF",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-TX-007/total_gas",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-TX-007/total_gas",
+      "parent": "wits/record01/RIG-TX-007",
+      "rig_id": "RIG-TX-007",
+      "column": "total_gas",
+      "wits_record": "1",
+      "wits_item": "38",
+      "wits_description": "Total Gas",
+      "data_type": "float",
+      "unit": "%",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-TX-007'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012",
+      "uns_layer": "rig",
+      "namespace": "wits/record01/RIG-ND-012",
+      "parent": "wits/record01",
+      "rig_id": "RIG-ND-012",
+      "rig_name": "Bakken",
+      "region": "North Dakota",
+      "location": "land",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/timestamp",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/timestamp",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "timestamp",
+      "wits_record": "1",
+      "wits_item": "1",
+      "wits_description": "Date and Time",
+      "data_type": "timestamp",
+      "unit": "UTC",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/rig_id",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/rig_id",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "rig_id",
+      "wits_record": "1",
+      "wits_item": "2",
+      "wits_description": "Rig Identifier",
+      "data_type": "string",
+      "unit": "",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/activity",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/activity",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "activity",
+      "wits_record": "1",
+      "wits_item": "4",
+      "wits_description": "Activity Code",
+      "data_type": "string",
+      "unit": "",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/status",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/status",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "status",
+      "wits_record": "1",
+      "wits_item": "5",
+      "wits_description": "Rig Status",
+      "data_type": "string",
+      "unit": "",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/bit_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/bit_depth",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "bit_depth",
+      "wits_record": "1",
+      "wits_item": "7",
+      "wits_description": "Bit Measured Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/measured_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/measured_depth",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "measured_depth",
+      "wits_record": "1",
+      "wits_item": "8",
+      "wits_description": "Hole Measured Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/true_vertical_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/true_vertical_depth",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "true_vertical_depth",
+      "wits_record": "1",
+      "wits_item": "9",
+      "wits_description": "Hole True Vertical Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/rop",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/rop",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "rop",
+      "wits_record": "1",
+      "wits_item": "10",
+      "wits_description": "Rate of Penetration",
+      "data_type": "float",
+      "unit": "ft/hr",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/block_height",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/block_height",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "block_height",
+      "wits_record": "1",
+      "wits_item": "11",
+      "wits_description": "Block Height",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/hookload",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/hookload",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "hookload",
+      "wits_record": "1",
+      "wits_item": "12",
+      "wits_description": "Hookload",
+      "data_type": "float",
+      "unit": "klbf",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/wob",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/wob",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "wob",
+      "wits_record": "1",
+      "wits_item": "14",
+      "wits_description": "Weight on Bit",
+      "data_type": "float",
+      "unit": "klbf",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/hole_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/hole_depth",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "hole_depth",
+      "wits_record": "1",
+      "wits_item": "15",
+      "wits_description": "Hole Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/rpm",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/rpm",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "rpm",
+      "wits_record": "1",
+      "wits_item": "16",
+      "wits_description": "Rotary Speed",
+      "data_type": "float",
+      "unit": "rpm",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/torque",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/torque",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "torque",
+      "wits_record": "1",
+      "wits_item": "17",
+      "wits_description": "Rotary Torque",
+      "data_type": "float",
+      "unit": "ft-klbf",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/standpipe_pressure",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/standpipe_pressure",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "standpipe_pressure",
+      "wits_record": "1",
+      "wits_item": "18",
+      "wits_description": "Standpipe Pressure",
+      "data_type": "float",
+      "unit": "psi",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/choke_pressure",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/choke_pressure",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "choke_pressure",
+      "wits_record": "1",
+      "wits_item": "20",
+      "wits_description": "Choke Pressure",
+      "data_type": "float",
+      "unit": "psi",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/flow_rate",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/flow_rate",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "flow_rate",
+      "wits_record": "1",
+      "wits_item": "24",
+      "wits_description": "Pump Output Flow Rate",
+      "data_type": "float",
+      "unit": "gal/min",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/mud_weight_in",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/mud_weight_in",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "mud_weight_in",
+      "wits_record": "1",
+      "wits_item": "27",
+      "wits_description": "Mud Weight In",
+      "data_type": "float",
+      "unit": "g/cc",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/mud_weight_out",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/mud_weight_out",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "mud_weight_out",
+      "wits_record": "1",
+      "wits_item": "28",
+      "wits_description": "Mud Weight Out",
+      "data_type": "float",
+      "unit": "g/cc",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/mud_temp_in",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/mud_temp_in",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "mud_temp_in",
+      "wits_record": "1",
+      "wits_item": "29",
+      "wits_description": "Mud Temperature In",
+      "data_type": "float",
+      "unit": "degF",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/mud_temp_out",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/mud_temp_out",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "mud_temp_out",
+      "wits_record": "1",
+      "wits_item": "30",
+      "wits_description": "Mud Temperature Out",
+      "data_type": "float",
+      "unit": "degF",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-ND-012/total_gas",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-ND-012/total_gas",
+      "parent": "wits/record01/RIG-ND-012",
+      "rig_id": "RIG-ND-012",
+      "column": "total_gas",
+      "wits_record": "1",
+      "wits_item": "38",
+      "wits_description": "Total Gas",
+      "data_type": "float",
+      "unit": "%",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-ND-012'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023",
+      "uns_layer": "rig",
+      "namespace": "wits/record01/RIG-GOM-023",
+      "parent": "wits/record01",
+      "rig_id": "RIG-GOM-023",
+      "rig_name": "Deepwater",
+      "region": "Gulf of Mexico",
+      "location": "offshore",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/timestamp",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/timestamp",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "timestamp",
+      "wits_record": "1",
+      "wits_item": "1",
+      "wits_description": "Date and Time",
+      "data_type": "timestamp",
+      "unit": "UTC",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/rig_id",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/rig_id",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "rig_id",
+      "wits_record": "1",
+      "wits_item": "2",
+      "wits_description": "Rig Identifier",
+      "data_type": "string",
+      "unit": "",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/activity",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/activity",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "activity",
+      "wits_record": "1",
+      "wits_item": "4",
+      "wits_description": "Activity Code",
+      "data_type": "string",
+      "unit": "",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/status",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/status",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "status",
+      "wits_record": "1",
+      "wits_item": "5",
+      "wits_description": "Rig Status",
+      "data_type": "string",
+      "unit": "",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/bit_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/bit_depth",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "bit_depth",
+      "wits_record": "1",
+      "wits_item": "7",
+      "wits_description": "Bit Measured Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/measured_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/measured_depth",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "measured_depth",
+      "wits_record": "1",
+      "wits_item": "8",
+      "wits_description": "Hole Measured Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/true_vertical_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/true_vertical_depth",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "true_vertical_depth",
+      "wits_record": "1",
+      "wits_item": "9",
+      "wits_description": "Hole True Vertical Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/rop",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/rop",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "rop",
+      "wits_record": "1",
+      "wits_item": "10",
+      "wits_description": "Rate of Penetration",
+      "data_type": "float",
+      "unit": "ft/hr",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/block_height",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/block_height",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "block_height",
+      "wits_record": "1",
+      "wits_item": "11",
+      "wits_description": "Block Height",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/hookload",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/hookload",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "hookload",
+      "wits_record": "1",
+      "wits_item": "12",
+      "wits_description": "Hookload",
+      "data_type": "float",
+      "unit": "klbf",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/wob",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/wob",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "wob",
+      "wits_record": "1",
+      "wits_item": "14",
+      "wits_description": "Weight on Bit",
+      "data_type": "float",
+      "unit": "klbf",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/hole_depth",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/hole_depth",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "hole_depth",
+      "wits_record": "1",
+      "wits_item": "15",
+      "wits_description": "Hole Depth",
+      "data_type": "float",
+      "unit": "ft",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/rpm",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/rpm",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "rpm",
+      "wits_record": "1",
+      "wits_item": "16",
+      "wits_description": "Rotary Speed",
+      "data_type": "float",
+      "unit": "rpm",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/torque",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/torque",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "torque",
+      "wits_record": "1",
+      "wits_item": "17",
+      "wits_description": "Rotary Torque",
+      "data_type": "float",
+      "unit": "ft-klbf",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/standpipe_pressure",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/standpipe_pressure",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "standpipe_pressure",
+      "wits_record": "1",
+      "wits_item": "18",
+      "wits_description": "Standpipe Pressure",
+      "data_type": "float",
+      "unit": "psi",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/choke_pressure",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/choke_pressure",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "choke_pressure",
+      "wits_record": "1",
+      "wits_item": "20",
+      "wits_description": "Choke Pressure",
+      "data_type": "float",
+      "unit": "psi",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/flow_rate",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/flow_rate",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "flow_rate",
+      "wits_record": "1",
+      "wits_item": "24",
+      "wits_description": "Pump Output Flow Rate",
+      "data_type": "float",
+      "unit": "gal/min",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/mud_weight_in",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/mud_weight_in",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "mud_weight_in",
+      "wits_record": "1",
+      "wits_item": "27",
+      "wits_description": "Mud Weight In",
+      "data_type": "float",
+      "unit": "g/cc",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/mud_weight_out",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/mud_weight_out",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "mud_weight_out",
+      "wits_record": "1",
+      "wits_item": "28",
+      "wits_description": "Mud Weight Out",
+      "data_type": "float",
+      "unit": "g/cc",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/mud_temp_in",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/mud_temp_in",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "mud_temp_in",
+      "wits_record": "1",
+      "wits_item": "29",
+      "wits_description": "Mud Temperature In",
+      "data_type": "float",
+      "unit": "degF",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/mud_temp_out",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/mud_temp_out",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "mud_temp_out",
+      "wits_record": "1",
+      "wits_item": "30",
+      "wits_description": "Mud Temperature Out",
+      "data_type": "float",
+      "unit": "degF",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  },
+  {
+    "uns": {
+      "name": "RIG-GOM-023/total_gas",
+      "uns_layer": "tag",
+      "namespace": "wits/record01/RIG-GOM-023/total_gas",
+      "parent": "wits/record01/RIG-GOM-023",
+      "rig_id": "RIG-GOM-023",
+      "column": "total_gas",
+      "wits_record": "1",
+      "wits_item": "38",
+      "wits_description": "Total Gas",
+      "data_type": "float",
+      "unit": "%",
+      "dbms": "timbergrove_rigs",
+      "table": "rig_data",
+      "where": "rig_id='RIG-GOM-023'"
+    }
+  }
+]

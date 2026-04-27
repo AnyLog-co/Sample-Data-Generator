@@ -1,31 +1,51 @@
-FROM python:3.9-alpine as base
+# -----------------------------
+# Base image
+# -----------------------------
+FROM python:3.11-slim AS base
 
 WORKDIR /app
-RUN mkdir -p /app/Sample-Data-Generator/blobs \
-    /app/Sample-Data-Generator/blobs/car_video \
-    /app/Sample-Data-Generator/blobs/factory_images \
-    /app/Sample-Data-Generator/blobs/people_video \
-    /app/Sample-Data-Generator/blobs/models \
-    /app/Sample-Data-Generator/data_generator \
-    /app/Sample-Data-Generator/data_publisher
 
-COPY blobs/car_video /app/Sample-Data-Generator/blobs/car_video
-COPY blobs/factory_images /app/Sample-Data-Generator/blobs/factory_images
-COPY blobs/people_video /app/Sample-Data-Generator/blobs/people_video
-COPY blobs/models /app/Sample-Data-Generator/blobs/models
-COPY blobs/factory_images.json /app/Sample-Data-Generator/blobs/factory_images.json
+# Copy application files
+COPY data_generator_main.py Sample-Data-Generator/
+COPY requirements.txt .
+COPY run.sh .
 
-COPY data_generator/* /app/Sample-Data-Generator/data_generator
-COPY data_publisher/* /app/Sample-Data-Generator/data_publisher
-COPY requirements.txt /app/Sample-Data-Generator/requirements.txt
-COPY data_generator.py /app/Sample-Data-Generator/data_generator.py
-COPY data_generator.sh /app/Sample-Data-Generator/data_generator.sh
+# Copy full source-original tree
+COPY source-original/ Sample-Data-Generator/source/
 
-RUN apk update && apk upgrade && \
-    apk add bash python3 python3-dev py3-pip && \
+# Install system dependencies and Python packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3-dev build-essential && \
+    rm -rf /var/lib/apt/lists/* && \
     python3 -m pip install --upgrade pip && \
-    python3 -m pip install --upgrade -r /app/Sample-Data-Generator/requirements.txt
+    pip install --no-cache-dir -r requirements.txt
 
-FROM base AS deployment
-#ENTRYPOINT ["/bin/bash"]
-ENTRYPOINT bash /app/Sample-Data-Generator/data_generator.sh
+# -----------------------------
+# Runtime image
+# -----------------------------
+FROM python:3.11-slim AS runtime
+
+WORKDIR /app
+
+# Copy installed Python libraries and scripts from base
+COPY --from=base /usr/local/lib/python3.11 /usr/local/lib/python3.11
+COPY --from=base /usr/local/bin /usr/local/bin
+COPY --from=base /app /app
+
+# Environment variables for all data generator options
+ENV HELP="" \
+    DATA="" \
+    PUBLISH_FORMAT="print" \
+    RIG_IDS="" \
+    VESSEL_IDS="" \
+    TURBINE_IDS="" \
+    PROVEIT_TOPICS="" \
+    CONN="" \
+    DB_NAME="test" \
+    REPEAT=10 \
+    TIMEOUT=60 \
+    SLEEP=15 \
+    OFFSET_SLEEP=0.5
+
+# Entrypoint
+ENTRYPOINT ["bash", "/app/run.sh"]

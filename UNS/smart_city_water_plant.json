@@ -1,0 +1,970 @@
+[
+  {
+    "uns": {
+      "name": "wp_analog",
+      "namespace": "Smart_City/Water_Plant/wp_analog",
+      "uns_level": "equipment_group",
+      "description": "Table 'wp_analog' on 172.105.60.50:32148 (dbms=cos)",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "cluster": "172.105.60.50:32148",
+      "parent": "7a19611092159686a1c5f236261fb9b6",
+      "id": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "chemicalscale1ai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/chemicalscale1ai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "612c48b6176725091bf86220e148f70c",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "chemicalscale1ai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/chemicalscale1ai/chemicalscale1ai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "chemicalscale1ai_pv",
+      "data_type": "numeric",
+      "unit": "kg",
+      "sensor_type": "weight",
+      "parent": "612c48b6176725091bf86220e148f70c",
+      "id": "3d0bc90e3b0b5088e68bbaf592727b18",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "chemicalscale2ai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/chemicalscale2ai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "70be86c95d0e183385f40b88234d611d",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "chemicalscale2ai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/chemicalscale2ai/chemicalscale2ai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "chemicalscale2ai_pv",
+      "data_type": "numeric",
+      "unit": "kg",
+      "sensor_type": "weight",
+      "parent": "70be86c95d0e183385f40b88234d611d",
+      "id": "2b0d125fc748aebb0c94ee65db7bbdca",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "chemicalscale3ai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/chemicalscale3ai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "23a2806366e71582875c2fc88c085a35",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "chemicalscale3ai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/chemicalscale3ai/chemicalscale3ai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "chemicalscale3ai_pv",
+      "data_type": "numeric",
+      "unit": "kg",
+      "sensor_type": "weight",
+      "parent": "23a2806366e71582875c2fc88c085a35",
+      "id": "0f322f3bab39fafa047de7cae85a9ee7",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "chemicalscale4ai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/chemicalscale4ai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "898493c7d1e0eb854b0bca7aa1aa6e2f",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "chemicalscale4ai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/chemicalscale4ai/chemicalscale4ai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "chemicalscale4ai_pv",
+      "data_type": "numeric",
+      "unit": "kg",
+      "sensor_type": "weight",
+      "parent": "898493c7d1e0eb854b0bca7aa1aa6e2f",
+      "id": "58fd58c9aa079d8f0dd112cc1cf3b0f4",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "phai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/phai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "d2c50d715d27a998b619ce337f264e2b",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "phai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/phai/phai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "phai_pv",
+      "data_type": "numeric",
+      "unit": "pH",
+      "sensor_type": "ph",
+      "parent": "d2c50d715d27a998b619ce337f264e2b",
+      "id": "b49f08e3c4a06881265bef51babcf6b7",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "combinedchlorinatorai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/combinedchlorinatorai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "db7c243d79303f97a327dcef1e26f967",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "combinedchlorinatorai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/combinedchlorinatorai/combinedchlorinatorai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "combinedchlorinatorai_pv",
+      "data_type": "numeric",
+      "unit": "ppm",
+      "sensor_type": "chlorine",
+      "parent": "db7c243d79303f97a327dcef1e26f967",
+      "id": "8947059a0402160f5a2ccf74f6178a4c",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "freechlorinatorai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/freechlorinatorai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "43801943c788836a313f228cb47630f9",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "freechlorinatorai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/freechlorinatorai/freechlorinatorai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "freechlorinatorai_pv",
+      "data_type": "numeric",
+      "unit": "ppm",
+      "sensor_type": "chlorine",
+      "parent": "43801943c788836a313f228cb47630f9",
+      "id": "1bb7cdf04bcbae10a1568310d91e3650",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "rawwatermeterai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/rawwatermeterai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "4f064a6d865352a31a9075f8bf334524",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "rawwatermeterai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/rawwatermeterai/rawwatermeterai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "rawwatermeterai_pv",
+      "data_type": "numeric",
+      "unit": "gpm",
+      "sensor_type": "flow",
+      "parent": "4f064a6d865352a31a9075f8bf334524",
+      "id": "354bb06fa452ba3259594e61ac77018b",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "watertowerlevelai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/watertowerlevelai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "7e090582faa93f47abc97b0cdfcee34e",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "watertowerlevelai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/watertowerlevelai/watertowerlevelai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "watertowerlevelai_pv",
+      "data_type": "numeric",
+      "unit": "%",
+      "sensor_type": "level",
+      "parent": "7e090582faa93f47abc97b0cdfcee34e",
+      "id": "27bd655c2fd5496be65e25b1a18871b4",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "combinedturbidityai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/combinedturbidityai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "3dfa67ac0568a6a6258181c0f33c55c7",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "combinedturbidityai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/combinedturbidityai/combinedturbidityai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "combinedturbidityai_pv",
+      "data_type": "double",
+      "unit": "NTU",
+      "sensor_type": "turbidity",
+      "parent": "3dfa67ac0568a6a6258181c0f33c55c7",
+      "id": "2d85fe695e256a720bf7d73b158438d3",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "filter1turbidityai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/filter1turbidityai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "7bec3a008e7d3c4898c8c5db8c361fe0",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "filter1turbidityai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/filter1turbidityai/filter1turbidityai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "filter1turbidityai_pv",
+      "data_type": "double",
+      "unit": "NTU",
+      "sensor_type": "turbidity",
+      "parent": "7bec3a008e7d3c4898c8c5db8c361fe0",
+      "id": "dcd5d3322b3c0cb0180582bb3cc94e56",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "filter2turbidityai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/filter2turbidityai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "8519028424ed6db8042e7dae62ef9d1a",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "filter2turbidityai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/filter2turbidityai/filter2turbidityai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "filter2turbidityai_pv",
+      "data_type": "double",
+      "unit": "NTU",
+      "sensor_type": "turbidity",
+      "parent": "8519028424ed6db8042e7dae62ef9d1a",
+      "id": "3d4b3dd1d10d6b112b6d981ff1959c0d",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "filter3turbidityai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/filter3turbidityai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "8d63ce50980fe19744679945ca126ef2",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "filter3turbidityai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/filter3turbidityai/filter3turbidityai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "filter3turbidityai_pv",
+      "data_type": "double",
+      "unit": "NTU",
+      "sensor_type": "turbidity",
+      "parent": "8d63ce50980fe19744679945ca126ef2",
+      "id": "2fc7ead5454da6d1b4062b02f15f38c1",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "rawwatermetertotalizer",
+      "namespace": "Smart_City/Water_Plant/wp_analog/rawwatermetertotalizer",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "8833eed0c6faaf2c853192ac05d699b9",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "rawwatermetertotalizer_curday",
+      "namespace": "Smart_City/Water_Plant/wp_analog/rawwatermetertotalizer/rawwatermetertotalizer_curday",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "rawwatermetertotalizer_curday",
+      "data_type": "numeric",
+      "unit": "gal",
+      "sensor_type": "totalizer",
+      "parent": "8833eed0c6faaf2c853192ac05d699b9",
+      "id": "787ae9463ebb93955093894758000dd7",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "rawwatermetertotalizer_yesday",
+      "namespace": "Smart_City/Water_Plant/wp_analog/rawwatermetertotalizer/rawwatermetertotalizer_yesday",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "rawwatermetertotalizer_yesday",
+      "data_type": "numeric",
+      "unit": "gal",
+      "sensor_type": "totalizer",
+      "parent": "8833eed0c6faaf2c853192ac05d699b9",
+      "id": "7ce320e07ec17bb344055fa34c7fc6b0",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "carbonfeeder_speedai",
+      "namespace": "Smart_City/Water_Plant/wp_analog/carbonfeeder_speedai",
+      "uns_level": "device",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "parent": "cb6feb6c23d6f7f7ff62930a9b0f184a",
+      "id": "a73da191c54a8ef752781b314f8e341f",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "carbonfeeder_speedai_pv",
+      "namespace": "Smart_City/Water_Plant/wp_analog/carbonfeeder_speedai/carbonfeeder_speedai_pv",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_analog",
+      "column": "carbonfeeder_speedai_pv",
+      "data_type": "numeric",
+      "unit": "%",
+      "sensor_type": "speed",
+      "parent": "a73da191c54a8ef752781b314f8e341f",
+      "id": "b733704d80f0f80127b6442dbea8ace3",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "wp_digital",
+      "namespace": "Smart_City/Water_Plant/wp_digital",
+      "uns_level": "equipment_group",
+      "description": "Table 'wp_digital' on 172.105.60.50:32148 (dbms=cos)",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "cluster": "172.105.60.50:32148",
+      "parent": "7a19611092159686a1c5f236261fb9b6",
+      "id": "5ab6beafa42459d98b67e42f53216f0b",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "atsnormalrdydi",
+      "namespace": "Smart_City/Water_Plant/wp_digital/atsnormalrdydi",
+      "uns_level": "device",
+      "description": "ATS normal ready",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "eb00a8d5b71926c67b0e357b21b5f12f",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/atsnormalrdydi/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "atsnormalrdydi",
+      "data_type": "boolean",
+      "sensor_type": "ats",
+      "parent": "eb00a8d5b71926c67b0e357b21b5f12f",
+      "id": "4d623ddb8cfb09131e5639901e6f8255",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "atsonstandbydi",
+      "namespace": "Smart_City/Water_Plant/wp_digital/atsonstandbydi",
+      "uns_level": "device",
+      "description": "ATS on standby",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "88de194e9433d2194040416bf17eb18c",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/atsonstandbydi/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "atsonstandbydi",
+      "data_type": "boolean",
+      "sensor_type": "ats",
+      "parent": "88de194e9433d2194040416bf17eb18c",
+      "id": "0d51cbab439a7b0e0a11ae87ad5c2463",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "atsstandybyrdydi",
+      "namespace": "Smart_City/Water_Plant/wp_digital/atsstandybyrdydi",
+      "uns_level": "device",
+      "description": "ATS standby ready",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "27f9a02fea752a3f1b6bb078e34b45ec",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/atsstandybyrdydi/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "atsstandybyrdydi",
+      "data_type": "boolean",
+      "sensor_type": "ats",
+      "parent": "27f9a02fea752a3f1b6bb078e34b45ec",
+      "id": "9a82fe9e57954a2b18742b880510c13a",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "clearwellhighleveldi",
+      "namespace": "Smart_City/Water_Plant/wp_digital/clearwellhighleveldi",
+      "uns_level": "device",
+      "description": "Clearwell high level",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "d1213905db78e55373b2af39c1cb9696",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/clearwellhighleveldi/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "clearwellhighleveldi",
+      "data_type": "boolean",
+      "sensor_type": "level",
+      "parent": "d1213905db78e55373b2af39c1cb9696",
+      "id": "a1b80075695dc07375032a4e328a7a3a",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "clearwelllowleveldi",
+      "namespace": "Smart_City/Water_Plant/wp_digital/clearwelllowleveldi",
+      "uns_level": "device",
+      "description": "Clearwell low level",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "17c85e18a05551e832631aa82d6d9c27",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/clearwelllowleveldi/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "clearwelllowleveldi",
+      "data_type": "boolean",
+      "sensor_type": "level",
+      "parent": "17c85e18a05551e832631aa82d6d9c27",
+      "id": "a2c264cac961002892157ebae86cb714",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "generatoralarmdi",
+      "namespace": "Smart_City/Water_Plant/wp_digital/generatoralarmdi",
+      "uns_level": "device",
+      "description": "Generator alarm",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "c20669ab2eea9b5921925cae3a205568",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/generatoralarmdi/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "generatoralarmdi",
+      "data_type": "boolean",
+      "sensor_type": "alarm",
+      "parent": "c20669ab2eea9b5921925cae3a205568",
+      "id": "6b75da187a7b66402911383a4e02f88c",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "generatorstatusdi",
+      "namespace": "Smart_City/Water_Plant/wp_digital/generatorstatusdi",
+      "uns_level": "device",
+      "description": "Generator status",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "4bd5ff42fd452837ad0454bb8556bd3f",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/generatorstatusdi/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "generatorstatusdi",
+      "data_type": "boolean",
+      "sensor_type": "status",
+      "parent": "4bd5ff42fd452837ad0454bb8556bd3f",
+      "id": "d8ce5254ead1db7f715308f4862a502c",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "oxygenmonitordi",
+      "namespace": "Smart_City/Water_Plant/wp_digital/oxygenmonitordi",
+      "uns_level": "device",
+      "description": "Oxygen monitor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "d7c70e9bdba1c08ef2072121c840aafb",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/oxygenmonitordi/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "oxygenmonitordi",
+      "data_type": "boolean",
+      "sensor_type": "monitor",
+      "parent": "d7c70e9bdba1c08ef2072121c840aafb",
+      "id": "3010215e397ff315ac0691d9a41ede30",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "plantrunningdi",
+      "namespace": "Smart_City/Water_Plant/wp_digital/plantrunningdi",
+      "uns_level": "device",
+      "description": "Plant running",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "e459dccd4aab96bb743014c3fd32187e",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/plantrunningdi/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "plantrunningdi",
+      "data_type": "boolean",
+      "sensor_type": "status",
+      "parent": "e459dccd4aab96bb743014c3fd32187e",
+      "id": "bac7fdb355f2c82e212511eefc494393",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "plantstartdi",
+      "namespace": "Smart_City/Water_Plant/wp_digital/plantstartdi",
+      "uns_level": "device",
+      "description": "Plant start",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "b2c059d4a08d35877e6f82a1743746b7",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/plantstartdi/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "plantstartdi",
+      "data_type": "boolean",
+      "sensor_type": "control",
+      "parent": "b2c059d4a08d35877e6f82a1743746b7",
+      "id": "78a808b8f32880b1f0188fa17b59c09f",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "servicepump1running_di",
+      "namespace": "Smart_City/Water_Plant/wp_digital/servicepump1running_di",
+      "uns_level": "device",
+      "description": "Service pump 1 running",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "d6fb0196bd7c0d5dc3f4839c3a0ae508",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/servicepump1running_di/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "servicepump1running_di",
+      "data_type": "boolean",
+      "sensor_type": "status",
+      "parent": "d6fb0196bd7c0d5dc3f4839c3a0ae508",
+      "id": "0d30f92e7392466612cd08407bc9536b",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "servicepump2running_di",
+      "namespace": "Smart_City/Water_Plant/wp_digital/servicepump2running_di",
+      "uns_level": "device",
+      "description": "Service pump 2 running",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "b0443215ab8fa356f8369067dfb91e52",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/servicepump2running_di/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "servicepump2running_di",
+      "data_type": "boolean",
+      "sensor_type": "status",
+      "parent": "b0443215ab8fa356f8369067dfb91e52",
+      "id": "31c95e480d1b738f266bcbd9c24bb300",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "plantshutdowndo",
+      "namespace": "Smart_City/Water_Plant/wp_digital/plantshutdowndo",
+      "uns_level": "device",
+      "description": "Plant shutdown",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "89afcf91b6675850b4bbba3f573aac86",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/plantshutdowndo/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "plantshutdowndo",
+      "data_type": "boolean",
+      "sensor_type": "control",
+      "parent": "89afcf91b6675850b4bbba3f573aac86",
+      "id": "4eb2164fabfbb031c05ffaaeedd5795e",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "watertowerlevelcommsdi",
+      "namespace": "Smart_City/Water_Plant/wp_digital/watertowerlevelcommsdi",
+      "uns_level": "device",
+      "description": "Water tower level comms",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "dc9436d73558b49ee1c36d4c1841933b",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/watertowerlevelcommsdi/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "watertowerlevelcommsdi",
+      "data_type": "boolean",
+      "sensor_type": "comms",
+      "parent": "dc9436d73558b49ee1c36d4c1841933b",
+      "id": "935973160e9c5c1de6a8b20c993bc934",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "plantenablechemicalsdo",
+      "namespace": "Smart_City/Water_Plant/wp_digital/plantenablechemicalsdo",
+      "uns_level": "device",
+      "description": "Plant enable chemicals",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "08a0c89aeb881a722df9f9a05b8e70b8",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/plantenablechemicalsdo/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "plantenablechemicalsdo",
+      "data_type": "boolean",
+      "sensor_type": "control",
+      "parent": "08a0c89aeb881a722df9f9a05b8e70b8",
+      "id": "6e9e305c1ab5c77459fce47c564b8909",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "combinedchlorinatorvacdi",
+      "namespace": "Smart_City/Water_Plant/wp_digital/combinedchlorinatorvacdi",
+      "uns_level": "device",
+      "description": "Combined chlorinator vacuum",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "1e871288ad6501d506f11cdfcd6184ed",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/combinedchlorinatorvacdi/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "combinedchlorinatorvacdi",
+      "data_type": "boolean",
+      "sensor_type": "vacuum",
+      "parent": "1e871288ad6501d506f11cdfcd6184ed",
+      "id": "b13ac25804f81ffd6cdd0704246fb472",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "freechlorinatorvacdi",
+      "namespace": "Smart_City/Water_Plant/wp_digital/freechlorinatorvacdi",
+      "uns_level": "device",
+      "description": "Free chlorinator vacuum",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "7c5266c5f0fae8f4667e0238ca4d8175",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/freechlorinatorvacdi/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "freechlorinatorvacdi",
+      "data_type": "boolean",
+      "sensor_type": "vacuum",
+      "parent": "7c5266c5f0fae8f4667e0238ca4d8175",
+      "id": "26130324da5f87a2a6800b0f7385579c",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "carbonfeeder_runningfwd",
+      "namespace": "Smart_City/Water_Plant/wp_digital/carbonfeeder_runningfwd",
+      "uns_level": "device",
+      "description": "Carbon feeder running forward",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "parent": "5ab6beafa42459d98b67e42f53216f0b",
+      "id": "182f97ace6c6b3b54d2ad0df925163d9",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  },
+  {
+    "uns": {
+      "name": "value",
+      "namespace": "Smart_City/Water_Plant/wp_digital/carbonfeeder_runningfwd/value",
+      "uns_level": "sensor",
+      "dbms": "cos",
+      "table": "wp_digital",
+      "column": "carbonfeeder_runningfwd",
+      "data_type": "boolean",
+      "sensor_type": "status",
+      "parent": "182f97ace6c6b3b54d2ad0df925163d9",
+      "id": "68193c2b00cd904c5c31bd9ca6d009e0",
+      "date": "2026-01-01T00:00:00.000000Z"
+    }
+  }
+]

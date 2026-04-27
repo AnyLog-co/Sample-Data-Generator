@@ -1,0 +1,88 @@
+import copy
+import posixpath
+
+from source.northbound.rest_calls import RestClient
+
+from source.support import url_read_content
+from source.support import get_files_by_url
+from source.support import mapping_param
+from source.policies.mappings import BASE_POLICY
+from source.policies.mappings import VESSEL_SCHEMAS
+from source.northbound.rest_functions import check_msg_client
+from source.northbound.rest_functions import declare_policy
+from source.northbound.rest_functions import declare_msg_client
+
+# from source-original.support import to_snake
+
+DATA_DIR = "http://45.33.11.32/Sample-Data/vessel-data/"
+VESSEL_FILES = get_files_by_url(url=DATA_DIR)
+
+TOPIC = "vessel-data"
+LOCAL_BASE_POLICY = copy.deepcopy(BASE_POLICY)
+
+for column in VESSEL_SCHEMAS.get("_metadata"):
+    LOCAL_BASE_POLICY["mapping"]["schema"][column] = {
+        **({"type": "int"} if column in ["ip_index", "motor_id"] else {}),
+        **({"type": "string"} if column in ["boat_name", "side"] else {}),
+        "bring": f"[{column}]",
+        **({"default": None} if column in ["ip_index", "motor_id"] else {}),
+        **({"default": ""} if column in ["boat_name", "side"] else {})
+    }
+
+
+
+# , =None, port:int, is_rest:bool=False
+def main(conn:RestClient|None, broker:str, port:int, publish_topics:str|None=None, user=None, password:str=None,
+         is_rest:bool=False):
+    topics = f"(name={TOPIC}/{publish_topics.upper()} " if publish_topics is not None else f"(name={TOPIC}/# "
+    if not check_msg_client(conn=conn, topics=topics):
+        columns = {}
+        for fname in VESSEL_FILES: # extract all columns and corresponding types
+            # print(fname)
+            url = posixpath.join(DATA_DIR, fname)
+            for row_id in range(3):
+                row = url_read_content(url=url, line=row_id, is_german=False)
+                # _, row = read_json_content(url=url, row_id=row_id, timestamp=None, german_format=False, timeout=30)
+                for column in row:
+                    if column not in columns:
+                        columns[column] = []
+                    if type(row.get(column)) not in columns.get(column):
+                        columns[column].append(type(row.get(column)))
+
+        for table in VESSEL_SCHEMAS:
+            if table != "_metadata":
+                mapping_policy = copy.deepcopy(LOCAL_BASE_POLICY)
+                topic = table.upper().replace('_', '-')
+                mapping_policy["mapping"]["id"] = topic
+                mapping_policy["mapping"]["table"] = table
+                topics += f" and policy={table.upper().replace('_', '-')}"
+                mapping_policy["mapping"]["schema"].update({"__start__": {"script": [f"set {topic}_counter = 0"]}})
+                for column in VESSEL_SCHEMAS[table]:
+                    if columns.get(column) is not None:
+                        data_type = mapping_param(columns.get(column))
+                        mapping_policy["mapping"]["schema"].update({
+                           column: {
+                                "type": data_type,
+                                "bring": f"[{column}]",
+                                "default": None if data_type in ["int", "float"] else "",
+                               "optional": True,
+                               "script": [f"if [{column}] then {topic}_counter = incr !{topic}_counter"]
+                            }
+                        })
+                mapping_policy["mapping"]["schema"]["__end__"] = {"script": [f"if !{topic}_counter == 0 then streaming data ignore event"]}
+
+                declare_policy(conn=conn, policy=mapping_policy)
+
+        topics += ')'
+        declare_msg_client(conn=conn, broker=broker, port=port, topics=topics, user=user, password=password,
+                           is_rest=is_rest)
+
+
+
+
+if __name__ == "__main__":
+    conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30 )
+    # conn = RestClient(conn="10.0.0.78:7849", auth=(), timeout=30)
+    main(conn=conn, broker="rest", port=32149 , is_rest=True)
+    # main(conn=conn, broker="rest", port=7849 , is_rest=True)
+

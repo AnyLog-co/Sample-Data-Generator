@@ -1,0 +1,77 @@
+name: Version Update & Docker Build
+
+on:
+  push:
+    branches:
+      - main
+      - pre-develop
+#      - os-dev
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Get setup.cfg
+        run: |
+          git checkout origin/os-dev -- setup.cfg
+
+      - name: Run version update script
+        run: python .github/workflows/generate_git_id.py
+
+      - name: Commit updated setup.cfg
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add setup.cfg
+          git diff --cached --quiet || git commit -m "chore: update version [os-dev] [skip ci]"
+          git pull --rebase origin ${GITHUB_REF_NAME}
+          git push
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: update-version
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Pull latest
+        run: git pull origin ${GITHUB_REF_NAME}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push
+        run: |
+          bash image_builder.sh \
+            --tag ${GITHUB_REF_NAME} \
+            --platform linux/amd64,linux/arm64 \
+            --push

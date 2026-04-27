@@ -1,0 +1,64 @@
+[
+  {
+    "uns": {
+      "name": "Smart City",
+      "namespace": "Smart_City",
+      "uns_level": "enterprise",
+      "loc": "39.9032, -95.8006",
+      "id": "beb7f0330ad6bc9e93a3da18c1a7978c",
+      "date": "2026-01-01T00:00:00.000000Z",
+      "ledger": "global"
+    }
+  },
+  {
+    "uns": {
+      "name": "Power Plant",
+      "namespace": "Smart_City/Power_Plant",
+      "isa95": {
+        "level": "L3",
+        "entity": "Site",
+        "standard": "ISA-95"
+      },
+      "description": "City of Sabetha Municipal Power Plant \u2014 11 dual-fuel generator units, 18,000 kW capacity.",
+      "loc": "39.9049, -95.8034",
+      "parent": "beb7f0330ad6bc9e93a3da18c1a7978c",
+      "id": "3cd74390633a53bdc0780bf8bfd6c283",
+      "date": "2026-01-01T00:00:00.000000Z",
+      "ledger": "global"
+    }
+  },
+  {
+    "uns": {
+      "name": "Water Plant",
+      "namespace": "Smart_City/Water_Plant",
+      "isa95": {
+        "level": "L3",
+        "entity": "Site",
+        "standard": "ISA-95"
+      },
+      "description": "Lavon Wenger Water Treatment Plant \u2014 fed by Pony Creek Lake, 192nd Road north of Sabetha.",
+      "loc": "39.9142, -95.7930",
+      "parent": "beb7f0330ad6bc9e93a3da18c1a7978c",
+      "id": "7a19611092159686a1c5f236261fb9b6",
+      "date": "2026-01-01T00:00:00.000000Z",
+      "ledger": "global"
+    }
+  },
+  {
+    "uns": {
+      "name": "Waste Water Plant",
+      "namespace": "Smart_City/Waste_Water_Plant",
+      "isa95": {
+        "level": "L3",
+        "entity": "Site",
+        "standard": "ISA-95"
+      },
+      "description": "Sabetha Wastewater Treatment Facility \u2014 approximately 1 mile south of Sabetha.",
+      "loc": "39.8887, -95.8006",
+      "parent": "beb7f0330ad6bc9e93a3da18c1a7978c",
+      "id": "34c46c20783b14ba24ab112f0d482c1c",
+      "date": "2026-01-01T00:00:00.000000Z",
+      "ledger": "global"
+    }
+  }
+]
