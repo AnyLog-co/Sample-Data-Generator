@@ -4,14 +4,20 @@ import asyncio
 from source.northbound.opcua import OpcuaServer
 from source.southbound.random_data import main as rand_data
 from source.southbound.vessel_data import main as vessel_data
+from source.southbound.rig_data import main as rig_data
+from source.southbound.wind_turbine import main as wind_turbine
+from source.southbound.wind_turbine2 import main as wind_turbine2
 
-OPCUA = {
+OPCUA_PORTS = {
     "rand": 4841,
     "vessel": 4842,
+    "rigs": 4843,
+    "wind-turbine": 4844,
+    "wind-turbine2": 4844
 }
 
 async def opcua_main(generator:str, db_name:str, iterations:int, wait_time:float, standalone_value:bool):
-    conn = OpcuaServer(host="0.0.0.0", port=OPCUA[generator])
+    conn = OpcuaServer(host="0.0.0.0", port=OPCUA_PORTS[generator])
     await conn.connect()
 
     # run the sync data generator in a thread executor
@@ -29,10 +35,28 @@ async def opcua_main(generator:str, db_name:str, iterations:int, wait_time:float
             lambda: vessel_data(method="OPCUA", conn=conn, db_name=db_name, iterations=iterations, sleep=wait_time,
                                 standalone_values=standalone_value, loop=loop)
         )
+    elif generator == "rigs":
+        await loop.run_in_executor(
+            None,
+            lambda : rig_data(method="OPCUA", conn=conn, db_name=db_name, iterations=iterations, sleep=wait_time,
+                              offset_sleep=0.5, standalone_values=standalone_value, loop=loop)
+        )
+    elif generator == "wind-turbine":
+        await loop.run_in_executor(
+            None,
+            lambda: wind_turbine(method="OPCUA", conn=conn, db_name=db_name, iterations=iterations, sleep=wait_time,
+                                 offset_sleep=0.5, standalone_values=standalone_value, loop=loop)
+        )
+    elif generator == "wind-turbine2":
+        await loop.run_in_executor(
+            None,
+            lambda: wind_turbine2(method="OPCUA", conn=conn, db_name=db_name, iterations=iterations, sleep=wait_time,
+                                 offset_sleep=0.5, standalone_values=standalone_value, loop=loop)
+        )
 
 def main():
     parse = argparse.ArgumentParser()
-    parse.add_argument("generator", type=str, default="rand", choices=["rand", "vessel"], help="data generator option")
+    parse.add_argument("generator", type=str, default="rand", choices=list(OPCUA_PORTS), help="data generator option")
     parse.add_argument("--method", type=str, default="print", help="how to publish data",
                        choices=["print", "put", "mqtt", "post", "kafka", "opcua"], )
     parse.add_argument("--conn", type=str, default="127.0.0.1:32149",
@@ -58,7 +82,15 @@ def main():
     elif args.generator == "vessel":
         vessel_data(method=args.method, conn=conn, db_name=args.db_name, iterations=args.iterations,
                     sleep=args.wait_time, standalone_values=args.standalone_values, loop=None)
-
+    elif args.generator == "rigs":
+        rig_data(method=args.method, conn=conn, db_name=args.db_name, iterations=args.iterations, sleep=args.wait_time,
+                 offset_sleep=0.5, standalone_values=args.standalone_values, loop=None)
+    elif args.generator == "wind-turbine":
+        wind_turbine(method=args.method, conn=conn, db_name=args.db_name, iterations=args.iterations, sleep=args.wait_time,
+                 offset_sleep=0.5, standalone_values=args.standalone_values, loop=None)
+    elif args.generator == "wind-turbine2":
+        wind_turbine(method=args.method, conn=conn, db_name=args.db_name, iterations=args.iterations, sleep=args.wait_time,
+                 offset_sleep=0.5, standalone_values=args.standalone_values, loop=None)
 
 
 

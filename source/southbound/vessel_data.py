@@ -9,6 +9,7 @@ from source.policies.mappings import VESSEL_SCHEMAS
 
 from source.northbound.rest_calls import RestClient
 from source.northbound.mqtt import MqttClient
+from source.northbound.opcua import OpcuaServer
 
 # from source.southbound.support import get_files_by_url
 from source.southbound.support import get_files_by_url
@@ -68,7 +69,7 @@ def _check_vessels(vessel_ids:list[str]|str=None)->dict:
 
 
 
-def main(method:str, conn:RestClient|MqttClient|None, db_name:str, publish_topics:list[str]|str=None,
+def main(method:str, conn:RestClient|MqttClient|OpcuaServer|None, db_name:str, publish_topics:list[str]|str=None,
          iterations: int = 10, sleep:float=10, offset_sleep:float=0.5, standalone_values:bool=False, loop=None):
     """
     main for publishing vessel (boat) data

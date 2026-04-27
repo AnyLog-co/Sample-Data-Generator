@@ -65,6 +65,7 @@ def publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer|KafkaClient,
     if method == "PRINT":
         topic = f"{topic} - " if topic else ""
         print(f"{topic}{json.dumps(payload, indent=2)}")
+        exit(1)
     elif method == "PUT":
         headers.update({
             "type": "json",
@@ -79,7 +80,7 @@ def publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer|KafkaClient,
                          db_name=db_name, table_name=table_name, standalone_values=standalone_values, loop=loop)
     elif standalone_values and method in ["MQTT", "KAFKA", "POST", "OPCUA"] and isinstance(payload, dict):
         for key, value in payload.items():
-            key = f"{idx}/{key}" if key and idx >= 0 else key
+            key = f"{idx}/{key}" if key and (idx is not None and idx >= 0) else key
             _publish_data(method=method, conn=conn, topic=f"{topic}/{key}", payload=value, headers=headers, loop=loop)
     elif method in ["MQTT", "KAFKA", "POST", "OPCUA"]:
         _publish_data(method=method, conn=conn, topic=topic, payload=payload, headers=headers, loop=loop)

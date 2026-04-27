@@ -85,9 +85,9 @@ def _get_file_line(url: str, line_num: int, is_german: bool = False, timeout: fl
         with requests.get(url, timeout=timeout, stream=True) as response:
             response.raise_for_status()
             for current_line, raw in enumerate(response.iter_lines(), start=1):
-                if is_csv and current_line == 1:
+                if is_csv and header_row is None:
                     header_row = next(csv.reader(io.StringIO(raw.decode(encoding))))
-
+                    line_num += 1
                 if current_line == line_num:
                     decoded = raw.decode(encoding)
                     if is_csv:
