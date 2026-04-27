@@ -1,0 +1,5 @@
+asyncua>=0.9.96
+beautifulsoup4>=4.12.3
+kafka-python>=2.0.2
+paho-mqtt>=1.6.1
+requests>=2.31.0

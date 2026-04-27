@@ -89,3 +89,22 @@ def publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer|KafkaClient,
         raise Exception(f"Invalid publish type {method}")
 
 
+def configure_connection(method:str, conn:str, timeout:float=30):
+    auth = ()
+    if '@' in auth:
+        auth, conn = conn.split('@')
+        auth = tuple(auth.split(':'))
+    host, port = conn.split(':')
+
+    if method in ["POST", "PUT"]:
+        conn = RestClient(conn=conn, auth=auth, timeout=timeout)
+    elif method in ["MQTT", "KAFKA"] :
+        FNC = MqttClient if method == "MQTT" else KafkaClient
+        user = None
+        password = None
+        if auth:
+            user, password = auth
+        conn = FNC(host=host, port=int(port), user=user, password=password)
+
+    return conn
+

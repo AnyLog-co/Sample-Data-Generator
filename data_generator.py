@@ -8,6 +8,7 @@ from source.southbound.rig_data import main as rig_data
 from source.southbound.wind_turbine import main as wind_turbine
 from source.southbound.wind_turbine2 import main as wind_turbine2
 from source.southbound.proveit_data import main as proveit
+from source.northbound.support import configure_connection
 
 OPCUA_PORTS = {
     "rand": 4841,
@@ -63,12 +64,32 @@ async def opcua_main(generator:str, db_name:str, iterations:int, wait_time:float
         )
 
 def main():
+    """
+    positional arguments:
+      {rand,vessel,rigs,wind-turbine,wind-turbine2,proveit}
+                            data generator option
+
+    options:
+      -h, --help            show this help message and exit
+      --method {print,put,mqtt,post,kafka,opcua}
+                            how to publish data
+      --conn CONN           MQTT or REST connection {user}:{password}@{ip}:{port}
+                            if OPC-UA then connection is based on generator
+      --db-name DB_NAME     logical database name
+      --iterations ITERATIONS
+                            Number of iterations - if 0 run continuously
+      --wait-time WAIT_TIME
+                            wait time between data sets (in seconds)
+      --standalone-values [STANDALONE_VALUES]
+                            If data is in JSON format or list of JSONs, then
+                            publish each value under its own subtopic
+    """
     parse = argparse.ArgumentParser()
     parse.add_argument("generator", type=str, default="rand", choices=list(OPCUA_PORTS), help="data generator option")
     parse.add_argument("--method", type=str, default="print", help="how to publish data",
                        choices=["print", "put", "mqtt", "post", "kafka", "opcua"], )
     parse.add_argument("--conn", type=str, default="127.0.0.1:32149",
-                       help="MQTT or REST connection {user}:{password}:{ip}{port} if OPC-UA then connection is based on generator")
+                       help="MQTT or REST connection {user}:{password}@{ip}:{port} if OPC-UA then connection is based on generator")
     parse.add_argument("--db-name", type=str, default="mydb", help="logical database name")
     parse.add_argument("--iterations", type=int, default=10,
                        help="Number of iterations - if 0 run continuously")
@@ -77,8 +98,12 @@ def main():
                        help="If data is in JSON format or list of JSONs, then publish each value under its own subtopic")
     args = parse.parse_args()
 
-    conn = None
     args.method = args.method.upper()
+    conn = None
+    if args.conn and args.method in ["POST", "PUT", "MQTT", "KAFAKA"]:
+        conn = configure_connection(method=args.method, conn=args.conn, timeout=30)
+
+
 
     if args.method == "OPCUA":
         asyncio.run(opcua_main(generator=args.generator, db_name=args.db_name, iterations=args.iterations,
@@ -97,8 +122,12 @@ def main():
         wind_turbine(method=args.method, conn=conn, db_name=args.db_name, iterations=args.iterations, sleep=args.wait_time,
                  offset_sleep=0.5, standalone_values=args.standalone_values, loop=None)
     elif args.generator == "wind-turbine2":
-        wind_turbine(method=args.method, conn=conn, db_name=args.db_name, iterations=args.iterations, sleep=args.wait_time,
+        wind_turbine2(method=args.method, conn=conn, db_name=args.db_name, iterations=args.iterations, sleep=args.wait_time,
                  offset_sleep=0.5, standalone_values=args.standalone_values, loop=None)
+    elif args.generator == "proveit":
+        args.method = "post" if args.method == "put" else args.method
+        proveit(method=args.method, conn=conn, db_name=args.db_name, iterations=args.iterations, sleep=args.wait_time,
+                offset_sleep=0.5, standalone_values=args.standalone_values, loop=None)
 
 
 
