@@ -3,9 +3,11 @@ import asyncio
 
 from source.northbound.opcua import OpcuaServer
 from source.southbound.random_data import main as rand_data
+from source.southbound.vessel_data import main as vessel_data
 
 OPCUA = {
     "rand": 4841,
+    "vessel": 4842,
 }
 
 async def opcua_main(generator:str, db_name:str, iterations:int, wait_time:float, standalone_value:bool):
@@ -15,15 +17,22 @@ async def opcua_main(generator:str, db_name:str, iterations:int, wait_time:float
     # run the sync data generator in a thread executor
     # so it doesn't block the event loop
     loop = asyncio.get_running_loop()
-    await loop.run_in_executor(
-        None,
-        lambda: rand_data(method="OPCUA", conn=conn, db_name=db_name,
-                          iterations=iterations, sleep=wait_time, standalone_value=False, loop=loop)
-    )
+    if generator == "rand":
+        await loop.run_in_executor(
+            None,
+            lambda: rand_data(method="OPCUA", conn=conn, db_name=db_name,
+                              iterations=iterations, sleep=wait_time, standalone_value=standalone_value, loop=loop)
+        )
+    elif generator == "vessel":
+        await loop.run_in_executor(
+            None,
+            lambda: vessel_data(method="OPCUA", conn=conn, db_name=db_name, iterations=iterations, sleep=wait_time,
+                                standalone_values=standalone_value, loop=loop)
+        )
 
 def main():
     parse = argparse.ArgumentParser()
-    parse.add_argument("generator", type=str, default="rand", choices=["rand"], help="data generator option")
+    parse.add_argument("generator", type=str, default="rand", choices=["rand", "vessel"], help="data generator option")
     parse.add_argument("--method", type=str, default="print", help="how to publish data",
                        choices=["print", "put", "mqtt", "post", "kafka", "opcua"], )
     parse.add_argument("--conn", type=str, default="127.0.0.1:32149",
@@ -39,13 +48,16 @@ def main():
     conn = None
     args.method = args.method.upper()
 
-    if args.method == "opcua":
+    if args.method == "OPCUA":
         asyncio.run(opcua_main(generator=args.generator, db_name=args.db_name, iterations=args.iterations,
                                wait_time=args.wait_time, standalone_value=args.standalone_values))
 
     elif args.generator == "rand":
         rand_data(method=args.method, conn=conn, db_name=args.db_name, iterations=args.iterations,
                   sleep=args.wait_time, standalone_value=args.standalone_values, loop=None)
+    elif args.generator == "vessel":
+        vessel_data(method=args.method, conn=conn, db_name=args.db_name, iterations=args.iterations,
+                    sleep=args.wait_time, standalone_values=args.standalone_values, loop=None)
 
 
 

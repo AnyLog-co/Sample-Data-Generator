@@ -32,6 +32,7 @@ def main(method:str, conn, db_name:str="test", iterations:int=10, sleep:float=10
         publish_data(method=method, conn=conn, topic=TOPIC, table_name=TABLE, db_name=db_name, payload=payload,
                      standalone_values=standalone_value, loop=loop)
 
+
         counter += 1
         if iterations > 0 and  0 < iterations <= counter:
             is_active = False

@@ -25,14 +25,25 @@ def _publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer|KafkaClient
         headers["Content-Type"] = "application/json"
         conn.publish_data(headers=headers, payload=payload, method=method)
     elif method == "OPCUA":
-        future = asyncio.run_coroutine_threadsafe(
-            conn.publish_data(topic=topic, payload=payload), loop
-        )
-        future.result()
+        try:
+            if isinstance(payload, list):
+                for idx in range(len(payload)):
+                    future = asyncio.run_coroutine_threadsafe(
+                        conn.publish_data(topic=f"{topic}/{idx}", payload=payload[idx]), loop
+                    )
+            else:
+                print(loop)
+                future = asyncio.run_coroutine_threadsafe(
+                    conn.publish_data(topic=topic, payload=payload), loop
+                )
+        except Exception as error:
+            raise Exception(f"Failed to define OPC-UA loop (Error: {error})")
+        else:
+            future.result()
 
 
 def publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer|KafkaClient, payload,  topic:str=None,
-                 table_name:str=None, db_name:str=None, standalone_values:bool=False, loop=None):
+                 table_name:str=None, db_name:str=None, idx:int|None=None, standalone_values:bool=False, loop=None):
     """
     main for publishing data
     :args:
@@ -63,12 +74,13 @@ def publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer|KafkaClient,
             "mode": "streaming"
         })
         conn.publish_data(headers=headers, payload=payload, method=method)
-    elif standalone_values and method in ["MQTT", "KAFKA", "POST"] and isinstance(payload, list):
-        for pyld in payload:
-            publish_data(method=method, conn=conn, topic=topic, payload=pyld,
-                         db_name=db_name, table_name=table_name, standalone_values=standalone_values)
+    elif standalone_values and method in ["MQTT", "KAFKA", "POST", "OPCUA"] and isinstance(payload, list):
+        for idx in range(len(payload)):
+            publish_data(method=method, conn=conn, topic=topic, payload=payload[idx], idx=idx,
+                         db_name=db_name, table_name=table_name, standalone_values=standalone_values, loop=loop)
     elif standalone_values and method in ["MQTT", "KAFKA", "POST", "OPCUA"] and isinstance(payload, dict):
         for key, value in payload.items():
+            key = f"{idx}/{key}" if key and idx >= 0 else key
             _publish_data(method=method, conn=conn, topic=f"{topic}/{key}", payload=value, headers=headers, loop=loop)
     elif method in ["MQTT", "KAFKA", "POST", "OPCUA"]:
         _publish_data(method=method, conn=conn, topic=topic, payload=payload, headers=headers, loop=loop)
