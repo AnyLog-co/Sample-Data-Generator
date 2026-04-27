@@ -101,7 +101,6 @@ def main(method:str, conn:RestClient|MqttClient|OpcuaServer|None, db_name:str, p
             "line_num": 0,
             "timestamp": None
         } for turbine_id in turbine_ids
-
     }
 
     counter = 0

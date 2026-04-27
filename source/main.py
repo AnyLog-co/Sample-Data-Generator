@@ -7,13 +7,15 @@ from source.southbound.vessel_data import main as vessel_data
 from source.southbound.rig_data import main as rig_data
 from source.southbound.wind_turbine import main as wind_turbine
 from source.southbound.wind_turbine2 import main as wind_turbine2
+from source.southbound.proveit_data import main as proveit
 
 OPCUA_PORTS = {
     "rand": 4841,
     "vessel": 4842,
     "rigs": 4843,
     "wind-turbine": 4844,
-    "wind-turbine2": 4844
+    "wind-turbine2": 4844,
+    "proveit": 4845
 }
 
 async def opcua_main(generator:str, db_name:str, iterations:int, wait_time:float, standalone_value:bool):
@@ -52,6 +54,12 @@ async def opcua_main(generator:str, db_name:str, iterations:int, wait_time:float
             None,
             lambda: wind_turbine2(method="OPCUA", conn=conn, db_name=db_name, iterations=iterations, sleep=wait_time,
                                  offset_sleep=0.5, standalone_values=standalone_value, loop=loop)
+        )
+    elif generator == "proveit":
+        await  loop.run_in_executor(
+            None,
+            lambda: proveit(method="OPCUA", conn=conn, db_name=db_name, iterations=iterations, sleep=wait_time,
+                            offset_sleep=0.5, standalone_values=standalone_value, loop=loop)
         )
 
 def main():

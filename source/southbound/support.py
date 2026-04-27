@@ -214,7 +214,7 @@ def _decode_row(row, url: str = "", is_german: bool = False):
 # Public fetch + decode
 # ─────────────────────────────────────────────
 
-def url_read_content(url:str, line:int=0, is_german: bool = False):
+def  url_read_content(url:str, line:int=0, is_german: bool = False):
     """
     Fetch a specific row from a remote file and return it as a decoded dict.
 
