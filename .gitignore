@@ -1,7 +1,0 @@
-.DS_Store
-*.swp
-__pycache__/
-sample_data/
-.idea/
-data/ 
-venv/
