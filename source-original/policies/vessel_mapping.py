@@ -12,7 +12,7 @@ from source.northbound.rest_functions import check_msg_client
 from source.northbound.rest_functions import declare_policy
 from source.northbound.rest_functions import declare_msg_client
 
-# from source.support import to_snake
+# from source-original.support import to_snake
 
 DATA_DIR = "http://45.33.11.32/Sample-Data/vessel-data/"
 VESSEL_FILES = get_files_by_url(url=DATA_DIR)

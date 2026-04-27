@@ -10,8 +10,8 @@ COPY data_generator_main.py Sample-Data-Generator/
 COPY requirements.txt .
 COPY run.sh .
 
-# Copy full source tree
-COPY source/ Sample-Data-Generator/source/
+# Copy full source-original tree
+COPY source-original/ Sample-Data-Generator/source/
 
 # Install system dependencies and Python packages
 RUN apt-get update && \

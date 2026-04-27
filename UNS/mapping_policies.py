@@ -11,7 +11,7 @@ def main():
     parse = argparse.ArgumentParser()
     parse.add_argument("conn", type=str, default=None, help="AnyLog REST connection for post requests")
     parse.add_argument("data", type=str, default=None, choices=["wind-turbine", "rig", "vessel", "random"],
-                       help="Data source to create policies and `msg client` for")
+                       help="Data source-original to create policies and `msg client` for")
     # parse.add_argument("publish_type", type=str, default=None, choices=["MQTT", "POST"],
     #                    help="Format data will be published")
     parse.add_argument("--broker", type=str, required=True, default="rest",

@@ -7,7 +7,49 @@ from source.northbound.rest_calls import RestClient
 from source.northbound.opcua import OpcuaServer
 from source.northbound.kafka import KafkaClient
 
+def publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer, payload:dict|List[dict],  topic:str=None, table_name:str=None,
+                 db_name:str=None):
+    """
+    main for publishing data
+    :args:
+        method:str - method to publish data
+        conn:MqttClient|RestClient - logic to publish with
+        payload:dict|List[dict] - content to publish
+        topic:str - for MQTT / POST topic to publish against
+        table_name:str - for PUT logical table name
+        db_name:str - for PUT logical table name
+    :params:
+        headers:dict - REST headers for when publishing via POST or PUT
+    """
+    headers = {
+        "User-Agent": "AnyLog/1.23",
+        "Content-Type": "text/plain"
+    }
 
+    if method == "PRINT":
+        print(json.dumps(payload, indent=2))
+    if method in ["MQTT", "KAFKA"]:
+        conn.publish_data(topic=topic, payload=payload)
+    elif method == "PUT":
+        headers.update({
+            "type": "json",
+            "dbms": db_name,
+            "table": table_name,
+            "mode": "streaming"
+        })
+        conn.publish_data(headers=headers, payload=payload, method=method)
+    elif method == "POST":
+        headers.update({
+            "command": "data",
+            "topic": topic
+        })
+        headers["Content-Type"] = "application/json"
+        # print(f"Method: {method.upper()}")
+        # print(f"headers: {headers}")
+        # print(f"Data Type: {type(payload)}")
+        # print(f" | Subtype: {type(payload[0])}" if isinstance(payload, list) else "")
+        # print(f" | Size: {len(payload)}" if isinstance(payload, list) or isinstance(payload, dict) else "")
+        conn.publish_data(headers=headers, payload=payload, method=method)
 
 def check_policy(conn:RestClient, policy_type:str=None, **kwargs)->str:
     """

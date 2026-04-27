@@ -5,7 +5,7 @@ import os
 from source.support import extract_credentials
 from source.northbound.rest_calls import RestClient
 from source.support import read_json_file
-from source.northbound.rest_functions import check_policy
+from source_old.northbound.rest_functions import check_policy
 from source.northbound.rest_functions import declare_policy
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "UNS")

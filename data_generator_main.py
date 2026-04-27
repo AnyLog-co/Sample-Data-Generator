@@ -180,7 +180,7 @@ def main():
     publishing via POST or MQTT.
 
     USAGE
-        python generator.py [data-source] [publish-format] [options]
+        python generator.py [data-source-original] [publish-format] [options]
 
     DATA SOURCES
         random
