@@ -1,5 +1,5 @@
 [Unit]
-Description=MQTT Vessel Generator
+Description=OPC-UA Vessel Generator
 After=network.target
 
 [Service]
@@ -8,11 +8,11 @@ User=root
 WorkingDirectory=/root/Sample-Data-Generator
 ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generator/source/main.py \
   vessel \
-  --method mqtt \
-  --conn anyloguser:mqtt4AnyLog!@172.104.228.251:1883 \
+  --method opcua \
   --db-name vessel \
   --wait-time 1 \
-  --iterations 0
+  --iterations 0 \
+  --standalone-values
 Restart=always
 RestartSec=5
 
