@@ -1,16 +1,16 @@
 [Unit]
-Description=MQTT Wind Turbine Generator
+Description=MQTT Vessel Generator
 After=network.target
 
 [Service]
 Type=simple
 User=root
 WorkingDirectory=/root/Sample-Data-Generator
-ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generator/source/main.py \
-  wind-turbine \
+ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generator/data_generator.py \
+  rand \
   --method mqtt \
   --conn anyloguser:mqtt4AnyLog!@172.104.228.251:1883 \
-  --db-name wind_turbine \
+  --db-name rand \
   --wait-time 1 \
   --iterations 0
 Restart=always
