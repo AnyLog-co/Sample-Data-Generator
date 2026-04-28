@@ -171,8 +171,6 @@ Default behaviour by method:
 | REST PUT / POST | Serialized JSON |
 | Kafka | Serialized JSON |
 
-> **Note:** `--standalone-values` is not yet fully implemented for all generators.
-
 ---
 
 ## Dataset Notes
