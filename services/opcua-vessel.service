@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 User=root
 WorkingDirectory=/root/Sample-Data-Generator
-ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generator/source/main.py \
+ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generator/data_generator.py \
   vessel \
   --method opcua \
   --db-name vessel \
