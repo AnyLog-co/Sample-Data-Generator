@@ -150,25 +150,6 @@ def main(method:str, conn:RestClient|MqttClient|OpcuaServer|None, db_name:str, p
             publish_data(method=method, conn=conn, topic=f"{TOPIC}/{side}",
                          table_name="boat_insight" if method == "PUT" else None,
                          db_name=db_name, payload=payload, standalone_values=standalone_values, loop=loop)
-        #     if payload:
-        #         for row in payload:
-        #             publish_data(
-        #                 method=method,
-        #                 conn=conn,
-        #                 topic=f"{TOPIC}/{side.upper()}",
-        #                 payload=[row], # ← FIX 3: list not dict
-        #                 db_name=db_name,
-        #                 table_name="boat_insight" if method.upper() == "PUT" else None,
-        #                 loop=loop,
-        #                 standalone_values=standalone_values
-        #             )
-        #     else:
-        #         time.sleep(sleep)
-        #
-        # counter += 1
-        # if 0 < iterations <= counter:
-        #     is_active = False
-
 
 if __name__ == "__main__":
     # conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)
