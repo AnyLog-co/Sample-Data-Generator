@@ -91,7 +91,7 @@ def publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer|KafkaClient,
 
 def configure_connection(method:str, conn:str, timeout:float=30):
     auth = ()
-    if '@' in auth:
+    if '@' in conn:
         auth, conn = conn.split('@')
         auth = tuple(auth.split(':'))
     host, port = conn.split(':')

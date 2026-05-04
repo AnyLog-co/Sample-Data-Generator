@@ -70,7 +70,7 @@ def _check_vessels(vessel_ids:list[str]|str=None)->dict:
 
 
 def main(method:str, conn:RestClient|MqttClient|OpcuaServer|None, db_name:str, publish_topics:list[str]|str=None,
-         iterations: int = 10, sleep:float=10, offset_sleep:float=0.5, standalone_values:bool=False, loop=None):
+         iterations:int = 10, sleep:float=10, offset_sleep:float=0.5, standalone_values:bool=False, loop=None):
     """
     main for publishing vessel (boat) data
     :args:
@@ -116,8 +116,8 @@ def main(method:str, conn:RestClient|MqttClient|OpcuaServer|None, db_name:str, p
                 if filename_to_base.endswith("DEVICE"):
                     filename_to_base = filename_to_base.rsplit("_DEVICE")[0]
                 base_row["boat_name"] = filename_to_base.split("_")[1] if not base_row.get("boat_name") else base_row.get("boat_name")
-                if not filename_to_base.endswith("vessel"):
 
+                if not filename_to_base.endswith("vessel"):
                     try:
                         base_row.update({
                             "motor_id": int(filename_to_base.split('_')[-1]),
@@ -128,7 +128,6 @@ def main(method:str, conn:RestClient|MqttClient|OpcuaServer|None, db_name:str, p
                         exit(1)
 
                 row = url_read_content(file_path, line=vessel_files.get(side).get("line_num").get(filename))
-
 
                 if row:
                     row.update(base_row)
@@ -141,7 +140,6 @@ def main(method:str, conn:RestClient|MqttClient|OpcuaServer|None, db_name:str, p
                     if method in ["MQTT", "POST", "KAFKA"]:
                         row["dbms"] = db_name
                     payload.append(row)
-
                     vessel_files[side]["line_num"][filename] += 1
                 else:
                     vessel_files[side]["timestamp"][filename] = None
@@ -150,25 +148,12 @@ def main(method:str, conn:RestClient|MqttClient|OpcuaServer|None, db_name:str, p
             publish_data(method=method, conn=conn, topic=f"{TOPIC}/{side}",
                          table_name="boat_insight" if method == "PUT" else None,
                          db_name=db_name, payload=payload, standalone_values=standalone_values, loop=loop)
-        #     if payload:
-        #         for row in payload:
-        #             publish_data(
-        #                 method=method,
-        #                 conn=conn,
-        #                 topic=f"{TOPIC}/{side.upper()}",
-        #                 payload=[row], # ← FIX 3: list not dict
-        #                 db_name=db_name,
-        #                 table_name="boat_insight" if method.upper() == "PUT" else None,
-        #                 loop=loop,
-        #                 standalone_values=standalone_values
-        #             )
-        #     else:
-        #         time.sleep(sleep)
-        #
-        # counter += 1
-        # if 0 < iterations <= counter:
-        #     is_active = False
 
+        if iterations > 0 and 0 < counter < iterations:
+            is_active = False
+        else:
+            counter +=  1
+            time.sleep(sleep)
 
 if __name__ == "__main__":
     # conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)

@@ -1,16 +1,28 @@
 [Unit]
+<<<<<<<< HEAD:services/mqtt-wind-turbine.service
 Description=MQTT Wind Turbine Generator
+========
+Description=MQTT Vessel Generator
+>>>>>>>> origin/pre-develop:services/mqtt-proveit.service
 After=network.target
 
 [Service]
 Type=simple
 User=root
 WorkingDirectory=/root/Sample-Data-Generator
+<<<<<<<< HEAD:services/mqtt-wind-turbine.service
 ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generator/source/main.py \
   wind-turbine \
   --method mqtt \
   --conn anyloguser:mqtt4AnyLog!@172.104.228.251:1883 \
   --db-name wind_turbine \
+========
+ExecStart=/root/Sample-Data-Generator/venv/bin/python3 /root/Sample-Data-Generator/data_generator.py \
+  proveit \
+  --method mqtt \
+  --conn anyloguser:mqtt4AnyLog!@172.104.228.251:1883 \
+  --db-name proveit \
+>>>>>>>> origin/pre-develop:services/mqtt-proveit.service
   --wait-time 1 \
   --iterations 0
 Restart=always
