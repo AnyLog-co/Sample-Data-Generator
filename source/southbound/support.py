@@ -27,7 +27,7 @@ from bs4 import BeautifulSoup
 # ─────────────────────────────────────────────
 
 _TIMESTAMP_RE = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}):\s*(.*)")
-_TIMESTAMP_FMT_OUT = "%Y-%m-%dT%H:%M:%S.%fZ"
+_TIMESTAMP_FMT_OUT = "%Y-%m-%d %H:%M:%S.%f"
 _TIMESTAMP_FMT_IN  = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
@@ -235,12 +235,8 @@ def  url_read_content(url:str, line:int=0, is_german: bool = False):
 # Timestamp generation
 # ─────────────────────────────────────────────
 
-def calculate_timestamp(
-    row_id: int,
-    off_set: float,
-    current_timestamp: str | datetime.datetime | None = None,
-    timezone: datetime.timezone | zoneinfo.ZoneInfo = datetime.timezone.utc,
-) -> str:
+def calculate_timestamp(row_id:int, off_set:float, current_timestamp:str|datetime.datetime|None = None,
+                        timezone:datetime.timezone|zoneinfo.ZoneInfo=datetime.timezone.utc) -> str:
     """
     Generate a publish timestamp for a data row.
 
