@@ -1,7 +1,12 @@
 import io
 import json
 
-import requests
+try:
+    import requests
+except ImportError:
+    _missing_requests = True
+else:
+    _missing_requests = False
 import csv
 
 from source.northbound.error_codes import REST_EXCEPTION_CODES

@@ -1,7 +1,12 @@
 """
 Dicts with error consistent error message to be used for REST and MQTT
 """
-from kafka.errors import KafkaError
+try:
+    from kafka.errors import KafkaError
+except ImportError:
+    _missing_kafka = False
+else:
+    _missing_kafka  = True
 
 MQTT_ERROR_CODES = {
     -1: "MQTT_ERR_NO_CONN",

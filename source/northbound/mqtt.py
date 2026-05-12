@@ -1,8 +1,13 @@
 import json
 import time
-import paho.mqtt.client as mqtt
-from typing import List
+try:
+    import paho.mqtt.client as mqtt
+except ImportError:
+    _missing_mqtt = True
+else:
+    _missing_mqtt = False
 
+from typing import List
 from source.northbound.error_codes import MQTT_ERROR_CODES
 
 

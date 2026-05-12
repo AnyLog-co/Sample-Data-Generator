@@ -1,8 +1,13 @@
 import json
 from typing import List
 
-from kafka import KafkaProducer
-from kafka.errors import KafkaTimeoutError, NoBrokersAvailable
+try:
+    from kafka import KafkaProducer
+    from kafka.errors import KafkaTimeoutError, NoBrokersAvailable
+except ImportError:
+    _missing_kafka = True
+else:
+    _missing_kafka = False
 
 from source.northbound.error_codes import KAFKA_ERROR_CODES
 

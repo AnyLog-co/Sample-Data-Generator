@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 
+from source.northbound.support import check_imports
 from source.northbound.opcua import OpcuaServer
 from source.southbound.random_data import main as rand_data
 from source.southbound.vessel_data import main as vessel_data
@@ -98,7 +99,9 @@ def main():
                        help="If data is in JSON format or list of JSONs, then publish each value under its own subtopic")
     args = parse.parse_args()
 
+    check_imports(method=args.method)
     args.method = args.method.upper()
+
     conn = None
     if args.conn and args.method in ["POST", "PUT", "MQTT", "KAFAKA"]:
         conn = configure_connection(method=args.method, conn=args.conn, timeout=30)

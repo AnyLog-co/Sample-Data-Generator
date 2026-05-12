@@ -9,6 +9,10 @@ from source.northbound.mqtt import MqttClient
 from source.northbound.kafka import KafkaClient
 from source.northbound.opcua import OpcuaServer
 
+from source.northbound.mqtt import _missing_mqtt
+from source.northbound.opcua import _missing_opcua
+from source.northbound.kafka import _missing_kafka
+from source.northbound.rest_calls import _missing_requests
 
 def _publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer|KafkaClient, payload,
                   topic:str=None, headers:dict=None, loop=None):
@@ -39,6 +43,21 @@ def _publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer|KafkaClient
             raise Exception(f"Failed to define OPC-UA loop (Error: {error})")
         else:
             future.result()
+
+
+def check_imports(method:str):
+    err_msg = None
+    if method.lower() in ["put", "post"] and _missing_requests is True:
+        err_msg = f"Missing `requests` package, cannot insert data via {method.upper()}"
+    if method.lower() == "mqtt" and _missing_mqtt is True:
+        err_msg=f"Missing `paho-mqtt` package, cannot insert data via MQTT"
+    elif method.lower() == "opcua" and _missing_opcua is True:
+        err_msg = f"Missing `asyncua` package, cannot insert data via OPC-UA"
+    elif method.lower() == "kafka" and _missing_kafka is True:
+        err_msg = f"Missing `kafka` package, cannot insert data via Kafka"
+    if err_msg:
+        print(err_msg)
+        exit(1)
 
 
 def publish_data(method:str, conn:MqttClient|RestClient|OpcuaServer|KafkaClient, payload,  topic:str=None,

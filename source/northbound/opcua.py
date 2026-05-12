@@ -1,7 +1,13 @@
 import asyncio
 import json
-from asyncua import ua, Server
 
+try:
+    from asyncua import ua, Server
+except ImportError:
+    _missing_opcua = True
+else:
+    _missing_opcua = False
+    
 
 class OpcuaServer:
     """
