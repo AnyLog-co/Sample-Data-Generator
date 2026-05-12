@@ -149,11 +149,13 @@ def main(method:str, conn:RestClient|MqttClient|OpcuaServer|None, db_name:str, p
                          table_name="boat_insight" if method == "PUT" else None,
                          db_name=db_name, payload=payload, standalone_values=standalone_values, loop=loop)
 
-        if iterations > 0 and 0 < counter < iterations:
+        # FIXED
+        counter += 1
+        if 0 < iterations <= counter:
             is_active = False
         else:
-            counter +=  1
             time.sleep(sleep)
+
 
 if __name__ == "__main__":
     # conn = RestClient(conn="50.116.20.125:32149", auth=(), timeout=30)

@@ -118,19 +118,19 @@ def main(method:str, conn:RestClient|MqttClient|OpcuaServer|None, db_name:str, p
                              payload=row, standalone_values=standalone_values, loop=loop)
 
                 line_counts[rig_id]["line_num"] += 1
-            if not line_counts[rig_id]["timestamp"]:
-                line_counts[rig_id]["timestamp"] = row["timestamp"]
-            elif row is None:
+            if row is None:
                 line_counts[rig_id]["timestamp"] = None
                 line_counts[rig_id]["line_num"] = 0
+            elif not line_counts[rig_id]["timestamp"]:
+                line_counts[rig_id]["timestamp"] = row["timestamp"]
 
         counter += 1
         if 0 < iterations <= counter:
             is_active = False
         else:
-            if all(lc is None for lc in line_counts.values()):
+            if all(lc["timestamp"] is None for lc in line_counts.values()):
                 for rig_id in line_counts:
-                    line_counts[rig_id] = 0
+                    line_counts[rig_id] = {"line_num": 0, "timestamp": None}
             time.sleep(sleep)
 
 
