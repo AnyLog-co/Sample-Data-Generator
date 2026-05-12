@@ -27,7 +27,7 @@ from bs4 import BeautifulSoup
 # ─────────────────────────────────────────────
 
 _TIMESTAMP_RE = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}):\s*(.*)")
-_TIMESTAMP_FMT_OUT = "%Y-%m-%d %H:%M:%S.%f"
+_TIMESTAMP_FMT_OUT = "%Y-%m-%dT%H:%M:%S.%fZ"
 _TIMESTAMP_FMT_IN  = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
@@ -258,6 +258,7 @@ def calculate_timestamp(row_id:int, off_set:float, current_timestamp:str|datetim
             current_timestamp = datetime.datetime.strptime(current_timestamp, _TIMESTAMP_FMT_IN)
         timestamp = current_timestamp + datetime.timedelta(seconds=off_set * row_id)
     else:
-        timestamp = datetime.datetime.now(tz=timezone)
+        timestamp = datetime.datetime.now(tz=datetime.timezone.utc)
+        # timestamp = datetime.datetime.now(tz=timezone)
 
     return timestamp.strftime(_TIMESTAMP_FMT_OUT)
