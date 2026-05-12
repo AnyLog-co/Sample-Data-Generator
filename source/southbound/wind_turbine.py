@@ -109,34 +109,34 @@ def main(method:str, conn:RestClient|MqttClient|OpcuaServer|None, db_name:str, p
     while is_active:
         timestamp = datetime.datetime.now(tz=TIMEZONE)  # was datetime.timezone.utc
         for id_index, (turbine_id, file_path) in enumerate(turbine_paths.items()):
-            if line_counts[turbine_id] is not None:
-                row = url_read_content(file_path, line=line_counts[turbine_id]["line_num"], is_german=True)
+            row = url_read_content(file_path, line=line_counts[turbine_id]["line_num"], is_german=True)
 
-                if row:
-                    row = _turbine_translate(content=row, timestamp=timestamp, offset_sleep=offset_sleep,
-                                             id_index=line_counts[turbine_id]["line_num"])
-                    if method in ["MQTT", "POST", "KAFKA"]:
-                        row.update({"dbms": db_name, "table": TABLE})
+            if row:
+                row = _turbine_translate(content=row, timestamp=timestamp, offset_sleep=offset_sleep,
+                                         id_index=line_counts[turbine_id]["line_num"])
+                if method in ["MQTT", "POST", "KAFKA"]:
+                    row.update({"dbms": db_name, "table": TABLE})
 
-                    publish_data(method=method, conn=conn, topic=f"{TOPIC}/turbine-{row.get('turbine_id')}",
-                                 table_name=TABLE, db_name=db_name, payload=row,
-                                 standalone_values=standalone_values, loop=loop)
+                publish_data(method=method, conn=conn, topic=f"{TOPIC}/turbine-{row.get('turbine_id')}",
+                             table_name=TABLE, db_name=db_name, payload=row,
+                             standalone_values=standalone_values, loop=loop)
 
-                    line_counts[turbine_id]["line_num"] += 1
+                line_counts[turbine_id]["line_num"] += 1
 
-                if not line_counts[turbine_id]["timestamp"]:
-                    line_counts[turbine_id]["timestamp"] = row["timestamp"]
-                else:
-                    line_counts[turbine_id]["timestamp"] = None
-                    line_counts[turbine_id]["line_num"] = 0
+            if row is None:
+                line_counts[turbine_id]["timestamp"] = None
+                line_counts[turbine_id]["line_num"] = 0
+            elif not line_counts[turbine_id]["timestamp"]:
+                line_counts[turbine_id]["timestamp"] = row["timestamp"]
+
 
         counter += 1
         if 0 < iterations <= counter:
             is_active = False
         else:
-            if all(lc is None for lc in line_counts.values()):
+            if all(lc["timestamp"] is None for lc in line_counts.values()):
                 for turbine_id in line_counts:
-                    line_counts[turbine_id] = 0
+                    line_counts[turbine_id] = {"line_num": 0, "timestamp": None}
             time.sleep(sleep)
 
 

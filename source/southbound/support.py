@@ -235,12 +235,8 @@ def  url_read_content(url:str, line:int=0, is_german: bool = False):
 # Timestamp generation
 # ─────────────────────────────────────────────
 
-def calculate_timestamp(
-    row_id: int,
-    off_set: float,
-    current_timestamp: str | datetime.datetime | None = None,
-    timezone: datetime.timezone | zoneinfo.ZoneInfo = datetime.timezone.utc,
-) -> str:
+def calculate_timestamp(row_id:int, off_set:float, current_timestamp:str|datetime.datetime|None = None,
+                        timezone:datetime.timezone|zoneinfo.ZoneInfo=datetime.timezone.utc) -> str:
     """
     Generate a publish timestamp for a data row.
 
@@ -262,6 +258,7 @@ def calculate_timestamp(
             current_timestamp = datetime.datetime.strptime(current_timestamp, _TIMESTAMP_FMT_IN)
         timestamp = current_timestamp + datetime.timedelta(seconds=off_set * row_id)
     else:
-        timestamp = datetime.datetime.now(tz=timezone)
+        timestamp = datetime.datetime.now(tz=datetime.timezone.utc)
+        # timestamp = datetime.datetime.now(tz=timezone)
 
     return timestamp.strftime(_TIMESTAMP_FMT_OUT)
