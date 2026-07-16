@@ -19,8 +19,40 @@ DATA = {
     "edgex12.mp4": 5,
     "edgex4.mp4": 3,
     "edgex8.mp4": 5,
-    "edgex3.mp4": 2
+    "edgex3.mp4": 2,
+    "video1A.mp4": 1,
+    "video1B.mp4": 2,
+    "video2A.mp4": 3,
+    "video2B.mp4": 4,
+    "video3A.mp4": 5,
+    "video3B.mp4": 1,
+    "video4A.mp4": 2,
+    "video4B.mp4": 3,
+    "video5A.mp4": 4,
+    "video5B.mp4": 4,
+    "video6A.mp4": 4,
+    "video6B.mp4": 5,
+    "video7A.mp4": 1,
+    "video7B.mp4": 2,
+    "video8A.mp4": 3,
+    "video8B.mp4": 2,
+    "video9A.mp4": 3,
+    "video9B.mp4": 3,
 }
+random.seed(1234)
+
+video_paths = []
+video_list = os.listdir(BLOBS_DIR)
+random.shuffle(video_list)
+for video in video_list:
+    if video in [None, '.DS_Store']:
+        continue
+    full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, video)))
+    video_paths.append(full_file_path)
+    if not os.path.isfile(full_file_path):
+        video = None
+
+video_idx = 0
 
 def __generate_number(expected_value:int)->(int, float):
     """
@@ -80,32 +112,37 @@ def get_data(db_name:str, last_blob:str=None, exception:bool=False)->dict:
     payload = {}
     video = None
 
-    if video is None and last_blob is None:
-        while video in [None, '.DS_Store']:
-            video = random.choice(list(os.listdir(BLOBS_DIR)))
-            full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, video)))
-            if not os.path.isfile(full_file_path):
-                video = None
-    else:
-        while video == last_blob or video in [None, '.DS_Store']:
-            video = random.choice(list(os.listdir(BLOBS_DIR)))
-            full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, video)))
-            if not os.path.isfile(full_file_path) or os.path.isdir(full_file_path):
-                video = None
-
-
+    # if True:
+    #     # while video in [None, '.DS_Store']:
+    #     #     video = random.choice(list(os.listdir(BLOBS_DIR)))
+    #     video_list = os.listdir(BLOBS_DIR)
+    #     random.shuffle(video_list)
+    #     for video in video_list:
+    #         if video in [None, '.DS_Store']:
+    #             continue
+    #         full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, video)))
+    #         if not os.path.isfile(full_file_path):
+    #             video = None
+    # else:
+    #     while video == last_blob or video in [None, '.DS_Store']:
+    #         video = random.choice(list(os.listdir(BLOBS_DIR)))
+    #         full_file_path = os.path.expanduser(os.path.expandvars(os.path.join(BLOBS_DIR, video)))
+    #         if not os.path.isfile(full_file_path) or os.path.isdir(full_file_path):
+    #             video = None
+    global video_idx
+    video = video_list[video_idx]
+    full_file_path = video_paths[video_idx]
     if video is not None and os.path.isfile(full_file_path):
         count, confidence = __generate_number(expected_value=DATA[video])
-
         payload = {
             "dbms": db_name,
-            "table": 'people_counter',
+            "table": 'people',
             "start_ts": support.create_timestamp(increase_ts=0),
             "end_ts": support.create_timestamp(increase_ts=random.choice(list(range(10, 15)))),
             "file_content": support.file_processing(file_name=full_file_path, exception=exception),
             "count": count,
             "confidence": confidence
         }
-
+    video_idx += 1
     return payload, video
 

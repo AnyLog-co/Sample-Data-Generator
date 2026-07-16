@@ -46,6 +46,11 @@ def publish_via_post(conn:str, payload:list, topic:str, auth:tuple=(), timeout:f
     }
 
     try:
+        print(conn)
+        # if conn == "192.168.1.125:32149":
+        #     payload[0]['table'] = "people"
+        # else:
+        #     payload[0]['table'] = "peoplenyc"
         r = requests.post(url=f'http://{conn}', headers=headers, data=serialize_data(payload=payload), auth=auth, timeout=timeout)
     except Exception as error:
         status = False

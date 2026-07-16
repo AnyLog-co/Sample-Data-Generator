@@ -124,12 +124,16 @@ def main():
 
     last_blob = None
 
-
+    conn_idx = 0
+    conns = list(conns.keys())
     while True:
-        conn = random.choice(list(conns.keys()))
-        data_generator = random.choice(data_generators)
-        auth = conns[conn]
+        # conn = random.choice(list(conns.keys()))
+        # data_generator = random.choice(data_generators)
+        # auth = conns[conn]
 
+        auth = ()
+        conn = conns[int(conn_idx%len(conns))]
+        conn_idx += 1
         payload, last_blob = __generate_data(data_generator=args.data_generator, db_name=args.db_name,
                                              last_blob=last_blob, exception=args.exception)
         payloads.append(payload)
